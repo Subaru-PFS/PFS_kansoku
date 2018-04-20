@@ -1,1 +1,4 @@
+# Reloads a python module and inserts the callables into 
+# the running instance of the PFS g2cam object.
+#
 MODULE TYPE=CHAR DEFAULT="PFSCommands"

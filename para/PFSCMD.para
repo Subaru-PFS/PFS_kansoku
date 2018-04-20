@@ -1,2 +1,6 @@
+# Call any PFS command. Hopelessly dangerous: in general low-level 
+# commands are not expected to be called out of context. Seriously: do
+# not use this casually.
+#
 ACTOR TYPE=CHAR DEFAULT="hub"
 CMD TYPE=CHAR DEFAULT="status"
