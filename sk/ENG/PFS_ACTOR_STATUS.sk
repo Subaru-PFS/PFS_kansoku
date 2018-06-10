@@ -1,0 +1,34 @@
+#**********************************************************************
+#
+# Check MCS function and Status (M-1, M-3)
+#
+#**********************************************************************
+:Header
+    OBE_ID=PFS
+    OBE_MODE=ENG
+    SCRIPT_ID=PFS_ACTOR_STATUS.sk
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.06.09
+    DISPATCHER_VERSION=0.0
+
+:Parameter
+#default
+  DATASET_ID=DUMMY
+  OBSERVATION_ID=NOP
+  SPIKE_ID=NOP
+#PFS
+  SSYS=MCS
+
+
+:Command
+:start
+:main_start
+# Actors status check
+  EXEC PFS PFSCMD ACTOR="gen2" CMD="ping" ;
+  EXEC PFS PFSCMD ACTOR="mcs" CMD="ping" ;
+  EXEC PFS PFSCMD ACTOR="meb" CMD="ping" ;
+:main_end
+
+:end
+
+
