@@ -25,7 +25,7 @@
 :main_start
 # Actors status check
   EXEC PFS PFSCMD ACTOR="gen2" CMD="ping" ;
-  EXEC PFS PFSCMD ACTOR="mcs" CMD="ping" ;
+  EXEC PFS PFSCMD ACTOR="mcs" CMD="ping" ,
   EXEC PFS PFSCMD ACTOR="meb" CMD="ping" ;
 :main_end
 

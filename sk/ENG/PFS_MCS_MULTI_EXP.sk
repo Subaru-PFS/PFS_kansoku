@@ -1,0 +1,40 @@
+#**********************************************************************
+#
+# MCS multiple exposure (M-4, P-4)
+#
+#**********************************************************************
+:Header
+    OBE_ID=PFS
+    OBE_MODE=PFS_ENG
+    SCRIPT_ID=PFS_MCS_MULTI_EXP.sk
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.06.13
+    DISPATCHER_VERSION=0.0
+
+:Parameter
+#default
+  DATASET_ID=DUMMY
+  OBSERVATION_ID=NOP
+  SPIKE_ID=NOP
+#for PFS
+  SSYS=MCS
+  NFRAME=2
+  AZ=@STATUS
+  EL=@STATUS
+  ROTA=@STATUS
+  EXPT=1
+
+:Command
+:start
+  EXEC TSC AzElDrive COORD=abs AZ=AZ EL=EL ;
+  EXEC TSC ImgRot COORD=rel POSITION=ROTA ;
+:main_start
+# No need to save
+*FOR $NFRAME IN
+  EXEC PFS MCSEXPOSE EXPTYPE=object EXPTIME=EXPT;
+*ENDFOR
+:main_end
+
+:end
+
+
