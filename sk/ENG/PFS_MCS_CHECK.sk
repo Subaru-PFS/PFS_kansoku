@@ -4,18 +4,11 @@
 #
 #**********************************************************************
 :Header
-    OBE_ID=PFS
-    OBE_MODE=ENG
-    SCRIPT_ID=PFS_MCS_CHECK.sk
     SCRIPT_AUTHOR=Moritani
     SCRIPT_UPDATE=2018.06.09
-    DISPATCHER_VERSION=0.0
 
 :Parameter
 #default
-  DATASET_ID=DUMMY
-  OBSERVATION_ID=NOP
-  SPIKE_ID=NOP
 #PFS
   SSYS=MCS
 
@@ -34,7 +27,7 @@
 # Shutter open/close
 #  EXEC PFS MCS_SHUTTER MODE=CLOSE ;
 # Test exposure
-  EXEC PFS MCSEXPOSE EXPTYPE=OBJECT EXPTIME=1 ;
+  EXEC PFS MCSEXPOSE EXPTYPE=TEST EXPTIME=1 ;
   EXEC PFS PFSCMD ACTOR="mcs" CMD="imageStats" ;
 :main_end
 

@@ -4,18 +4,10 @@
 #
 #**********************************************************************
 :Header
-    OBE_ID=PFS
-    OBE_MODE=PFS_ENG
-    SCRIPT_ID=PFS_MCS_MULTI_EXP.sk
     SCRIPT_AUTHOR=Moritani
     SCRIPT_UPDATE=2018.06.13
-    DISPATCHER_VERSION=0.0
 
 :Parameter
-#default
-  DATASET_ID=DUMMY
-  OBSERVATION_ID=NOP
-  SPIKE_ID=NOP
 #for PFS
   SSYS=MCS
   NFRAME=2
@@ -23,15 +15,17 @@
   EL=@STATUS
   ROTA=@STATUS
   EXPT=1
+  DTYP=OBJECT
 
 :Command
 :start
-  EXEC TSC AzElDrive COORD=abs AZ=AZ EL=EL ;
-  EXEC TSC ImgRot COORD=rel POSITION=ROTA ;
+  EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
+  EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
 :main_start
-# No need to save
-*FOR $NFRAME IN
-  EXEC PFS MCSEXPOSE EXPTYPE=object EXPTIME=EXPT;
+# argment IN is mandatory
+# the third argumnt is needed ven if yout 
+*FOR $NFRAME NF IN
+  EXEC PFS MCSEXPOSE EXPTYPE=$DTYP EXPTIME=$EXPT;
 *ENDFOR
 :main_end
 
