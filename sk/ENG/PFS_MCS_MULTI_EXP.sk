@@ -22,8 +22,8 @@
   EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
   EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
 :main_start
-# argment IN is mandatory
-# the third argumnt is needed ven if yout 
+# Forth argment IN is mandatory
+# The third argumnt is needed even if not used. 
 *FOR $NFRAME NF IN
   EXEC PFS MCSEXPOSE EXPTYPE=$DTYP EXPTIME=$EXPT;
 *ENDFOR
