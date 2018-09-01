@@ -24,7 +24,6 @@
 # Move teescope to initial position and take exposure
 EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$Z TX=NOP TY=NOP;
 EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
-*ENDFOR
 :main_start
 # move HExapod in Z direction
 # Forth argment IN is mandatory
