@@ -1,0 +1,58 @@
+#**********************************************************************
+#
+# MCS multiple exposure 2 (M-4, P-4)
+#
+# -- Interleave telescopemove and exposure
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.09.01
+
+:Parameter
+# for PFS
+  SSYS=MCS
+# Telescope movement
+  AZ=@STATUS
+  EL=@STATUS
+  ROTA=@STATUS
+  DAZ=0
+  DEL=0
+  DROTA=0
+  NMOVE_AZ=1
+  NMOVE_EL=1
+  NMOVE_ROTA=1
+# Exposure
+  NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+
+:Command
+:start
+# Move teescope to initial position and take exposure
+EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
+EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
+*FOR $NFRAME NF IN
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+*ENDFOR
+:main_start
+# move telescope step by step
+# Forth argment IN is mandatory
+# The third argumnt is needed even if not used. 
+*FOR $NMOVE_EL NZ IN
+  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
+  *FOR $NMOVE_AZ NZ IN
+    EXEC TSC AzElDrive COORD=rel AZ=$DAZ EL=0 ;
+    *FOR $NMOVE_ROTA NZ IN
+      EXEC TSC ImgRot COORD=rel POSITION=$DROTA ;
+      *FOR $NFRAME NF IN
+        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+      *ENDFOR
+    *ENDFOR
+  *ENDFOR
+*ENDFOR
+:main_end
+
+:end
+
+

@@ -1,0 +1,41 @@
+#**********************************************************************
+#
+# MCS Throught Focus (M-4, P-4)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.09.01
+
+:Parameter
+# for PFS
+  SSYS=MCS
+# Hexapod movement
+  IZ=-0.01
+  Z=(!TSCV.PF_OFF_Z+$IZ)
+  DZ=0.01
+  NMOVE_Z=1
+# Exposure
+  EXPTIME=1
+  EXPTYPE=OBJECT
+
+:Command
+:start
+# Move teescope to initial position and take exposure
+EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$Z TX=NOP TY=NOP;
+EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+*ENDFOR
+:main_start
+# move HExapod in Z direction
+# Forth argment IN is mandatory
+# The third argumnt is needed even if not used. 
+*FOR $NMOVE_Z NZ IN
+  *Set ZZ=(!TSCV.PF_OFF_Z+$DZ)
+  EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$ZZ TX=NOP TY=NOP;
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+*ENDFOR
+:main_end
+
+:end
+
+
