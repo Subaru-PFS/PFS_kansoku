@@ -5,7 +5,7 @@
 #**********************************************************************
 :Header
     SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2018.06.13
+    SCRIPT_UPDATE=2018.10.18
 
 :Parameter
 #for PFS
@@ -19,14 +19,19 @@
 
 :Command
 :start
+
+asn count = 0
+
   EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
   EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
 :main_start
 # Forth argment IN is mandatory
 # The third argumnt is needed even if not used. 
-*FOR $NFRAME NF IN
+while(@count < $NFRAME){
+  asn count = @count + 1;
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
-*ENDFOR
+}
+
 :main_end
 
 :end
