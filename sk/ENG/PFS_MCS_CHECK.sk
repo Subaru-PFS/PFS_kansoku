@@ -1,0 +1,36 @@
+#**********************************************************************
+#
+# Check MCS function and Status (M-1, M-3)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.06.09
+
+:Parameter
+#default
+#PFS
+  SSYS=MCS
+
+
+:Command
+:start
+:main_start
+# MHS status check
+  EXEC PFS PFSCMD ACTOR="mcs" CMD="ping" ;
+  EXEC PFS PFSCMD ACTOR="meb" CMD="ping" ;
+# MCS status check
+  EXEC PFS PFSCMD ACTOR="meb" CMD="temps status" ;
+  EXEC PFS PFSCMD ACTOR="meb" CMD="flow status" ;
+# Shutter open/close
+#  EXEC PFS MCS_SHUTTER MODE=OPEN ;
+# Shutter open/close
+#  EXEC PFS MCS_SHUTTER MODE=CLOSE ;
+# Test exposure
+  EXEC PFS MCSEXPOSE EXPTYPE=OBJECT EXPTIME=1 ;
+  EXEC PFS PFSCMD ACTOR="mcs" CMD="imageStats" ;
+:main_end
+
+:end
+
+

@@ -1,0 +1,65 @@
+#**********************************************************************
+#
+# MCS multiple exposure 2 (M-4, P-4)
+#
+# -- Interleave telescopemove(El, Rot) and exposure
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.09.01
+
+:Parameter
+# for PFS
+  SSYS=MCS
+# Telescope movement
+  EL=@STATUS
+  ROTA=@STATUS
+  DEL=0
+  DROTA=0
+  NMOVE_EL=1
+  NMOVE_ROTA=1
+# Exposure
+  NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+
+:Command
+:start
+
+# set counters
+
+asn cntel = 0
+asn cntrt = 0
+
+# For nesting to rotation move without el move
+*IF ($DEL) == (0)
+  asn totel = 1
+*ELSE
+  asn totel = ($NMOVE_EL)
+*ENDIF
+
+# Move teescope to initial position and take exposure
+EXEC TSC AzElDrive COORD=abs AZ=0 EL=$EL ;
+EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
+# Forth argment IN is mandatory
+# The third argumnt is needed even if not used. 
+*FOR $NFRAME NF IN
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+*ENDFOR
+:main_start
+# move telescope step by step
+while(@cntel < @totel){
+  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
+  while(@cntrt < $NMOVE_ROTA){
+      EXEC TSC ImgRot COORD=rel POSITION=$DROTA ;
+      *FOR $NFRAME NF IN
+        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+      *ENDFOR
+  }
+}
+:main_end
+
+:end
+
+

@@ -1,0 +1,39 @@
+#**********************************************************************
+#
+# MCS multiple exposure (M-4, P-4)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.10.18
+
+:Parameter
+#for PFS
+  SSYS=MCS
+  NFRAME=2
+  AZ=@STATUS
+  EL=@STATUS
+  ROTA=@STATUS
+  EXPTIME=1
+  EXPTYPE=OBJECT
+
+:Command
+:start
+
+asn count = 0
+
+  EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
+  EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
+:main_start
+# Forth argment IN is mandatory
+# The third argumnt is needed even if not used. 
+while(@count < $NFRAME){
+  asn count = @count + 1;
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+}
+
+:main_end
+
+:end
+
+

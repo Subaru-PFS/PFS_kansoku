@@ -1,0 +1,27 @@
+#**********************************************************************
+#
+# Check MCS function and Status (M-1, M-3)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.06.09
+
+:Parameter
+#default
+#PFS
+  SSYS=MCS
+
+
+:Command
+:start
+:main_start
+# Actors status check
+  EXEC PFS PFSCMD ACTOR="gen2" CMD="ping" ;
+  EXEC PFS PFSCMD ACTOR="mcs" CMD="ping" ,
+  EXEC PFS PFSCMD ACTOR="meb" CMD="ping" ;
+:main_end
+
+:end
+
+
