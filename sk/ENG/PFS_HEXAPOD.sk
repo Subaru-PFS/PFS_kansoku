@@ -1,0 +1,28 @@
+#**********************************************************************
+#
+# Hexapod Movement 
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.10.19
+
+:Parameter
+# for PFS
+  SSYS=POPT2
+# Hexapod movement
+  X=!TSCV.PF_OFF_X
+  Y=!TSCV.PF_OFF_Y
+  Z=!TSCV.PF_OFF_Z
+  TX=!TSCV.PF_OFF_TX
+  TY=!TSCV.PF_OFF_TY
+
+:Command
+:start
+:main_start
+EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
+:main_end
+
+:end
+
+
