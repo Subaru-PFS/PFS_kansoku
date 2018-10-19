@@ -40,14 +40,16 @@ asn cntrt = 0
 *ENDIF
 
 # Move teescope to initial position and take exposure
-EXEC TSC AzElDrive COORD=abs AZ=0 EL=$EL ;
+EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ;
 PFS_HEXAPOD OBE_ID=PFS OBE_MODE=ENG COMP=ADC EL=$EL ;
 EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
+
 # Forth argment IN is mandatory
 # The third argumnt is needed even if not used. 
 *FOR $NFRAME NF IN
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
 *ENDFOR
+
 :main_start
 # move telescope step by step
 while(@cntel < @totel){
