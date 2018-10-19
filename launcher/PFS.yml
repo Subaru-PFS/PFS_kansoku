@@ -11,11 +11,12 @@ launchers:
 #
     -
         label: "Move Te. and Multi Exposure" 
-        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPYIPE=$VAL03 AZ=$VAL04 EL=$VAL05
+        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
             - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
             - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
+            - break
             - [ VAL04, INPUT, 6, "nop", "Az" ]
             - [ VAL05, INPUT, 6, "nop", "El" ]
 
