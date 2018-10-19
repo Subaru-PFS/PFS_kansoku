@@ -10,28 +10,25 @@ launchers:
 # MCS: Multipule Exposure
 #
     -
-    label: "Move Tel. and Exposure" # AO acquisition
-    cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTIPE=$VAL03
-    params:
-        - [ VAL01, INPUT, 6, 1, "NFrame" ]
-        - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
-        - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
-    -
+        label: "Move Tel. and Exposure" 
+        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTIPE=$VAL03
+        params:
+            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+            - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
+            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
     - sep
 
 #
 # POpt2 Hexapod Movement
 #
     -
-    label: "Hexapod Movement" # AO acquisition
-    cmd  : PFS_HEXAPOD OBE_ID=PFS OBE_MODE=ENG X=$VAL01 Y=$VAL02 Z=$VAL03 TX=$VAL04 TY=$VAL05
-    params:
-        - [ VAL01, INPUT, 8, !TSCV.PF_OFF_X, "X (abs)" ]
-        - [ VAL02, INPUT, 8, !TSCV.PF_OFF_Y, "Y (abs)" ]
-        - [ VAL03, INPUT, 8, !TSCV.PF_OFF_Z, "Z (abs)" ]
-        - [ VAL04, INPUT, 8, !TSCV.PF_OFF_TX, "TX (abs)" ]
-        - [ VAL05, INPUT, 8, !TSCV.PF_OFF_TY, "TY (abs)" ]
-    -
-    - sep
+        label: "Hexapod Movement" 
+        cmd  : PFS_HEXAPOD OBE_ID=PFS OBE_MODE=ENG X=$VAL01 Y=$VAL02 Z=$VAL03 TX=$VAL04 TY=$VAL05
+        params:
+            - [ VAL01, INPUT, 8, "!TSCV.PF_OFF_X", "X (abs)" ]
+            - [ VAL02, INPUT, 8, "!TSCV.PF_OFF_Y", "Y (abs)" ]
+            - [ VAL03, INPUT, 8, "!TSCV.PF_OFF_Z", "Z (abs)" ]
+            - [ VAL04, INPUT, 8, "!TSCV.PF_OFF_TX", "TX (abs)" ]
+            - [ VAL05, INPUT, 8, "!TSCV.PF_OFF_TY", "TY (abs)" ]
 
 # End
