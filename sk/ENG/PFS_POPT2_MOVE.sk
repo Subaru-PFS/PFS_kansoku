@@ -19,10 +19,14 @@
   TX=!TSCV.PF_OFF_TX
   TY=!TSCV.PF_OFF_TY
 # ADC movement
-## movement select by El. (EL) or set by mm (MM)
-  MMODE="EL"
+## movement select by El. (EL) or POS
   EL=@status
   POSIN=!STATL.ADCPF_POS
+  E0=0.0027
+  E1=12.6755
+  E2=-0.0992
+  E3=0.2141
+  E4=-0.0901
 
 :Command
 :start
@@ -31,19 +35,10 @@
     EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
 *ELIF ($COMP) == "ADC"
     *IF ($MMODE) == "EL"
-        *IF ($EL) == (90)
-            *SET POSITION=0.0
-        *ELIF ($EL) == (75)
-            *SET POSITION=3.4
-        *ELIF ($EL) == (60)
-            *SET POSITION=7.3
-        *ELIF ($EL) == (45)
-            *SET POSITION=12.7
-        *ELIF ($EL) == (30)
-            *SET POSITION=22.0
-        *ELSE
-            EXEC OBS Set_message obsinfo2="Unregistered elevation angle.Set the current ADC position.";
-            *SET POSITION=(!STATL.ADCPF_POS);
+        *SET ZA = (90-$EL)
+        EXEC OBS CALC TAN_ARG=$ZA
+        *SET POSITION = ($E0 + $E1*$ZA + $E2*$ZA*$ZA + $E3*$ZA*$ZA*$ZA + $E4*$ZA*$ZA*$ZA*$ZA )
+        EXEC OBS Set_message obsinfo2="Set ADC Position is ($POSITION)";
         *ENDIF
     *ELIF ($MMODE) == "MM"
         *SET POSITION = ($POSIN)
