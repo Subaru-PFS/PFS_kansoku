@@ -20,6 +20,7 @@
   TY=!TSCV.PF_OFF_TY
 # ADC movement
 ## movement select by El. (EL) or POS
+  MMODE=MM
   EL=@status
   POSIN=!STATL.ADCPF_POS
   E0=0.0027
@@ -31,17 +32,21 @@
 :Command
 :start
 :main_start
-*IF ($COMP) == "HEXAPOD"
+*IF "$COMP" == "HEXAPOD"
     EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
-*ELIF ($COMP) == "ADC"
-    *IF ($MMODE) == "EL"
+*ENDIF
+*IF "$COMP" == "ADC"
+    *IF "$MMODE" == "EL"
         *SET ZA = (90-$EL)
         EXEC OBS CALC TAN_ARG=$ZA
-        *SET POSITION = ($E0 + $E1*$ZA + $E2*$ZA*$ZA + $E3*$ZA*$ZA*$ZA + $E4*$ZA*$ZA*$ZA*$ZA )
-        EXEC OBS Set_message obsinfo2="Set ADC Position is ($POSITION)";
-        *ENDIF
-    *ELIF ($MMODE) == "MM"
+        *SET TZA = !STATOBS.TAN
+        *SET POSITION = ($E0 + $E1*$TZA + $E2*$TZA*$TZA + $E3*$TZA*$TZA*$TZA + $E4*$TZA*$TZA*$TZA*$TZA )
+        EXEC OBS Set_message obsinfo2="ADC Position is $POSITION";
+    *ENDIF
+    *IF "$MMODE" == "MM"
         *SET POSITION = ($POSIN)
+    *ELSE
+        *SET POSITION = (!STATL.ADCPF_POS)
     *ENDIF
     EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION
 *ENDIF
