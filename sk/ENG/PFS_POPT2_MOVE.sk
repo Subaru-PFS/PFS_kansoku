@@ -1,0 +1,49 @@
+#**********************************************************************
+#
+# POpt2 Movement (Hexapod or ADC)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.10.19
+
+:Parameter
+# for PFS
+  SSYS=POPT2
+# component to move (HEXAPOD or ADC)
+  COMP=NONE
+# Hexapod movement
+  X=!TSCV.PF_OFF_X
+  Y=!TSCV.PF_OFF_Y
+  Z=!TSCV.PF_OFF_Z
+  TX=!TSCV.PF_OFF_TX
+  TY=!TSCV.PF_OFF_TY
+# ADC movement
+  EL=@status
+
+:Command
+:start
+:main_start
+*IF ($COMP) == "HEXAPOD"
+    EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
+*ELIF ($COMP) == "ADC"
+    *IF ($EL) == (90)
+        *SET POSITION=0.0
+    *ELIF ($EL) == (75)
+        *SET POSITION=3.4
+    *ELIF ($EL) == (60)
+        *SET POSITION=7.3
+    *ELIF ($EL) == (45)
+        *SET POSITION=12.7
+    *ELIF ($EL) == (30)
+        *SET POSITION=22.0
+    *ELSE
+        *SET POSITION=(!STATL.ADCPF_POS)
+    *ENDIF
+    EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION
+*ENDIF
+:main_end
+
+:end
+
+
