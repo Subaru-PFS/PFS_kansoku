@@ -22,14 +22,15 @@ launchers:
 # POpt2 Hexapod Movement
 #
     -
-        label: "Hexapod" 
+        label: "Hexapod (abs)" 
         cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=NEXAPOD X=$VAL01 Y=$VAL02 Z=$VAL03 TX=$VAL04 TY=$VAL05
         params:
-            - [ VAL01, INPUT, 8, "!TSCV.PF_OFF_X", "X (abs)" ]
-            - [ VAL02, INPUT, 8, "!TSCV.PF_OFF_Y", "Y (abs)" ]
-            - [ VAL03, INPUT, 8, "!TSCV.PF_OFF_Z", "Z (abs)" ]
-            - [ VAL04, INPUT, 8, "!TSCV.PF_OFF_TX", "TX (abs)" ]
-            - [ VAL05, INPUT, 8, "!TSCV.PF_OFF_TY", "TY (abs)" ]
+            - [ VAL01, INPUT, 10, "!TSCV.PF_OFF_X", "X (mm)" ]
+            - [ VAL02, INPUT, 10, "!TSCV.PF_OFF_Y", "Y (mm)" ]
+            - [ VAL03, INPUT, 10, "!TSCV.PF_OFF_Z", "Z (mm)" ]
+            - break
+            - [ VAL04, INPUT, 10, "!TSCV.PF_OFF_TX", "TX (arcm)" ]
+            - [ VAL05, INPUT, 10, "!TSCV.PF_OFF_TY", "TY (arcm)" ]
 
 #
 # POpt2 ADC Movement (Elevation)
@@ -38,15 +39,15 @@ launchers:
         label: "ADC (El.)" 
         cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$VAL01
         params:
-            - [ VAL01, SELECT, [90, 75, 60, 45, 30],"El."]
+            - [ VAL01, SELECT, [90, 75, 60, 45, 30],"Elevation."]
 
 #
 # POpt2 ADC Movement (Elevation)
 #
     -
-        label: "ADC (Pos. in mm)" 
+        label: "ADC (Pos.)" 
         cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=MM POSIN=$VAL01
         params:
-            - [ VAL01, INPUT, 6, 0.0 ,"Position"]
+            - [ VAL01, INPUT, 6, 0.0 ,"in mm"]
 
 # End
