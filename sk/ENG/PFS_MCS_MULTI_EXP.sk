@@ -28,7 +28,7 @@ asn count = 0
 # Forth argment IN is mandatory
 # The third argumnt is needed even if not used. 
 while(@count < $NFRAME){
-  asn count = @count + 1;
+  asn count = @count + 1
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
 }
 
