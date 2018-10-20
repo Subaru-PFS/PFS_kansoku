@@ -11,24 +11,27 @@
 #for PFS
   SSYS=MCS
   NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+# Telescope
   AZ=@STATUS
   EL=@STATUS
   ROTA=@STATUS
-  EXPTIME=1
-  EXPTYPE=OBJECT
 
 :Command
 :start
 
 asn count = 0
 
+# Move Telescope
   EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
-  EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
+  EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
+
 :main_start
-# Forth argment IN is mandatory
-# The third argumnt is needed even if not used. 
+
 while(@count < $NFRAME){
   asn count = @count + 1
+  EXEC OBS Set_message obsinfo3="@count / $NFRAME frame";
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
 }
 

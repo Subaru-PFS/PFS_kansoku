@@ -10,7 +10,7 @@ launchers:
 # MCS: Multipule Exposure
 #
     -
-        label: "Move Tel. and Multi Exposure" 
+        label: "Move Tel. and Multi Exp." 
         cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
@@ -53,5 +53,28 @@ launchers:
         cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=MM POSIN=$VAL01
         params:
             - [ VAL01, INPUT, 6, 0.0 ,"in mm"]
+
+    - sep
+
+#
+# Copy from COMMON for easy use
+#
+
+    -
+        label: "Set AzEl(abs)"
+        cmd  : SETAzEl OBE_ID=COMMON OBE_MODE=LAUNCHER Az=$VAL01 El=$VAL02
+        params:
+            - [ VAL01, INPUT, 6, nop, "Az" ]
+            - [ VAL02, INPUT, 6, nop, "El" ]
+
+
+    -
+        label: "Rotator Angle (abs)"
+        cmd  : SETROTATOR OBE_ID=COMMON OBE_MODE=LAUNCHER TELESCOPE=$VAL01 INSROT_PA=$VAL02
+        params:
+            - { name: VAL01, type: LIST, values: [Link, Free],
+                label: Telscp }
+            - { name: VAL02, type: INPUT, width: 7, value: 0.0,
+                label: Degree }
 
 # End

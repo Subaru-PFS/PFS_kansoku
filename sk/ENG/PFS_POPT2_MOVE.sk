@@ -19,18 +19,24 @@
   TX=!TSCV.PF_OFF_TX
   TY=!TSCV.PF_OFF_TY
 # ADC movement
-## movement select by El. (EL) or POS
+## movement select by El. (EL) or Position in mm (MM)
   MMODE=MM
+## Elevation
   EL=@status
-  POSIN=!STATL.ADCPF_POS
+## Coefficients of ADC position
   E0=0.0027
   E1=12.6755
   E2=-0.0992
   E3=0.2141
   E4=-0.0901
+## Input position
+  POSIN=!STATL.ADCPF_POS
 
 :Command
 :start
+
+from "math" import pow
+
 :main_start
 *IF "$COMP" == "HEXAPOD"
     EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
@@ -38,17 +44,26 @@
 *IF "$COMP" == "ADC"
     *IF "$MMODE" == "EL"
         *SET ZA = (90-$EL)
-        EXEC OBS CALC TAN_ARG=$ZA
-        *SET TZA = !STATOBS.TAN
-        *SET POSITION = ($E0 + $E1*$TZA + $E2*$TZA*$TZA + $E3*$TZA*$TZA*$TZA + $E4*$TZA*$TZA*$TZA*$TZA )
-        EXEC OBS Set_message obsinfo2="ADC Position is $POSITION";
+        # Calc. tan(za) calling dedicated DD command
+        #EXEC OBS CALC TAN_ARG=$ZA ;
+        #*SET TZA = !STATOBS.TAN
+        #*SET POSITION = ($E0 + $E1*$TZA + $E2*$TZA*$TZA + $E3*$TZA*$TZA*$TZA + $E4*$TZA*$TZA*$TZA*$TZA )
+        #EXEC OBS Set_message obsinfo3="ADC Position is $POSITION";
+
+        # Calc. tan(za) inside Abstract command
+        asn tza = tan($ZA)
+        asn pos = $E0 + $E1*@tza + $E2*@pow(@tza,2) + $E3*@pow(@tza,3) + $E4*@pow(@tza,4)
+        EXEC OBS Set_message obsinfo3="ADC Position is @pos";
     *ENDIF
     *IF "$MMODE" == "MM"
-        *SET POSITION = ($POSIN)
+        #*SET POSITION = ($POSIN)
+        asn pos = ($POSIN)
     *ELSE
-        *SET POSITION = (!STATL.ADCPF_POS)
+        #*SET POSITION = (!STATL.ADCPF_POS)
+        asn pos = (!STATL.ADCPF_POS)
     *ENDIF
-    EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION
+    #EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION ;
+    EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos ;
 *ENDIF
 :main_end
 
