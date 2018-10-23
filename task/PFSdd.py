@@ -39,8 +39,8 @@ class Fits_File(PFSTask):
         super(Fits_File, self).__init__('Fits_File', motor=motor, frame_no=frame_no, template=template, delay=delay)
 
 class Mcsexpose(PFSTask):
-    def __init__(self, exptime=None, exptype=None):
-        super(Mcsexpose, self).__init__('Mcsexpose', exptime=exptime, exptype=exptype)
+    def __init__(self, exptime=None, exptype=None, docentroid='FALSE'):
+        super(Mcsexpose, self).__init__('Mcsexpose', exptime=exptime, exptype=exptype, docentroid=docentroid)
 
 class Obcp_Mode(PFSTask):
     def __init__(self, motor=None, mode=None):
