@@ -11,7 +11,9 @@
 #default
 #PFS
   SSYS=MCS
-
+  DOCENTROID=False
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT="Health Check"
 
 :Command
 :start
@@ -27,7 +29,7 @@
 # Shutter open/close
 #  EXEC PFS MCS_SHUTTER MODE=CLOSE ;
 # Test exposure
-  EXEC PFS MCSEXPOSE EXPTYPE=OBJECT EXPTIME=1 ;
+  EXEC PFS MCSEXPOSE EXPTYPE=OBJECT EXPTIME=1 DoCentroid=$DOCENTROID;
   EXEC PFS PFSCMD ACTOR="mcs" CMD="imageStats" ;
 :main_end
 

@@ -7,11 +7,16 @@
 #**********************************************************************
 :Header
     SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2018.09.01
+    SCRIPT_UPDATE=2018.10.19
 
 :Parameter
 # for PFS
   SSYS=MCS
+##Exposure
+  NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+  DOCENTROID=FALSE
 # Telescope movement
   EL=@STATUS
   ROTA=@STATUS
@@ -19,18 +24,17 @@
   DROTA=0
   NMOVE_EL=1
   NMOVE_ROTA=1
-# Exposure
-  NFRAME=2
-  EXPTIME=1
-  EXPTYPE=OBJECT
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT=nop
+
 
 :Command
 :start
 
 # set counters
-
 asn cntel = 0
 asn cntrt = 0
+
 
 # For nesting to rotation move without el move
 *IF ($DEL) == (0)
@@ -39,22 +43,31 @@ asn cntrt = 0
   asn totel = ($NMOVE_EL)
 *ENDIF
 
-# Move teescope to initial position and take exposure
-EXEC TSC AzElDrive COORD=abs AZ=0 EL=$EL ;
-EXEC TSC ImgRot COORD=abs POSITION=$ROTA ;
-# Forth argment IN is mandatory
-# The third argumnt is needed even if not used. 
+# Move telescope to initial position and take exposure
+EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ;
+*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL ;
+EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
+
+# Forth argument IN is mandatory
+# The third argument is needed even if not used. 
 *FOR $NFRAME NF IN
-  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
 *ENDFOR
+
+
 :main_start
-# move telescope step by step
-while(@cntel < @totel){
+
+# Move telescope step by step
+while ((@cntel) < (@totel)) {
+  asn cntel = @cntel + 1
   EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
+  asn nel=($EL + $DEL * (@cntel+1))
+  *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMOVE=EL EL=@nel ;
   while(@cntrt < $NMOVE_ROTA){
-      EXEC TSC ImgRot COORD=rel POSITION=$DROTA ;
+      asn cntrt = (@cntrt + 1)
+      EXEC TSC InsRot Telescope=free COORD=rel POSITION=$DROTA ;
       *FOR $NFRAME NF IN
-        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
       *ENDFOR
   }
 }

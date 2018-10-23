@@ -1,0 +1,57 @@
+#**********************************************************************
+#
+# POpt2 Movement (Hexapod or ADC)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2018.10.19
+
+:Parameter
+# for PFS
+  SSYS=POPT2
+# component to move (HEXAPOD or ADC)
+  COMP=NONE
+# Hexapod movement
+  X=!TSCV.PF_OFF_X
+  Y=!TSCV.PF_OFF_Y
+  Z=!TSCV.PF_OFF_Z
+  TX=!TSCV.PF_OFF_TX
+  TY=!TSCV.PF_OFF_TY
+# ADC movement
+## movement select by El. (EL) or Position in mm (MM)
+  MMODE=MM
+## Elevation
+  EL=@status
+## Coefficients of ADC position
+  CONF=WAVE9
+## Input position
+  POSIN=!STATL.ADCPF_POS
+
+:Command
+:start
+
+from "pfsmisc" import adc_pos
+
+:main_start
+if "$COMP" == "HEXAPOD"
+    EXEC TSC TUDRIVE MOTOR=ON X=$X Y=$Y Z=$Z TX=$TX TY=$TY;
+endif
+if "$COMP" == "ADC"
+    if "$MMODE" == "EL"
+        asn pos = @adc_pos($EL,"$CONF") 
+	if (@pos) == (-99)
+            asn pos = (!STATL.ADCPF_POS)
+        endif
+        EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos" ofsinfo4=clear obsinfo5=clear ;
+    endif
+    if "$MMODE" == "MM"
+        asn pos = ($POSIN)
+    else
+        asn pos = (!STATL.ADCPF_POS)
+    endif
+    EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos ;
+endif
+:main_end
+
+:end
