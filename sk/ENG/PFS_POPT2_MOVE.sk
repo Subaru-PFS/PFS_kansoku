@@ -53,7 +53,7 @@ from "math" import pow
         # Calc. tan(za) inside Abstract command
         asn tza = tan($ZA)
         asn pos = $E0 + $E1*@tza + $E2*@pow(@tza,2) + $E3*@pow(@tza,3) + $E4*@pow(@tza,4)
-        EXEC OBS Set_message obsinfo3="ADC Position is @pos";
+        EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos" obsinfo4=clear obsinfo5=clear;
     *ENDIF
     *IF "$MMODE" == "MM"
         #*SET POSITION = ($POSIN)

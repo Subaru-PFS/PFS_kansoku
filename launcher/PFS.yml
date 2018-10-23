@@ -10,15 +10,18 @@ launchers:
 # MCS: Multipule Exposure
 #
     -
-        label: "Move Tel. and Multi Exp." 
-        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05
+        label: "Move Tel. and Exp." 
+        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
             - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
             - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
+            - [ VAL07, INPUT, 12, "test", "Obj. Name" ]
+            - [ VAL08, LIST, ["True", "False"], "DoCentroid"]
             - break
             - [ VAL04, INPUT, 6, "nop", "Az" ]
             - [ VAL05, INPUT, 6, "nop", "El" ]
+            - [ VAL06, INPUT, 6, "nop", "InsRot" ]
 
     - sep
 

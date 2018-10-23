@@ -12,6 +12,11 @@
 :Parameter
 # for PFS
   SSYS=MCS
+##Exposure
+  NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+  DOCENTROID=FALSE
 # Telescope movement
   EL=@STATUS
   ROTA=@STATUS
@@ -19,10 +24,9 @@
   DROTA=0
   NMOVE_EL=1
   NMOVE_ROTA=1
-# Exposure
-  NFRAME=2
-  EXPTIME=1
-  EXPTYPE=OBJECT
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT=nop
+
 
 :Command
 :start
@@ -47,7 +51,7 @@ EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
 # Forth argument IN is mandatory
 # The third argument is needed even if not used. 
 *FOR $NFRAME NF IN
-  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
 *ENDFOR
 
 
@@ -63,7 +67,7 @@ while ((@cntel) < (@totel)) {
       asn cntrt = (@cntrt + 1)
       EXEC TSC InsRot Telescope=free COORD=rel POSITION=$DROTA ;
       *FOR $NFRAME NF IN
-        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
       *ENDFOR
   }
 }
