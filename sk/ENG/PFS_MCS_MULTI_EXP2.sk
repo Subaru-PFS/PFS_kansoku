@@ -18,8 +18,8 @@
   EXPTYPE=OBJECT
   DOCENTROID=FALSE
 # Telescope movement
-  EL=@STATUS
-  ROTA=@STATUS
+  EL=!STATS.EL
+  ROTA=!STATL.IROTPF_TELESCOPE
   DEL=0
   DROTA=0
   NMOVE_EL=1
@@ -45,8 +45,8 @@ asn cntrt = 0
 
 # Move telescope to initial position and take exposure
 EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ;
-*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL ;
-EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
+*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
+EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 
 # Forth argument IN is mandatory
 # The third argument is needed even if not used. 
@@ -60,12 +60,12 @@ EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
 # Move telescope step by step
 while ((@cntel) < (@totel)) {
   asn cntel = @cntel + 1
-  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
+#  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
   asn nel=($EL + $DEL * (@cntel+1))
-  *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMOVE=EL EL=@nel ;
+  *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMOVE=EL EL=@nel TELESCOPE=free;
   while(@cntrt < $NMOVE_ROTA){
       asn cntrt = (@cntrt + 1)
-      EXEC TSC InsRot Telescope=free COORD=rel POSITION=$DROTA ;
+      EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
       *FOR $NFRAME NF IN
         EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
       *ENDFOR

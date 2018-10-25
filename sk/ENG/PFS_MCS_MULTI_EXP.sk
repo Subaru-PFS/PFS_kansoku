@@ -27,8 +27,8 @@
 asn count = 0
 
 # Move Telescope
-  EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
-  EXEC TSC InsRot Telescope=free COORD=abs POSITION=$ROTA ;
+#  EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ;
+  EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 
 :main_start
 
