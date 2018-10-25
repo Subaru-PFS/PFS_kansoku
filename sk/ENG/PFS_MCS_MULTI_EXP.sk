@@ -15,9 +15,9 @@
   EXPTYPE=OBJECT
   DOCENTROID=FALSE
 # Telescope
-  AZ=@STATUS
-  EL=@STATUS
-  ROTA=@STATUS
+  AZ=!STATS.AZ
+  EL=!STATS.EL
+  ROTA=!STATS.IROTPF_POS
 # Object (passed to Gen2 FITS.PFS.OBJECT status.)
   OBJECT=nop
 
