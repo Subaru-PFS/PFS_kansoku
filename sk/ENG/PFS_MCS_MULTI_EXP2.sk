@@ -44,15 +44,21 @@ asn cntrt = 0
 *ENDIF
 
 # Move telescope to initial position and take exposure
-EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ;
-*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
+EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ,
 EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+#*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
 
 # Forth argument IN is mandatory
 # The third argument is needed even if not used. 
-*FOR $NFRAME NF IN
+#*FOR $NFRAME NF IN
+#  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
+#*ENDFOR
+asn count = 0
+while(@count < $NFRAME){
+  asn count = @count + 1
+  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
-*ENDFOR
+}
 
 
 :main_start
@@ -60,15 +66,18 @@ EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 # Move telescope step by step
 while ((@cntel) < (@totel)) {
   asn cntel = @cntel + 1
-#  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
+  EXEC TSC AzElDrive COORD=rel AZ=0 EL=$DEL ;
   asn nel=($EL + $DEL * (@cntel+1))
-  *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMOVE=EL EL=@nel TELESCOPE=free;
+#  *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMOVE=EL EL=@nel TELESCOPE=free;
   while(@cntrt < $NMOVE_ROTA){
       asn cntrt = (@cntrt + 1)
       EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
-      *FOR $NFRAME NF IN
-        EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
-      *ENDFOR
+       asn count = 0
+       while(@count < $NFRAME){
+          asn count = @count + 1
+          EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
+          EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
+}
   }
 }
 :main_end
