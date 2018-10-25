@@ -34,7 +34,7 @@ asn count = 0
 
 while(@count < $NFRAME){
   asn count = @count + 1
-  EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
+  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
   EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
 }
 
