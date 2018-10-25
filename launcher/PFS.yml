@@ -21,7 +21,7 @@ launchers:
             - break
             - [ VAL04, INPUT, 6, "nop", "Az" ]
             - [ VAL05, INPUT, 6, "nop", "El" ]
-            - [ VAL06, INPUT, 6, "nop", "InsRot" ]
+            - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
 
     - sep
 
