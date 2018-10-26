@@ -62,6 +62,10 @@ from "math" import pow
         #*SET POSITION = (!STATL.ADCPF_POS)
         asn pos = (!STATL.ADCPF_POS)
     *ENDIF
+    if (@pos) < (0)
+       asn pos = 0
+    if (@pos) > (22)
+       asn pos = 22
     #EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION ;
     EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos TELESCOPE=FREE;
 *ENDIF
