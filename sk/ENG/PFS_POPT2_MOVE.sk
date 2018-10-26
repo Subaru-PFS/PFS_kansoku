@@ -71,4 +71,9 @@ from "math" import pow
 *ENDIF
 :main_end
 
+#wait for ADC to finish moving
+asn posu= (@pos + 0.01)
+asn posl= (@pos - 0.01)
+Exec OBS CHECK_STATUS MODE=AND TIMEOUT=0090 N1=[!STATL.ADCPF_POS @posl @posu] ;
+
 :end
