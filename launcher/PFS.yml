@@ -1,6 +1,6 @@
 # 
 # PFS Launcher File
-# As of 2018.10.18
+# As of 2018.10.26
 #
 
 tabname: "PFS"
@@ -11,7 +11,7 @@ launchers:
 #
     -
         label: "Move Tel. and Exp." 
-        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08
+        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08 ADCMOVE=$VAL09
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
             - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
@@ -22,6 +22,7 @@ launchers:
             - [ VAL04, INPUT, 6, "nop", "Az" ]
             - [ VAL05, INPUT, 6, "nop", "El" ]
             - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
+            - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
 
     - sep
 
