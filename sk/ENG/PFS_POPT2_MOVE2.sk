@@ -43,7 +43,7 @@ if "$COMP" == "ADC"
 	if (@pos) == (-99)
             asn pos = (!STATL.ADCPF_POS)
         endif
-        EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos" ofsinfo4=clear obsinfo5=clear ;
+        EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos" obsinfo4=clear obsinfo5=clear ;
     endif
     if "$MMODE" == "MM"
         asn pos = ($POSIN)

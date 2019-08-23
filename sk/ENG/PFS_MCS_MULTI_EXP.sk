@@ -25,8 +25,6 @@
 :Command
 :start
 
-asn count = 0
-
 # Move Telescope
 {
   EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ,
@@ -38,11 +36,12 @@ asn count = 0
 
 :main_start
 
-while(@count < $NFRAME){
-  asn count = @count + 1
-  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
-  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
-}
+*FOR $NFRAME COUNT IN
+    *SET INFO3="$COUNT / $NFRAME frame"
+    EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3=$INFO3 obsinfo4=clear obsinfo5=clear ;
+    EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID ;
+*ENDFOR
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
 :main_end
 
