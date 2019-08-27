@@ -68,7 +68,8 @@ from "math" import pow
     if (@pos) > (22)
        asn pos = 22
     endif
-    EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos" obsinfo4=clear obsinfo5=clear,
+    asn pos_char = "@pos"
+    EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3="ADC Position is @pos_char" obsinfo4=clear obsinfo5=clear,
     #EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=$POSITION ;
     # EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos+1 TELESCOPE=Free ;
     # EXEC OBS SLEEP SLEEP_TIME=1 ;
