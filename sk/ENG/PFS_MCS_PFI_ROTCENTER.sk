@@ -1,0 +1,64 @@
+#**********************************************************************
+#
+# PFI rotation center on MCS (M-4, P-4)
+#
+# -- Rotate Instrument rotator, take exposure, and calculate center
+#    Command to send to IIC (not directly to FPS)
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2019.08.26
+
+:Parameter
+# for PFS
+  SSYS=MCS
+##Exposure (leave to IIC)
+#  NFRAME=2
+#  EXPTIME=1
+#  EXPTYPE=OBJECT
+#  DOCENTROID=FALSE
+# Telescope movement
+  EL=!STATS.EL
+#  ROTA=!STATS.IROTPF_POS
+  ROTA=-180
+  DROTA=30
+  NMOVE_ROTA=11
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT="Rotation Center calib"
+
+
+:Command
+:start
+
+# set counters
+asn cntrt = 0
+
+# Claim IIC to start measurement
+EXEC OBS Set_message obsinfo1=clear obsinfo2="Measure PFI center on MCS" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="taking data..." obsinfo4=clear obsinfo5=clear ;
+EXEC PFS PFSCMD ACTOR="iic" cmd="startBoresightAcquisition" ;
+# Move telescope to initial position and take exposure
+EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ,
+EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+#*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
+
+# Take initial exposure
+EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightRotation" ;
+
+
+:main_start
+
+# Move Instrument rotator and take exposure
+while(@cntrt < $NMOVE_ROTA){
+    asn cntrt = (@cntrt + 1)
+    EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightRotation" ;
+}
+:main_end
+
+EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="calculating..." obsinfo4=clear obsinfo5=clear ;
+# Claim IIC to end measurement
+EXEC PFS PFSCMD ACTOR="iic" cmd="processBoresightData" ;
+
+:end
