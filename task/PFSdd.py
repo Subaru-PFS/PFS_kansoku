@@ -47,8 +47,8 @@ class Obcp_Mode(PFSTask):
         super(Obcp_Mode, self).__init__('Obcp_Mode', motor=motor, mode=mode)
 
 class Pfscmd(PFSTask):
-    def __init__(self, actor=None, cmd=None):
-        super(Pfscmd, self).__init__('Pfscmd', actor=actor, cmd=cmd)
+    def __init__(self, actor=None, cmd=None, timelim=None):
+        super(Pfscmd, self).__init__('Pfscmd', actor=actor, cmd=cmd, timelim=timelim)
 
 class Reload(PFSTask):
     def __init__(self, module=None):

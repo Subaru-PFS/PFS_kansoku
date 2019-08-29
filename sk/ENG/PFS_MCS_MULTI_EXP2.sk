@@ -54,6 +54,9 @@ EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 #  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
 #*ENDFOR
 
+# Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame"
     EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3=$INFO3 obsinfo4=clear obsinfo5=clear ;
@@ -93,5 +96,7 @@ while ((@cntel) < (@totel)) {
   }
 }
 :main_end
+
+EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 
 :end

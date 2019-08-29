@@ -62,7 +62,7 @@ if "$COMP" == "ADC"
     asn dpos = (@pos - @posc)
     if (@dpos * @dpos) > (0.01)
         EXEC OBS Set_message obsinfo1=clear obsinfo2=clear obsinfo3=nop obsinfo4="ADC Moves to @pos" obsinfo5=clear ;
-        ##EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos TELESCOPE=Free ;
+        EXEC TSC ADC_PF MOTOR=ON F_SELECT=P_OPT2 COORD=abs POSITION=@pos TELESCOPE=Free ;
         #wait for ADC to finish moving
         asn posu= (@pos + 0.01)
         asn posl= (@pos - 0.01)
