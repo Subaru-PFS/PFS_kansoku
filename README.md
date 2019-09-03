@@ -1,6 +1,6 @@
 # PFS_kansoku : Subaru/Gen2 commands to operate PFS
 
-See PFS-GEN-IPM003003 for detailds.
+See PFS-GEN-IPM003003 for details.
 
 ## /launcher
 
@@ -11,17 +11,17 @@ PFS.yml
 
 ## /task 
 
-Device Developement command and python modules imported in the abstract commands.
+Device Dependent command and python modules imported in the abstract commands.
 
 PFSdd.py
-: Device Developement command
+: Device Dependent command
 
 misc.py
 : misc tools for Abstract commands. symbolic link from $OBSHOME/COMMON/pfsmisc.py on Gen2 server.
 
 ## /para
 
-Parameters for Device Developement command.
+Parameters for Device Dependent command.
 
 MCSEXPOSE.para
 : take MCS exposure
@@ -48,7 +48,7 @@ PFS_MCS_MULTI_EXP_IIC.sk
 : Move telescope and take a series of MCS exposure **through IIC**.
 
 PFS_MCS_MULTI_EXP2.sk
-: Interlace telescope movement and MCS esposure.
+: Interlace telescope movement and MCS exposure.
 
 PFS_MCS_PFI_ROTCENTER.sk
 : Rotate and calculate PFI rotation center on MCS detector.
