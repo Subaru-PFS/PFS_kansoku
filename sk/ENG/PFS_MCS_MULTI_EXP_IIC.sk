@@ -1,0 +1,67 @@
+#**********************************************************************
+#
+# MCS multiple exposure (M-4, P-4)
+#  sending a command to IIC
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2019.08.27
+    OBE_ID=PFS
+    OBE_mode=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  SSYS=MCS
+  NFRAME=2
+  EXPTIME=1
+  EXPTYPE=OBJECT
+  DOCENTROID=FALSE
+# Telescope
+  AZ=!STATS.AZ
+  EL=!STATS.EL
+  ROTA=!STATS.IROTPF_POS
+  ADCMOVE=FALSE
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT=nop
+#  TIMELIM=30
+
+:Command
+:start
+
+# Move Telescope
+{
+  EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ,
+  EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+*IF "$ADCMOVE" == "TRUE"
+    *SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
+*ENDIF
+} ;
+
+# Calc timelimit for sequence of exposure
+*SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4=clear obsinfo5=clear ;
+#*FOR $NFRAME COUNT IN
+#    *SET INFO3="$COUNT / $NFRAME frame"
+#    EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3=$INFO3 obsinfo4=clear obsinfo5=clear ;
+#    EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID ;
+#*ENDFOR
+
+# Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+
+EXEC PFS PFSCMD ACTOR="iic" CMD="fpsLoop expTime=$EXPTIME cnt=$NFRAME" TIMELIM=$TIMELIM;
+
+#EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+

@@ -6,8 +6,8 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2018.10.19
+    SCRIPT_AUTHOR=Yabe, Moritani
+    SCRIPT_UPDATE=2019.08.15
 
 :Parameter
 # for PFS
@@ -53,12 +53,22 @@ EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 #*FOR $NFRAME NF IN
 #  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
 #*ENDFOR
-asn count = 0
-while(@count < $NFRAME){
-  asn count = @count + 1
-  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
-  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
-}
+
+# Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+
+*FOR $NFRAME COUNT IN
+    *SET INFO3="$COUNT / $NFRAME frame"
+    EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3=$INFO3 obsinfo4=clear obsinfo5=clear ;
+    EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID ;
+*ENDFOR
+
+#asn count = 0
+#while(@count < $NFRAME){
+#  asn count = @count + 1
+#  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
+#  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
+#}
 
 
 :main_start
@@ -72,16 +82,21 @@ while ((@cntel) < (@totel)) {
   while(@cntrt < $NMOVE_ROTA){
       asn cntrt = (@cntrt + 1)
       EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
-       asn count = 0
-       while(@count < $NFRAME){
-          asn count = @count + 1
-          EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
-          EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
-}
+      *FOR $NFRAME COUNT IN
+          *SET INFO3="$COUNT / $NFRAME frame"
+	  EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3=$INFO3 obsinfo4=clear obsinfo5=clear ;
+	  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID ;
+      *ENDFOR
+      # asn count = 0
+      # while(@count < $NFRAME){
+      #    asn count = @count + 1
+      #    EXEC OBS Set_message Instrument_name=PFS obsinfo1=clear obsinfo2=clear obsinfo3="@count / $NFRAME frame" obsinfo4=clear obsinfo5=clear;
+      #    EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME DoCentroid=$DOCENTROID;
+      #  }
   }
 }
 :main_end
 
+EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+
 :end
-
-
