@@ -1,0 +1,22 @@
+:Header
+AUTHOR=cloomis
+TRANSCRIBED=ejeschke
+
+:Parameter
+NUM = 1
+EXPTIME = 15
+
+:Command
+:start
+
+:main_start
+  # Start science exposures. These will continue until
+  # "exec PFS finishField" is sent to PFS or some planned
+  # limit is hit.
+  exec PFS startExposures num=$NUM exptime=$EXPTIME ;
+
+:main_end
+
+:end
+
+
