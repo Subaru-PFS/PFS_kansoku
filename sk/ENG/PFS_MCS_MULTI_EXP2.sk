@@ -8,6 +8,8 @@
 :Header
     SCRIPT_AUTHOR=Yabe, Moritani
     SCRIPT_UPDATE=2019.08.15
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
 
 :Parameter
 # for PFS
