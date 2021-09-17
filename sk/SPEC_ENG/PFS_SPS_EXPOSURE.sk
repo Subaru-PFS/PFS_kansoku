@@ -1,0 +1,77 @@
+#**********************************************************************
+#
+# SpS Basic Exposure command
+#  executing doBias, doDark and doExposure
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2019.08.27
+    OBE_ID=PFS
+## Overwrite Gen2 FITS.PFS.OBS-MOD status
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  SSYS=SPS
+## Sps uses "duplicate" as the number of frames
+  NFRAME=1
+  EXPTIME=1
+  EXPTYPE=OBJECT
+## Which camera to be used
+  CAMERA="b1,r1"
+## Default value of on-time [sec] for each cal-lamp source
+  HGAR=1.0
+  AR=1.0
+  NE=1.0
+  KR=1.0
+  HAL=1.0
+## command before/after exposure
+  SEQ_HEAD=noseq
+  SEQ_TAIL=noseq
+  SEQ_NAME="viaGen2"
+  SEQ_COMMENT="fromGen2"
+# Telescope
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT=nop
+#  TIMELIM=30
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+*SET TIMELIM = (30 + ($EXPTIME + 30) * $NFRAME)
+
+# Common Parameters about camera
+*sps_set = "cam=$CAMERA name=$SEQ_NAME comment=$SEQ_COMMENT"
+
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4=clear obsinfo5=clear ;
+
+# Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+
+if $EXPTIPE == "bias"
+  EXEC PFS PFSCMD ACTOR="iic" CMD="bias duplicate=$NFRAME $sps_set" TIMELIM=$TIMELIM;
+elif $EXPTIPE == "dark"
+  EXEC PFS PFSCMD ACTOR="iic" CMD="dark expTime=$EXPTIME duplicate=$NFRAME $sps_set" TIMELIM=$TIMELIM;
+elif $EXPTIPE == "arc"
+  EXEC PFS PFSCMD ACTOR="iic" CMD="scienceArc hgar=$HGAR argon=$AR neon=$NE krypton=$KR $sps_set" TIMELIM=$TIMELIM;
+elif $EXPTIPE == "trace"
+  EXEC PFS PFSCMD ACTOR="iic" CMD="scienceTrace halogen=$HAL $sps_set" TIMELIM=$TIMELIM;
+else
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sprry. No option for $EXPTIPE" obsinfo5=clear ;
+endif
+
+#EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+
