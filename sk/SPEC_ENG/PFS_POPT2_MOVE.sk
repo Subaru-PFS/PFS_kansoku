@@ -6,6 +6,8 @@
 :Header
     SCRIPT_AUTHOR=Moritani
     SCRIPT_UPDATE=2018.10.19
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
 
 :Parameter
 # for PFS
