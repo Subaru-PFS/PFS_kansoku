@@ -41,7 +41,7 @@ endif
 ## Science Fiber
 if $SF == "ON"
   EXEC PFS PFSCMD ACTOR="sps" cmd="bia on power=$SF_POWER" ;
-elif $FF == "OFF"
+elif $SF == "OFF"
   EXEC PFS PFSCMD ACTOR="sps" cmd="bia off" ;
 else
   EXEC OBS Set_message obsinfo4="No option for $SF";
