@@ -39,7 +39,7 @@ SLEEP.para
 
 Abstract commands.
 
-### /ENG : for engineering.
+### /SPEC_ENG : for engineering.
 
 PFS_MCS_MULTI_EXP.sk
 : Move telescope and take a series of MCS exposure.
@@ -61,3 +61,15 @@ PFS_POPT2_MOVE2.sk
 
 PFS_MCS_CHECK.sk
 : MCS health check
+
+PFS_FIBRE_LIGHT.sk
+: Turn on/off LEDs
+
+PFS_SPS_EXPOSURE.sk
+: SpS exposure (bias, dark, arc, trace)
+
+PFS_SPS_EXPOSURE.sk
+: Abort SpS exposure
+
+PFS_DOMELAMP_EXP.sk
+: Sps exposure using dome flat lamp and dome room lamp.
