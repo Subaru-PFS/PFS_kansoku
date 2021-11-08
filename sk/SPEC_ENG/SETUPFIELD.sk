@@ -1,0 +1,193 @@
+#**********************************************************************
+#
+# Setup Field of Telescope 
+#  
+#**********************************************************************
+:Header
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=SETUPFIELD
+        Script_Version=0.1
+        Script_Author=cloomis
+	Transcribed=ejeschke, koshida
+        Script_Update=2021.09.30
+#       Dispatcher_Version=1.0
+#             ESTIMATE=180
+
+
+:Parameter
+	# we default to the last position sent by PFS if the command is repeated
+	TARGET = NOP
+	DB = OFF
+
+        DATASET_ID=DS000
+        #RA=!STATS.RA
+        #DEC=!STATS.DEC
+	RA=NOP
+	DEC=NOP
+        EQUINOX=!STATS.EQUINOX
+        #INSROT_PA=!TSCL.INSROTPA_PF # One of 
+        ROTA=!STATS.IROTPF_POS      #    those two
+        OFFSET_RA=0
+        OFFSET_DEC=0
+        OBJECT=NOP
+        Z=!TSCL.Z
+        #FILTER=NOP
+        FILE=NOP    # non-sidereal etc. ?
+
+:Command
+:Start
+
+*IF "$DB" == "ON"  
+
+
+# Assume that either we are not yet observing, or that the QA system
+# indicates that the running exposure is the last one for theis field.
+# Assume that the next field has been selected in the targetting system.
+
+  # Get coordinates for next field. Once this command has been run,
+  # ICC, the AG system, and the FPS also know what the field is.
+  # NOTE: presumably this can be done concurrently with finishField
+  exec PFS getNextField ,
+  # return in status items: PFS.pfsDesign (?), PFS.RA, PFS.DEC, PFS.PA
+
+  # Tell SPS that the running exposure (if any) is the last one for
+  # this field. _Blocks_ until shutter closes (or returns immediately
+  # if no exposure is active)
+  exec PFS finishField ;
+
+*ENDIF
+
+:Main_Start
+
+*IF "$DB" == "ON"
+
+# with opDB
+    {
+
+    # import Python function to calculate the convergence strategy based
+    # on some inputs--TODO
+    from "pfs_utils" import get_convergence_strategy
+
+    # Start cobra convergence, slew telescope to field.
+    # One tricky bit here which I crudely flesh out. If the time to slew
+    # the rotator is longer than the time to slew the telescope, do all
+    # fine cobra moves after field acquisition: we do not gain any time by
+    # turning off the rotator now.  But if the rotator slew finishes
+    # first by an interesting amount, it does pay to stop the rotator
+    # and make all but the final cobra move now.
+
+    # TODO: probably need to pass additional parameters to calculate
+    #  the desired outcome--add later as needed. Probably need azimuth and
+    #  rotator actual position, for example...
+    asn rot_is_slow = @get_convergence_strategy(!STATS.RA, !STATS.DEC,
+    					  !TSCL.INSROTPA_PF,
+					  !PFS.RA, !PFS.DEC, !PFS.PA)
+
+    {
+    if (@rot_is_slow != 0)
+        exec PFS coarseConvergence dummy=NOP ,
+        exec TSC TelDrive motor=on ra=!PFS.RA dec=!PFS.DEC ,
+        exec TSC InsRot_pf motor=on coord=abs telescope=link position=!PFS.PA ;
+    else
+        exec TSC TelDrive motor=on ra=!PFS.RA dec=!PFS.DEC ,
+        {
+	    {
+	        exec PFS coarseConvergence dummy=NOP ,
+	        exec TSC InsRot_pf motor=on coord=abs telescope=link position=!PFS.PA ;
+	    } ;
+	    # stop rotator
+	    exec TSC InsRot_pf motor=off ;
+	    exec PFS continueConvergence dummy=NOP ;
+	    # resume rotator
+	    exec TSC InsRot_pf motor=on coord=abs telescope=link position=!PFS.PA ;
+        } ;
+    endif
+    } ;
+
+    # Acquire field. Telescope axes are all moving.
+    # Note that this might fail and would require manual attention via the AG GUI.
+    # NOTE: returns PFS.AGRESULT
+    exec PFS AG_acquireField dummy=NOP ;
+
+    # Stop rotator, finish cobra convergence.
+    exec TSC InsRot_pf motor=off ;
+    exec PFS finishConvergence dummy=NOP ;
+
+    # Restart rotator and allow AG to recenter and start guiding. Field
+    # should be very close: the AG wlll probably only need a single
+    # confirmation frame.
+    exec TSC insrot_pf motor=on coord=abs telescope=link position=!PFS.PA ;
+
+    # NOTE: not sure if this ends up being a TSC command or a PFS command (or both);
+    # it depends on some details of the telescope side that we need to find out
+    exec TSC ag readout=on exposure=!PFS.AG_EXP_TIME;
+    #exec PFS ag readout=on exposure=!PFS.AG_EXP_TIME;
+
+    # wait for the rotator to settle (may be desirable)
+    exec OBS check_status mode=AND timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    # if/after the windscreen is fixed you may need this one as well
+    #exec OBS check_status mode=AND timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
+
+
+    };
+
+
+
+*ELSE
+
+# With RA Dec
+
+    {
+    #
+    # AG off
+    #
+
+    *SET TIMELIM = 5
+
+    #EXEC TSC AG_TRACKING MOTOR=OFF ;
+    EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+
+
+    *Set INFO3="Target : $OBJECT"
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=Clear ObsInfo3=$INFO3 ObsInfo4=Clear ObsInfo5=Clear , 
+    #
+    # calculate pointing
+    #
+    *IF "$FILE" == "NOP"
+	    EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA DECBASE=$DEC ;
+	    EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+	    #EXEC TSC INSROT_PF TELESCOPE=LINK COORD=ABS POSITION=$INSROT_PA ; 
+	    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+	    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX , 
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" , 
+    *ELSE
+	    #EXEC TSC INSROT_PF TELESCOPE=LINK COORD=ABS POSITION=$INSROT_PA ; 
+	    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo4="Non Sidereal Tracking" , 
+	    EXEC TSC TELDRIVE COORD=FILE TARGET=$FILE DIRECTION=TSC ; 
+	    EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATS.RA DECBASE=!STATS.DEC ;
+		Exec TSC TELDRIVE_Offset COORD=ABS RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
+    *ENDIF
+	    Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
+
+    };
+    # 
+    # chceck status
+    #
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Waiting for Rotator/Focus/WindScreen to Settle" , 
+	    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+	    Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
+    #        Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
+	    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
+    #
+
+*ENDIF
+
+
+
+:Main_End
+
+:End
+

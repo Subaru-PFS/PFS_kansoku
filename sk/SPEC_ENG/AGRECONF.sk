@@ -1,0 +1,50 @@
+#**********************************************************************
+#
+# Stop running AG sequence 
+#  sending a command to AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Koshida
+    SCRIPT_UPDATE=2021.09.22
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+
+    EXPTIME=NOP
+    INTERVAL=NOP
+
+:Command
+:start
+
+
+:main_start
+
+*IF "$EXPTIME" == "NOP"
+
+*ELSE
+    *Set $EXPT_AG = $EXPTIME * 1000 
+
+*IF "$INTERVAL" == "NOP" 
+
+*ELSE
+    *Set $INT_AG = $INTERVAL * 1000
+
+
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+#exec pfs pfscmd actor="ag" cmd="autoguide start"
+*IF 
+    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
+*ELSE
+
+
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end

@@ -1,0 +1,52 @@
+#**********************************************************************
+#
+# AG camera exposure
+#  sending a command to AGCC
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.10.05
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  EXPTIME=1
+  #DOCENTROID=FALSE
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT="object" # dark|test|object
+  PFIVISITID=0 # pfiVisitId
+  COMBINED=1
+  CENTROID=0  
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+*SET TIMELIM = $EXPTIME + 15
+
+:main_start
+
+*SET INFO2="$NFRAME x $EXPTIME sec"
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2= obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+*FOR $NFRAME COUNT IN
+    *SET INFO3="$COUNT / $NFRAME frame"
+    EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3;
+
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$PFIVISITID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+
+
+*ENDFOR
+
+## Sound : file is in /gen2/conf/Sounds/
+#EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
