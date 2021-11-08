@@ -1,0 +1,74 @@
+#**********************************************************************
+#
+# Setup Field of Telescope 
+#  
+#
+#**********************************************************************
+<Header>
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=SETUPFIELD
+        Script_Version=0.1
+        Script_Author=Koshida
+        Script_Update=2021.09.20
+#       Dispatcher_Version=1.0
+#             ESTIMATE=180
+</Header>
+<Default_Parameter>
+        DATASET_ID=DS000
+        #RA=!STATS.RA
+        #DEC=!STATS.DEC
+	AZ=!STATS.AZ
+        EL=!STATS.EL
+        EQUINOX=!STATS.EQUINOX
+        #INSROT_PA=!TSCL.INSROTPA_PF # One of 
+        ROTA=!STATS.IROTPF_POS      #    those two
+        #OFFSET_RA=0
+        #OFFSET_DEC=0
+        OFFSET_AZ=0
+        OFFSET_EL=0
+        OBJECT=NOP
+        Z=!TSCL.Z
+        #FILTER=NOP
+</Default_Parameter>
+<Command>
+:START
+:MAIN_START
+{
+
+#
+# AG off
+#
+
+*SET TIMELIM = 5
+
+#EXEC TSC AG_TRACKING MOTOR=OFF ;
+EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+
+
+*Set INFO3="Target : $OBJECT"
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=Clear ObsInfo3=$INFO3 ObsInfo4=Clear ObsInfo5=Clear , 
+
+#
+# pointing
+#
+        EXEC TSC AzElDrive COORD=abs AZ=$AZ EL=$EL ,
+        EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" , 
+
+        Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
+};
+# 
+# chceck status
+#
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Waiting for Rotator/Focus/WindScreen to Settle" , 
+        Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+        Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
+#        Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
+        Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
+#
+:MAIN_END
+:END
+</Command>

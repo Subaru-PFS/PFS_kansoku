@@ -1,0 +1,31 @@
+#**********************************************************************
+#
+# Stop running AG sequence 
+#  sending a command to AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Koshida
+    SCRIPT_UPDATE=2021.09.22
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+
+:Command
+:start
+
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGoff" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+#exec pfs pfscmd actor="ag" cmd="autoguide start"
+exec pfs pfscmd actor="ag" cmd="autoguide stop" ;
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end

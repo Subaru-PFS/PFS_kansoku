@@ -1,0 +1,53 @@
+#**********************************************************************
+#
+# AG camera focusing sequence
+#  sending a command to IIC and AG actor
+#  performs focusing sequence at the current telescope pointing
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Koshida
+    SCRIPT_UPDATE=2021.09.21
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  EXPTIME=1
+  Z=!TSCL.Z
+  ADJ_Z="FALSE" # TRUE | FALSE
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT="FOCUSING"
+  VISITID=0 # if not specified the recent one will be used
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+*SET TIMELIM = (15 + ($EXPTIME + 5))
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ,
+
+EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=$Z ;
+
+*Set $EXPT_AG = $EXPTIME * 1000
+exec pfs pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISITID" ;
+
+#EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.FOCUS_OFFSET ;
+
+# Adjust focus position
+#*IF "$ADJ_Z" == "TRUE"
+
+#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Adjusting focus to" obsinfo3=($Z + !PFS.AG.FOCUS_OFFSET) obsinfo4=clear obsinfo5=clear ,
+#    EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=($Z + !PFS.AG.FOCUS_OFFSET) ;
+#    EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done." obsinfo3="z=" obsinfo4=!TSCL.Z  obsinfo5=($Z + !PFS.AG.FOCUS_OFFSET);
+
+#*ENDIF
+
+:main_end
+
+:end
