@@ -7,7 +7,7 @@
 #**********************************************************************
 :Header
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
-    SCRIPT_UPDATE=2021.09.21
+    SCRIPT_UPDATE=2021.11.10
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -15,22 +15,15 @@
 :Parameter
 #for PFS
   EXPTIME=1
-  #AG="ON"
-  #EXPTYPE=OBJECT
+  AG="ON"
   DESIGN_PATH=NOP # /export/home/pfs/pfsDesign-0x0000000000000001.fits
   INTERVAL=10
   DESIGN_ID=1
-  VISIT_ID=0
+  VISIT_ID=0 # Default 0
   FROM_SKY="no"
-
-#DOCENTROID=FALSE
-# Object (passed to Gen2 FITS.PFS.OBJECT status.)
-#  OBJECT="FOCUSING"
-#  TIMELIM=30
 
 :Command
 :start
-
 
 # Calc timelimit for sequence of exposure
 #*SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
@@ -42,39 +35,37 @@
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Auto Guiding: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
 EXEC pfs pfscmd actor="ag" cmd="autoguide stop" ;
 
 
-# EXEC TSC Autoguide on ???
-
-
-#EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
-#*IF "$AG" == "ON"
-#    *Set GUIDE = "yes"
-#*ELSE
-#    *Set GUIDE = "no"
-
-#*IF "$PFSDESIGN" == "NOP"
-#    # start AG at the current position
-#
-#*ELSE
-#    EXEC pfs pfscmd actor="ag" cmd="aquire_field design_path=$DESIGN_PATH exposure_time=$EXPT_AG guide=$GUIDE" ;
-#    EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
-#
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
+*IF "$AG" == "ON"
+    *Set GUIDE = "yes"
+    # EXEC TSC AG_TRACKING MOTOR=ON ; 
+*ELSE
+    *Set GUIDE = "no"
+*ENDIF
 
 *Set INFO3 = "ExpTime : $EXPTIME"
 *Set INFO4 = "Interval : $INTERVAL"
-EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo3=INFO3 obsinfo4=INFO4;
 
 *IF "$PFSDESIGN" == "NOP"
-    EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG w/ pfsDesign" obsinfo3=INFO3 obsinfo4=INFO4 ,
+    ### EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
+
 *ELSE
-    EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
 
-# EXEC TSC Autoguide on ???
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG in OTF mode" obsinfo3=INFO3 obsinfo4=INFO4 ,
+    ### EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
+    #EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=1 visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
 
+*ENDIF
 
+# EXEC TSC AG_TRACKING MOTOR=ON ;
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done. " ;
 
 :main_end
