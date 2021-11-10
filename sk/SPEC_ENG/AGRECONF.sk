@@ -1,15 +1,14 @@
 #**********************************************************************
 #
-# Stop running AG sequence 
-#  sending a command to AG actor
+# Reconfigure running AG sequence parameter
+#   sending a command to AG actor
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani, Koshida
-    SCRIPT_UPDATE=2021.09.22
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.10
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
-
 
 :Parameter
 
@@ -22,27 +21,42 @@
 
 :main_start
 
-*IF "$EXPTIME" == "NOP"
-
-*ELSE
-    *Set $EXPT_AG = $EXPTIME * 1000 
-
-*IF "$INTERVAL" == "NOP" 
-
-*ELSE
-    *Set $INT_AG = $INTERVAL * 1000
-
-
-
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
+*IF "$EXPTIME" != "NOP"
+
+    *Set $EXPT_AG = $EXPTIME * 1000 
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="ExpTime: $EXPTIME" ;
+
+*ENDIF
+
+*IF "$INTERVAL" != "NOP" 
+
+    *Set $INT_AG = $INTERVAL * 1000
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo5="Int.: $INTERVAL" ;
+
+*ENDIF
+
 #exec pfs pfscmd actor="ag" cmd="autoguide start"
-*IF 
-    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
+*IF "$EXPTIME" != "NOP"
+
+    *IF "$INTERVAL" != "NOP"
+        ###exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
+    *ELSE
+        ###exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG" ;
+    *ENDIF
+
 *ELSE
 
+    *IF "$INTERVAL" != "NOP"
+        ###exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG" ;
+    *ELSE
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Neither ExpT nor Int specified. " ;
+    *ENDIF
 
+*ENDIF
 
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
 
 :main_end

@@ -1,21 +1,21 @@
 #**********************************************************************
 #
 # AG camera exposure
-#  sending a command to AGCC
+#   Make exposures with AG cameras
+#   sending a command to AGCC
 #
 #**********************************************************************
 :Header
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
-    SCRIPT_UPDATE=2021.10.05
+    SCRIPT_UPDATE=2021.11.10
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
-
 
 :Parameter
 #for PFS
   EXPTIME=1
-  #DOCENTROID=FALSE
-# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  NFRAME=1
+# Object type for AGCC actor
   OBJECT="object" # dark|test|object
   PFIVISITID=0 # pfiVisitId
   COMBINED=1
@@ -25,7 +25,7 @@
 :start
 
 # Calc timelimit for sequence of exposure
-*SET TIMELIM = $EXPTIME + 15
+*SET TIMELIM = $EXPTIME * $NFRAME + 15
 
 :main_start
 
@@ -34,17 +34,19 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame"
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3;
+    Exec OBS TIMER DURATION=$EXPTIME ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$PFIVISITID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    ###EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$PFIVISITID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    Exec OBS SLEEP SLEEP_TIME=$EXPTIME ; ###
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
-
 
 *ENDFOR
 
 ## Sound : file is in /gen2/conf/Sounds/
 #EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
 
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
 :main_end

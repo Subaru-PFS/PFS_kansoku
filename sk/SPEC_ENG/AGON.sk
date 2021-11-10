@@ -1,37 +1,42 @@
 #**********************************************************************
 #
-# Start AG sequence at the current position
-#  sending a command to AG actor
+# Restart AG sequence at the current position
+#   sending a command to AG actor
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani, Koshida
-    SCRIPT_UPDATE=2021.09.22
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.10
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
-
 
 :Parameter
 
 #for PFS
-  #EXPTIME=1
+  EXPTIME=1
   #DESIGN_ID=0
-  #DESIGN_PATH="/export/home/pfs"
-  #VISIT_ID=0
-  #FROM_SKY="yes"
+  DESIGN_PATH="NOP" # "/export/home/pfs"
+  VISIT_ID=0
+  FROM_SKY="no"
   
 :Command
 :start
-
 
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
-#exec pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
-exec pfs pfscmd actor="ag" cmd="autoguide restart"
-# oneCmd.py ag autoguide start design_id=1 design_path=/export/home/pfs from_visit_id=0 sky=yes
+*IF "$DESIGN_PATH" != "NOP"
 
+    ###EXEC pfs pfscmd actor="ag" cmd="autoguide start design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
+
+*ELSE
+
+    ###EXEC pfs pfscmd actor="ag" cmd="autoguide restart"
+
+*ENDIF
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
 
 :main_end
