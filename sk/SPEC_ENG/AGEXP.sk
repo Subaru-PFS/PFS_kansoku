@@ -16,29 +16,30 @@
   EXPTIME=1
   NFRAME=1
 # Object type for AGCC actor
-  OBJECT="object" # dark|test|object
-  PFIVISITID=0 # pfiVisitId
+# object type for AGCC: dark|test|object
+  OBJECT="object"
+  VISIT_ID=0 
   COMBINED=1
   CENTROID=0  
 
 :Command
 :start
 
-# Calc timelimit for sequence of exposure
-*SET TIMELIM = $EXPTIME * $NFRAME + 15
+# Timelimit for each exposure exposure passed to AGCC actor
+*SET TIMELIM = $EXPTIME + 15
 
 :main_start
 
 *SET INFO2="$NFRAME x $EXPTIME sec"
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2= obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame"
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3;
-    Exec OBS TIMER DURATION=$EXPTIME ;
+    Exec OBS TIMER DURATION=$TIMELIM;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    ###EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$PFIVISITID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
-    Exec OBS SLEEP SLEEP_TIME=$EXPTIME ; ###
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    ###Exec OBS SLEEP SLEEP_TIME=$EXPTIME ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 
 *ENDFOR

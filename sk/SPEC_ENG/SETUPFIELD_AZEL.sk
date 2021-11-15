@@ -21,8 +21,9 @@
 	AZ=!STATS.AZ
         EL=!STATS.EL
         EQUINOX=!STATS.EQUINOX
-        #INSROT_PA=!TSCL.INSROTPA_PF # One of 
-        ROTA=!STATS.IROTPF_POS      #    those two
+        #INSROT_PA=!TSCL.INSROTPA_PF  
+        #INSROT_PA=!TSCL.INSROTPA_PF  
+        ROTA=!STATS.IROTPF_POS 
         #OFFSET_RA=0
         #OFFSET_DEC=0
         OFFSET_AZ=0

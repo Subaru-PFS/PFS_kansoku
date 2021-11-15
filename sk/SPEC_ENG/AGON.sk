@@ -15,7 +15,8 @@
 #for PFS
   EXPTIME=1
   #DESIGN_ID=0
-  DESIGN_PATH="NOP" # "/export/home/pfs"
+  #DESIGN_PATH default: "/export/home/pfs"
+  DESIGN_PATH="NOP"
   VISIT_ID=0
   FROM_SKY="no"
   
@@ -28,11 +29,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3
 
 *IF "$DESIGN_PATH" != "NOP"
 
-    ###EXEC pfs pfscmd actor="ag" cmd="autoguide start design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
+    EXEC pfs pfscmd actor="ag" cmd="autoguide start design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
 
 *ELSE
 
-    ###EXEC pfs pfscmd actor="ag" cmd="autoguide restart"
+    EXEC pfs pfscmd actor="ag" cmd="autoguide restart"
 
 *ENDIF
 

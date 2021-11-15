@@ -16,10 +16,12 @@
 #for PFS
   EXPTIME=1
   AG="ON"
-  DESIGN_PATH=NOP # /export/home/pfs/pfsDesign-0x0000000000000001.fits
+# DESIGN_PATH exapmple: /export/home/pfs/pfsDesign-0x0000000000000001.fits
+  DESIGN_PATH=NOP
   INTERVAL=10
   DESIGN_ID=1
-  VISIT_ID=0 # Default 0
+# VISIT_ID Default 0
+  VISIT_ID=0
   FROM_SKY="no"
 
 :Command
@@ -30,8 +32,8 @@
 
 :main_start
 
-*Set $EXPT_AG = $EXPTIME * 1000 
-*Set $INT_AG = $INTERVAL * 1000
+*Set EXPT_AG = $EXPTIME * 1000 
+*Set INT_AG = $INTERVAL * 1000
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Auto Guiding: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
@@ -50,15 +52,15 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 *Set INFO3 = "ExpTime : $EXPTIME"
 *Set INFO4 = "Interval : $INTERVAL"
 
-*IF "$PFSDESIGN" == "NOP"
+*IF "$DESIGN_PATH" != "NOP"
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG w/ pfsDesign" obsinfo3=INFO3 obsinfo4=INFO4 ,
-    ### EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
+    EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
 
 *ELSE
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG in OTF mode" obsinfo3=INFO3 obsinfo4=INFO4 ,
-    ### EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
+    EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
     #EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=1 visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
 
 *ENDIF
