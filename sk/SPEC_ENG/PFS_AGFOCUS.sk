@@ -15,8 +15,10 @@
 #for PFS
   EXPTIME=1
   Z=!TSCL.Z
-  ADJ_Z="NOP" # NOP or other
-  VISITID=0 # if not specified the recent one will be used
+# NOP or other
+  ADJ_Z="NOP"
+# if not specified the recent one will be used
+  VISITID=0
 
 :Command
 :start
@@ -30,8 +32,8 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2
 
 EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=$Z ;
 
-*Set $EXPT_AG = $EXPTIME * 1000
-###EXEC pfs pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISITID" ;
+*Set EXPT_AG = $EXPTIME * 1000
+EXEC pfs pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISITID" ;
 
 #EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.FOCUS_OFFSET ;
 

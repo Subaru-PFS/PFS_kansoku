@@ -27,13 +27,13 @@
 	DEC=NOP
         EQUINOX=!STATS.EQUINOX
         #INSROT_PA=!TSCL.INSROTPA_PF # One of 
-        ROTA=!STATS.IROTPF_POS      #    those two
+        ROTA=!STATS.IROTPF_POS
         OFFSET_RA=0
         OFFSET_DEC=0
         OBJECT=NOP
         Z=!TSCL.Z
         #FILTER=NOP
-        FILE=NOP    # non-sidereal etc. ?
+        FILE=NOP
 
 :Command
 :Start
@@ -146,7 +146,7 @@
     *SET TIMELIM = 5
 
     #EXEC TSC AG_TRACKING MOTOR=OFF ;
-    EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+    ###EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
 
 
     *Set INFO3="Target : $OBJECT"

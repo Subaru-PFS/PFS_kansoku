@@ -20,7 +20,7 @@
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGoff" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
 #exec pfs pfscmd actor="ag" cmd="autoguide start"
-###exec pfs pfscmd actor="ag" cmd="autoguide stop" ;
+exec pfs pfscmd actor="ag" cmd="autoguide stop" ;
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
