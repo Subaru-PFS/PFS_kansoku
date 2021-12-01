@@ -21,12 +21,13 @@
   VISIT_ID=0 
   COMBINED=1
   CENTROID=0  
+  CMETHOD="sep"
 
 :Command
 :start
 
 # Timelimit for each exposure exposure passed to AGCC actor
-*SET TIMELIM = $EXPTIME + 15
+*SET TIMELIM = $EXPTIME + 30 
 
 :main_start
 
@@ -35,11 +36,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame"
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3;
-    Exec OBS TIMER DURATION=$TIMELIM;
+    Exec OBS TIMER DURATION=$EXPTIME + 5 ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
-    ###Exec OBS SLEEP SLEEP_TIME=$EXPTIME ; 
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID cMethod=$CMETHOD" TIMELIM=$TIMELIM ;
+    Exec OBS SLEEP SLEEP_TIME=($EXPTIME+3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 
 *ENDFOR

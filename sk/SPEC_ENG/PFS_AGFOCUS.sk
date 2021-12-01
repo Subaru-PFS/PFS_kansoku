@@ -19,21 +19,26 @@
   ADJ_Z="NOP"
 # if not specified the recent one will be used
   VISITID=0
+  COMBINED=1
+  CENTROID=1
+  OBJECT="object"
 
 :Command
 :start
 
 # Calc timelimit for sequence of exposure
-*SET TIMELIM = (15 + ($EXPTIME + 5))
+*SET TIMELIM = (30 + ($EXPTIME + 5))
 
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ,
 
-EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=$Z ;
+#EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=$Z ;
+Exec TSC TelFocus MOTOR=ON COORD=TSC Z=$Z ;
 
-*Set EXPT_AG = $EXPTIME * 1000
+*Set EXPT_AG = int($EXPTIME * 1000)
 EXEC pfs pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISITID" ;
+#EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT exptime=$EXPTIME combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
 
 #EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.FOCUS_OFFSET ;
 

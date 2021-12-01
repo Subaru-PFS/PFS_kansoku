@@ -61,7 +61,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG in OTF mode" obsinfo3=INFO3 obsinfo4=INFO4 ,
     EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
-    #EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=1 visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY" ;
+    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="yes"' ;
 
 *ENDIF
 

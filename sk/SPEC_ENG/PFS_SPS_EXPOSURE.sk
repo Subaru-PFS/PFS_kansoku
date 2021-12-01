@@ -73,6 +73,8 @@ elif $EXPTYPE == "arc"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR neon=$NE krypton=$KR duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "trace"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+elif $EXPTYPE == "object"
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject expTime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
 endif

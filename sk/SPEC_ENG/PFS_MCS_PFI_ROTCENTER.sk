@@ -28,7 +28,7 @@
   NMOVE_ROTA=11
 # Object (passed to Gen2 FITS.PFS.OBJECT status.)
   OBJECT="Rotation Center calib"
-
+  TIMELIM=60
 
 :Command
 :start
@@ -46,7 +46,7 @@ EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
 #*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
 
 # Take initial exposure
-EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" ;
+EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
 
 
 :main_start
@@ -55,7 +55,7 @@ EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" ;
 while(@cntrt < $NMOVE_ROTA){
     asn cntrt = (@cntrt + 1)
     EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
-    EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
 }
 :main_end
 

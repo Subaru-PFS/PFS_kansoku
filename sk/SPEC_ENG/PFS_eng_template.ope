@@ -49,7 +49,7 @@ VISIT01=OBJECT="Visit01" RA=190000.000 DEC=+200000.00 EQUINOX=2000.0
 SetupField $DEF_PFSENG $VISIT01 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 Z=1.75
 
 # 2. Take a set of 6 AG camera images.
-AgExp $PFS_ENG EXPTIME=5 NFRAME=1 
+AgExp $DEF_PFSENG EXPTIME=5 NFRAME=1 
 
 # 3. Do astrometry and measure the pixel scale
 # Put a slight offset on the telescope in R.A and Dec. direction individually.
@@ -204,7 +204,7 @@ AgInit?
 
 # 1. Move telescope (EL, InR) without Field Acquisition or Auto Guide
 
-SetupField $PFS_ENG $VISIT01 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 Z=1.75
+SetupField $DEF_PFSENG $VISIT01 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 Z=1.75
 
 # 2. BIA on
 
@@ -307,6 +307,10 @@ PFS_STARTAG $DEF_PFSENG EXPTIME=1 INTERVAL=10 DESIGN_PATH="/export/home/pfs/pfsD
 #   AG: Set mode to AG kept running after an initial field acquisition ("ON") or not ("OFF"). Default is "ON". Only affect on OTF mode.
 #   FROM_SKY: Set AG to "from_sky" mode in which the Az, El errors are culcurated against the stars found in the first exposure of the AG cameras. "yes" or "no" (default).
 
+# oneCmd.py ag autoguide start design_id=1 visit_id=0 exposure_time=1000 cadence=5000
+# oneCmd.py ag autoguide start design_id=1 design_path=/export/home/pfs visit_id=0 from_sky=yes
+# oneCmd.py ag acquire_field otf visit_id=0 exposure_time=5000 guide=yes
+
 # Field acquisition from pfsDesign with AG cameras
 
 PFS_SETFIELD_DB $DEF_PFSENG DESIGN_PATH=$PFSDSGNDIR DESIGN_ID=1 EXPTIME=2
@@ -314,6 +318,8 @@ PFS_SETFIELD_DB $DEF_PFSENG DESIGN_PATH=$PFSDSGNDIR DESIGN_ID=1 EXPTIME=2
 PFS_SETFIELD_DB $DEF_PFSENG DESIGN_PATH=$PFSDSGNDIR DESIGN_ID="pfsDesign-0x0000000000000001.fits" EXPTIME=2
 
 PFS_SETFIELD_DB $DEF_PFSENG DESIGN_PATH="/export/home/pfs/pfsDesign-0x0000000000000001.fits" EXPTIME=2
+
+# oneCmd.py ag acquire_field design_path=/export/home/pfs/pfsDesign-0x0000000000000001.fits exposure_time=2000 guide=yes
 
 # Parameters
 #
@@ -360,6 +366,7 @@ AGEXP $DEF_PFSENG EXPTIME=1 NFRAME=1
 # Stop running AG sequence
 
 AGOFF $DEF_PFSENG
+# oneCmd.py ag autoguide stop
 
 # Resume previously run AG sequence
 
@@ -375,6 +382,10 @@ AGRECONF $DEF_PFSENG EXPTIME=1 INTERVAL=10
 #   INTERVAL: Interval of AG exposure in unit of second. "cadence" passed to AG actor.
 ##  Either one of the parameter above or both can be specified. 
 
+# oneCmd.py ag autoguide reconfigure exposure_time=2000
+
+
+
 ##
 ## Telescope Operation 
 ##
@@ -383,7 +394,7 @@ AGRECONF $DEF_PFSENG EXPTIME=1 INTERVAL=10
 
 SetupField $DEF_PFSENG RA=!STATS.RA Dec=!STATS.DEC EQUINOX=2000.0 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 OBJECT="Simtest" Z=1.75
 
-SetupField $PFS_ENG $VISIT01 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 Z=1.75
+SetupField $DEF_PFSENG $VISIT01 ROTA=0 OFFSET_RA=0 OFFSET_DEC=0 Z=1.75
 
 # Move telescope with Az El
 
