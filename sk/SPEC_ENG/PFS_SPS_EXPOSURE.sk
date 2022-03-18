@@ -5,8 +5,8 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2020.09.22
+    SCRIPT_AUTHOR=Koshida, Moritani
+    SCRIPT_UPDATE=2022.03.18
     OBE_ID=PFS
 ## Overwrite Gen2 FITS.PFS.OBS-MOD status
     OBE_MODE=SPEC_ENG
@@ -17,7 +17,7 @@
   SSYS=SPS
 ## Sps uses "duplicate" as the number of frames
   NFRAME=1
-# For lamp data, EXPTIME also needs to be sset to calclate the time limit.
+# For lamp data, EXPTIME also needs to be set to calculate the time limit.
   EXPTIME=1
   EXPTYPE=OBJECT
 ## Which camera to be used
@@ -51,8 +51,16 @@
 #endif
 #
 #*SET TIMELIM = ($LAMP_WARM + 30 + ($EXPTIME + 60) * $NFRAME)
-*SET TIMELIM = (100 + 30 + ($EXPTIME + 60) * $NFRAME)
-
+if $EXPTYPE == "bias"
+# bias: no overhead, zero exposure time
+  *SET TIMELIM = 30 + 60 * $NFRAME
+elif $EXPTYPE == "arc" or $EXPTYPE == "trace"
+# arc or trace: cal-lamps needs 100sec to warm up
+  *SET TIMELIM = 130 + ($EXPTIME + 60) * $NFRAME
+else
+# others mode (i.e. dark or object): no additional overhead
+  *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
+endif
 
 :main_start
 
@@ -64,6 +72,7 @@ EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
 EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads):" ,
 
 { 
+# Note: Case sensitive!!
 if $EXPTYPE == "bias"
   EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name=\\"$SEQ_NAME\\" comments=\\"$SEQ_COMMENT\\"' TIMELIM=$TIMELIM;
 #  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME comments="test exposure"' TIMELIM=$TIMELIM;
