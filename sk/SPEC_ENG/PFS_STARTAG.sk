@@ -16,7 +16,7 @@
 #for PFS
   EXPTIME=1
   AG="ON"
-# DESIGN_PATH exapmple: /export/home/pfs/pfsDesign-0x0000000000000001.fits
+# DESIGN_PATH exapmple: /data/pfsDesing/pfsDesign-0x0000000000000001.fits
   DESIGN_PATH=NOP
   INTERVAL=10
   DESIGN_ID=1

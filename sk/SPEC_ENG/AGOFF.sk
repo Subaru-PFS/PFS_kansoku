@@ -27,7 +27,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGoff" obsinfo2=clear obsinfo
 EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
 
 # turn off TSC AG_Tracking mode
-EXEC TSC AG_TRACKING MOTOR=OFF ;
+#EXEC TSC AG_TRACKING MOTOR=OFF ;
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;

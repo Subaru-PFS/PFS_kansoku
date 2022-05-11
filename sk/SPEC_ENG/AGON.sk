@@ -13,9 +13,9 @@
 :Parameter
 
 #for PFS
-  EXPTIME=1
+  #EXPTIME=1
   #DESIGN_ID=0
-  #DESIGN_PATH default: "/export/home/pfs"
+  #DESIGN_PATH default: "/data/pfsDesign"
   DESIGN_PATH="NOP"
   VISIT_ID=0
   FROM_SKY="no"
@@ -25,7 +25,12 @@
 
 :main_start
 
+#*Set EXPT_AG = $EXPTIME * 1000 
+#*Set INT_AG = $INTERVAL * 1000
+
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+#EXEC TSC AG_TRACKING MOTOR=ON ;
 
 *IF "$DESIGN_PATH" != "NOP"
 
@@ -33,7 +38,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3
 
 *ELSE
 
-    EXEC pfs pfscmd actor="ag" cmd="autoguide restart"
+    EXEC pfs pfscmd actor="ag" cmd="autoguide restart " ;
 
 *ENDIF
 
