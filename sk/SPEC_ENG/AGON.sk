@@ -4,42 +4,41 @@
 #   sending a command to AG actor
 #
 #**********************************************************************
-:Header
-    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
-    SCRIPT_UPDATE=2021.11.10
+<Header>
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
+    SCRIPT_UPDATE=2022.05.01
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
+</Header>
 
-:Parameter
-
+<Default_Parameter>
 #for PFS
-  #EXPTIME=1
+  EXPTIME=2
   #DESIGN_ID=0
-  #DESIGN_PATH default: "/data/pfsDesign"
+  #DESIGN_PATH default: "/export/home/pfs"
   DESIGN_PATH="NOP"
   VISIT_ID=0
   FROM_SKY="no"
-  
-:Command
+</Default_Parameter>
+
+<Command>
 :start
+
+#Calculate exptime in milliseconds
+*SET EXPT_AG=($EXPTIME*1000)
+
 
 :main_start
 
-#*Set EXPT_AG = $EXPTIME * 1000 
-#*Set INT_AG = $INTERVAL * 1000
-
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
-#EXEC TSC AG_TRACKING MOTOR=ON ;
+# prepare telescope for autoguiding
+EXEC TSC AG_TRACKING MOTOR=ON ;
 
 *IF "$DESIGN_PATH" != "NOP"
-
-    EXEC pfs pfscmd actor="ag" cmd="autoguide start design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
-
+    EXEC pfs pfscmd actor="ag" cmd="autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH visit_id=$VISIT_ID from_sky=$FROM_SKY" ;
 *ELSE
-
-    EXEC pfs pfscmd actor="ag" cmd="autoguide restart " ;
-
+    EXEC pfs pfscmd actor="ag" cmd="autoguide restart" ;
 *ENDIF
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
@@ -48,3 +47,4 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
 :main_end
 
 :end
+</Command>
