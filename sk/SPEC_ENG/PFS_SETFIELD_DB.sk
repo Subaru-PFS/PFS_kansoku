@@ -17,7 +17,7 @@
   EXPTIME=2
   AG="OFF"
 # DESIGN_PATH example: /export/home/pfs/pfsDesign-0x0000000000000001.fits
-  DESIGN_PATH="NOP"
+  DESIGN_PATH="/data/pfsDesign"
   DESIGN_ID="NOP"
 </Default_Parameter>
 
@@ -32,8 +32,8 @@
 
 :main_start
 
-*Set EXPT_AG = $EXPTIME * 1000
-*Set INT_AG = $INTERVAL * 1000
+*Set EXPT_AG = INT($EXPTIME * 1000)
+#*Set INT_AG = INT($INTERVAL * 1000)
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Field acquisition from pfsDesign: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 

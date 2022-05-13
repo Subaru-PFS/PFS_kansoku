@@ -21,16 +21,18 @@
   # object type for AGCC: dark|test|object
   OBJECT="object"
   VISIT_ID=0 
-  COMBINED=1
-  CENTROID=0  
-  CMETHOD="sep"
+  #Comment out "COMBINED" parameter since not used.
+  #COMBINED=1
+  CENTROID=0
+  #Comment out "CMETHOD" since only sep is used.  
+  #CMETHOD="sep"
 </Default_Parameter>
 
 <Command>
 :start
 
-# Expime in milliseconds to use in AGCC actor
-*SET EXPT_AG=($EXPTIME * 1000) 
+# AGCC USES SECONDS!!! (NOT milliseconds)
+# *SET EXPT_AG=INT($EXPTIME * 1000) 
 
 # Timelimit for each exposure exposure passed to AGCC actor
 *SET TIMELIM=($EXPTIME + 30)
@@ -43,7 +45,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPT_AG combined=$COMBINED centroid=$CENTROID cMethod=$CMETHOD" TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
     EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 *ENDFOR
