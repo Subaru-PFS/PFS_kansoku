@@ -57,9 +57,9 @@ EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads)
 
 { 
 if $EXPTYPE == "arc"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA "$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "trace"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA "$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
 endif

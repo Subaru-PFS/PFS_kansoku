@@ -12,6 +12,8 @@
 :Parameter
 # for PFS
   SSYS=SPS
+  SAVE=TRUE
+
 
 :Command
 :start
@@ -20,9 +22,14 @@
 
 :main_start
 
-EXEC PFS PFSCMD ACTOR="iic" cmd="sps abort" ;
-EXEC OBS SOUND SELECT=whistle Volume=64 ,
-EXEC OBS Set_message obsinfo1=clear obsinfo2="SpS sequence is aborted." obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+if $SAVE == "TRUE"
+   EXEC PFS PFSCMD ACTOR="iic" cmd="sps finishExposure" ;
+else
+   EXEC PFS PFSCMD ACTOR="iic" cmd="sps abort" ;
+endif
+
+EXEC OBS SOUND SELECT="whistle" Volume=64 ,
+EXEC OBS Set_message obsinfo1=clear obsinfo2="SpS exposure is aborted." obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
 :main_end
 
