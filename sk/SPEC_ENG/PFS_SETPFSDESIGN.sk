@@ -27,20 +27,20 @@
 
     *IF "$DESIGN_ID" == "NOP"
 
-        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_PATH"
+        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_PATH" ;
 
     *ELIF "$DESIGN_PATH" != "/data/pfsDesign" AND "$DESIGN_ID" != "NOP"
 
     	# the command below is TBC
-        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designPath=$DESIGN_PATH designId=$DESIGN_ID"
+        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designPath=$DESIGN_PATH designId=$DESIGN_ID" ;
 
     *ELSE
 
-        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID"
+        EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
     
     *ENDIF
 
-    *Set INFO2="ID : !PFS.DESIGN.ID, Target : !PFS.DESIGN.NAME"
+    *Set INFO2="ID : !PFS.DESIGN.ID, Target : !PFS.DESIGN.NAME" 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ; 
 
 :Main_End
