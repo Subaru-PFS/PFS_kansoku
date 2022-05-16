@@ -76,15 +76,11 @@
     #
     ## Siredeal tracking
     *IF "$FILE" == "NOP"
-            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA
- DECBASE=$DEC ;
-            EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STAT
-OBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
-            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=$ROTA 
-;
-            EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCA
-LCOUT EQUINOX=$EQUINOX , 
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" , 
+            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA DECBASE=$DEC ;
+            EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=$ROTA ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ,
+            EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
     *ELSE
     ## non sidereal tracking
 
@@ -92,7 +88,6 @@ LCOUT EQUINOX=$EQUINOX ,
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo4="Non Sidereal Tracking" , 
             EXEC TSC TELDRIVE COORD=FILE TARGET=$FILE DIRECTION=TSC ; 
             EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATS.RA DECBASE=!STATS.DEC ;
-
             Exec TSC TELDRIVE_Offset COORD=ABS RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
     *ENDIF
     Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
@@ -205,7 +200,7 @@ LCOUT EQUINOX=$EQUINOX ,
     EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=$ROTA ;
     Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done."
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
 
 
     # Acquire Field
@@ -215,15 +210,15 @@ LCOUT EQUINOX=$EQUINOX ,
     EXEC TSC AG_TRACKING MOTOR=ON ;
 
     # The command below is TBC
-    EXEC pfs pfscmd actor=iic" cmd='agAcquireField' ;
+    EXEC pfs pfscmd actor="iic" cmd='agAcquireField' ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." , 
 
     *IF "$AG"=="ON"
     # when AG should be started in SetupField
 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide: Start" , 
-	# The command below is TBC?
-	EXEC pfs pfscmd actor=iic" cmd='agStartGuiding' ;
+        # The command below is TBC?
+        EXEC pfs pfscmd actor="iic" cmd='agStartGuiding' ;
 
     *ELSE   
 
