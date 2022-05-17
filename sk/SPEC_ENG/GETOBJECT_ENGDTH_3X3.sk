@@ -36,7 +36,7 @@
 :START
 
 #Preparation for SPS exposure
-*SET EXPTIMELIM = ( $EXPTIME + 60 )
+*SET EXPTIMLIM = ( $EXPTIME + 60 )
 #*SET EXPCMD="scienceObject exptime=$EXPTIME name=EXP_3X3DTH"
 
 
