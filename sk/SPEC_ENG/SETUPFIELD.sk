@@ -36,7 +36,7 @@
 	DESIGN_ID=NOP
         VISIT_ID=0
 	# Start AG after a field acquisition or not
-	AG=ON
+	AG=OFF
 
         # Common parameters
 
@@ -63,7 +63,7 @@
     # AG off
     #
 
-    *SET TIMELIM = 5
+    *SET TIMELIM = 60
 
     EXEC TSC AG_TRACKING MOTOR=OFF ;
     EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
@@ -113,7 +113,7 @@
     # AG off
     #
 
-    *SET TIMELIM = 10
+    *SET TIMELIM = 60
 
     EXEC TSC AG_TRACKING MOTOR=OFF ;
     EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
