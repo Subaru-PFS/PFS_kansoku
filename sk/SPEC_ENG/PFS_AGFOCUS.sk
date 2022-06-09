@@ -41,15 +41,14 @@ EXEC TSC TelFocus MOTOR=ON COORD=TSC Z=$Z ;
 *SET EXPT_AG = INT($EXPTIME * 1000)
 EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISIT_ID" ;
 
-### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. --------------------
-#EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT exptime=$EXPT_AG combined=$COMBINED centroid=$CENTROID" TIMELIM=$TIMELIM ;
-#EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.FOCUS_OFFSET ;
+### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. ---
+#EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;
 # Adjust focus position
 #*IF "$ADJ_Z" != "NOP"
-#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Adjusting focus to" obsinfo3=($Z + !PFS.AG.FOCUS_OFFSET) obsinfo4=clear obsinfo5=clear ,
-#    EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=($Z + !PFS.AG.FOCUS_OFFSET) ;
+#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Adjusting focus to" obsinfo3=($Z + !PFS.AG.ERR.FOCUS_ERR) obsinfo4=clear obsinfo5=clear ,
+#    EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=($Z + !PFS.AG.ERR.FOCUS_ERR) ;
 #    EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
-#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done." obsinfo3="z=" obsinfo4=!TSCL.Z  obsinfo5=($Z + !PFS.AG.FOCUS_OFFSET);
+#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done." obsinfo3="z=" obsinfo4=!TSCL.Z  obsinfo5=($Z + !PFS.AG.ERR.FOCUS_ERR);
 #*ENDIF
 ### --- 
 
