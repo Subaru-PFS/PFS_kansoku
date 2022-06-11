@@ -1,0 +1,56 @@
+#**********************************************************************
+#
+# SpS Command : Abort
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2021.09.18
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+:Parameter
+# for PFS
+  SSYS=SPS
+  FF=on
+  FF_POWER=35
+  FF_PERIOD=100
+  SF=on
+  SF_POWER=65
+
+:Command
+:start
+
+# Nothing to execute here
+
+:main_start
+
+EXEC OBS Set_message obsinfo1=clear obsinfo2="Illuminators" obsinfo3="FF $FF" obsinfo4="SF $SF" ;
+
+## Fiducical Fiber
+if $FF == "ON"
+  EXEC PFS PFSCMD ACTOR="peb" cmd="led config ledperiod=$FF_PERIOD dutycycle=$FF_POWER" ;
+  EXEC PFS PFSCMD ACTOR="peb" cmd="led off" ;
+  EXEC PFS PFSCMD ACTOR="peb" cmd="led on" ;
+elif $FF == "OFF"
+  EXEC PFS PFSCMD ACTOR="peb" cmd="led off" ;
+else
+  EXEC OBS Set_message obsinfo3="No option for $FF";
+endif
+
+## Science Fiber
+if $SF == "ON"
+  EXEC PFS PFSCMD ACTOR="sps" cmd="bia on power=$SF_POWER" ;
+elif $SF == "OFF"
+  EXEC PFS PFSCMD ACTOR="sps" cmd="bia off" ;
+else
+  EXEC OBS Set_message obsinfo4="No option for $SF";
+endif
+
+EXEC OBS Set_message obsinfo5="Done" ;
+
+:main_end
+
+# Nothing to execute here
+
+:end

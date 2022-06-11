@@ -1,0 +1,77 @@
+#**********************************************************************
+#
+# SuNSS+SpS cal lamp exposure (using dome lights)
+#  executing domeBias, doDark and doExposure
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani
+    SCRIPT_UPDATE=2020.09.23
+    OBE_ID=PFS
+## Overwrite Gen2 FITS.PFS.OBS-MOD status
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  SSYS=SPS
+## Sps uses "duplicate" as the number of frames
+  NFRAME=1
+# For lamp data, EXPTIME also needs to be sset to calclate the time limit.
+  EXPTIME=1
+  EXPTYPE=OBJECT
+## Which camera to be used
+  CAMERA="b1,r1"
+## Default value of on-time [sec] for each cal-lamp source
+  HGCD=0.0
+  AR=0.0
+  NE=0.0
+  KR=0.0
+  HAL=0.0
+## command before/after exposure
+  SEQ_HEAD=noseq
+  SEQ_TAIL=noseq
+  SEQ_NAME="fromGen2"
+  SEQ_COMMENT="command executed from Gen2"
+# Telescope
+# Object (passed to Gen2 FITS.PFS.OBJECT status.)
+  OBJECT=nop
+#  TIMELIM=30
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+## Readout 60sec
+*SET TIMELIM = (30 + ($EXPTIME + 60) * $NFRAME)
+
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4='Type: \\"$EXPTYPE\\"' obsinfo5=clear ;
+
+# Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+#EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion:" ICONFILE=NOP SOUNDFILE=TIMER_END ,
+EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads):" ,
+
+{ 
+if $EXPTYPE == "arc"
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+elif $EXPTYPE == "trace"
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+else
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
+endif
+};
+
+
+#EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+

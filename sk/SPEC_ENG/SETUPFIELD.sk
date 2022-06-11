@@ -1,0 +1,236 @@
+#**********************************************************************
+#
+# Setup Field of Telescope 
+#  
+#    2022.05.11 add pfsDesign option
+#
+#**********************************************************************
+:Header
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=SETUPFIELD
+        Script_Version=0.1
+        Script_Author=cloomis
+	Transcribed=ejeschke, koshida
+        Script_Update=2021.09.30
+#       Dispatcher_Version=1.0
+#             ESTIMATE=180
+
+
+:Parameter
+	# we default to the last position sent by PFS if the command is repeated
+	TARGET = NOP
+        DATASET_ID=DS000
+
+        # Parameters only for RA Dec mode
+
+        OBJECT=NOP
+        RA=!STATS.RA
+        DEC=!STATS.DEC
+        ROTA=!STCS.INSROTPOS_PF
+
+
+	# Parameters only for pfsDesign mode
+
+        DESIGN_PATH="/data/pfsDesign"
+	DESIGN_ID=NOP
+        VISIT_ID=0
+	# Start AG after a field acquisition or not
+	AG=OFF
+
+        # Common parameters
+
+        OFFSET_RA=0
+        OFFSET_DEC=0
+        Z=!TSCL.Z
+        # non-sidereal tracking file
+        FILE=NOP
+
+        EQUINOX=!STATS.EQUINOX
+
+:Command
+:Start
+
+
+:Main_Start
+
+*IF "$DESIGN_ID" == "NOP" AND "$DESIGN_PATH" == "/data/pfsDesign"
+
+# With RA Dec
+
+    {
+    #
+    # AG off
+    #
+
+    *SET TIMELIM = 60
+
+    EXEC TSC AG_TRACKING MOTOR=OFF ;
+    EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+
+    *Set INFO3="Target : $OBJECT"
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=Clear ObsInfo3=$INFO3 ObsInfo4=Clear ObsInfo5=Clear , 
+
+    #
+    # calculate pointing
+    #
+    ## Siredeal tracking
+    *IF "$FILE" == "NOP"
+            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA DECBASE=$DEC ;
+            EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=$ROTA ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ,
+            EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
+    *ELSE
+    ## non sidereal tracking
+
+            EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=$ROTA ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo4="Non Sidereal Tracking" , 
+            EXEC TSC TELDRIVE COORD=FILE TARGET=$FILE DIRECTION=TSC ; 
+            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATS.RA DECBASE=!STATS.DEC ;
+            Exec TSC TELDRIVE_Offset COORD=ABS RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
+    *ENDIF
+    Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
+
+    };
+    # 
+    # chceck status
+    #
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Waiting for Rotator/Focus/WindScreen to Settle" , 
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
+    #    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
+    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
+    #
+
+*ELSE
+
+# With pfsDesign
+
+    {
+    #
+    # AG off
+    #
+
+    *SET TIMELIM = 60
+
+    EXEC TSC AG_TRACKING MOTOR=OFF ;
+    EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+
+
+    # SpS grating setting: No operation in 2022.05 run
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Set SpS grating: Start" , 
+    #EXEC pfs pfscmd actor="iic" cmd="setSpsPfsDesign",
+
+    #
+    # calculate pointing
+    #
+
+    # Get pfsDesign RA and Dec. The command below is TBC
+    #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_PATH" ;
+    #EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_PATH" ;
+
+    *Set OBJECT=!PFS.DESIGN.NAME
+    #*Set DESIGN_ID=!PFS.DESIGN.ID
+
+    *Set INFO2="ID : $DESIGN_ID, Target : $OBJECT"
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=$INFO2 ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear , 
+
+    # Sidereal tracking
+    *IF "$FILE" == "NOP"
+
+	    *Set RA=!PFS.DESIGN.RA
+	    *Set DEC=!PFS.DESIGN.DEC
+	    *Set ROTA=!PFS.DESIGN.PA
+
+	    EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA DECBASE=$DEC ;
+	    EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+
+            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=$ROTA ;
+
+	    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ;
+ 
+    # Non-sidereal tracking
+    *ELSE
+	    EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=$ROTA ;
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ObsInfo4="Non Sidereal Tracking" , 
+	    EXEC TSC TELDRIVE COORD=FILE TARGET=$FILE DIRECTION=TSC ; 
+	    EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATS.RA DECBASE=!STATS.DEC ;
+
+            Exec TSC TELDRIVE_Offset COORD=ABS RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
+    *ENDIF
+
+    Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
+
+    };
+
+
+    # 
+    # chceck status
+    #
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting for Rotator/Focus/WindScreen to Settle" , 
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
+    #    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
+    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Done" ;  
+
+    #
+    # PFS settings
+    #
+
+    # Cobra convergence with Rotator stop
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra configuration with rotator paused: Start." , 
+    EXEC TSC InsRot_PF MOTOR=OFF Telescope=LINK COORD=abs ;
+
+    ## Cobra configuration
+    EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign";
+
+    ### Pause and wait with a pop-up window
+
+    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    Exec OBS Confirmation Instrument_Name=PFS Title="Cobras are already converged?" Dialog=[OK] ;
+
+    # restart rotator move 
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Waiting for Rotator to Settle" , 
+    EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=$ROTA ;
+    Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
+
+
+    # Acquire Field
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
+
+    EXEC TSC AG_TRACKING MOTOR=ON ;
+
+    # The command below is TBC
+    EXEC pfs pfscmd actor="iic" cmd='agAcquireField' ;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." , 
+
+    *IF "$AG"=="ON"
+    # when AG should be started in SetupField
+
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide: Start" , 
+        # The command below is TBC?
+        EXEC pfs pfscmd actor="iic" cmd='agStartGuiding' ;
+
+    *ELSE   
+
+        EXEC TSC AG_TRACKING MOTOR=OFF ;
+        EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+
+
+    *ENDIF
+
+*ENDIF
+
+:Main_End
+
+:End
+
