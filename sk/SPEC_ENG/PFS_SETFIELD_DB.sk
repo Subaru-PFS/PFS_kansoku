@@ -1,5 +1,6 @@
 #**********************************************************************
 #
+<<<<<<< HEAD
 # Start AG sequence
 #   Field acquisition via AG actor
 #
@@ -25,6 +26,29 @@
 
 <Command>
 
+=======
+# Start AG sequence 
+#   Initialize the AG status and start AG sequense
+#   sending a command to IIC and AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.16
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  EXPTIME=2
+  AG="OFF"
+# DESIGN_PATH exapmple: /export/home/pfs/pfsDesign-0x0000000000000001.fits
+  DESIGN_PATH="NOP"
+  DESIGN_ID="NOP"
+
+:Command
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 :start
 
 # Calc timelimit for sequence of exposure
@@ -32,8 +56,13 @@
 
 :main_start
 
+<<<<<<< HEAD
 *Set EXPT_AG = INT($EXPTIME * 1000)
 #*Set INT_AG = INT($INTERVAL * 1000)
+=======
+*Set EXPT_AG = $EXPTIME * 1000 
+*Set INT_AG = $INTERVAL * 1000
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Field acquisition from pfsDesign: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
@@ -44,7 +73,11 @@ EXEC pfs pfscmd actor="ag" cmd="autoguide stop" ;
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 *IF "$AG" == "ON"
     *Set GUIDE = "yes"
+<<<<<<< HEAD
     EXEC TSC AG_TRACKING MOTOR=ON ;
+=======
+    # EXEC TSC AG_TRACKING MOTOR=ON ; 
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 *ELSE
     *Set GUIDE = "no"
 *ENDIF
@@ -58,7 +91,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 
 *ELSE
 
+<<<<<<< HEAD
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="No pfsDesign specified. " obsinfo3=INFO3 obsinfo4=INFO4 ,
+=======
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="No pfsDesign specipided. " obsinfo3=INFO3 obsinfo4=INFO4 ,
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
     EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH exposure_time=$EXPT_AG guide=$GUIDE " ;
 
 
@@ -74,4 +111,7 @@ EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 :main_end
 
 :end
+<<<<<<< HEAD
 </Command>
+=======
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403

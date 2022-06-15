@@ -4,6 +4,7 @@
 #   sending a command to AG actor
 #
 #**********************************************************************
+<<<<<<< HEAD
 <Header>
     SCRIPT_AUTHOR=Moritani, Koshida, Arai
     SCRIPT_UPDATE=2022.05.02
@@ -16,18 +17,34 @@
 
 <Command>
 
+=======
+:Header
+    SCRIPT_AUTHOR=Moritani, Koshida
+    SCRIPT_UPDATE=2021.11.10
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+:Parameter
+
+:Command
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 :start
 
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGoff" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
+<<<<<<< HEAD
 # Stop auto-guiding
     # reference command:  exec pfs pfscmd actor="ag" cmd="autoguide start"
 EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
 
 # turn off TSC AG_Tracking mode
 #EXEC TSC AG_TRACKING MOTOR=OFF ;
+=======
+#exec pfs pfscmd actor="ag" cmd="autoguide start"
+exec pfs pfscmd actor="ag" cmd="autoguide stop" ;
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
@@ -35,5 +52,8 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
 :main_end
 
 :end
+<<<<<<< HEAD
 
 </Command>
+=======
+>>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
