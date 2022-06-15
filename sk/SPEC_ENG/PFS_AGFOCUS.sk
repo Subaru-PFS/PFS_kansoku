@@ -7,7 +7,7 @@
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
-    SCRIPT_UPDATE=2022.05.02
+    SCRIPT_UPDATE=2022.06.14
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -17,7 +17,7 @@
   EXPTIME=1
   Z=!TSCL.Z
 # NOP or other
-#  ADJ_Z="NOP"
+  ADJ_Z="NOP"
 # if not specified the recent one will be used
   VISIT_ID=0
 #  COMBINED=1
@@ -42,13 +42,13 @@ EXEC TSC TelFocus MOTOR=ON COORD=TSC Z=$Z ;
 EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISIT_ID" ;
 
 ### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. ---
-#EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;
 # Adjust focus position
-#*IF "$ADJ_Z" != "NOP"
-#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Adjusting focus to" obsinfo3=($Z + !PFS.AG.ERR.FOCUS_ERR) obsinfo4=clear obsinfo5=clear ,
-#    EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=($Z + !PFS.AG.ERR.FOCUS_ERR) ;
+*IF "$ADJ_Z" != "NOP"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Adjusting focus to" obsinfo3=($Z + !PFS.AG.ERR.FOCUS_ERR) ,
+    EXEC TSC TELFOCUS COORD=ABS F_SELECT=P_OPT2 Z=($Z + !PFS.AG.ERR.FOCUS_ERR) ;
 #    EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
-#    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done." obsinfo3="z=" obsinfo4=!TSCL.Z  obsinfo5=($Z + !PFS.AG.ERR.FOCUS_ERR);
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done." obsinfo3="z=" obsinfo4=!TSCL.Z  obsinfo5=clear ;
 #*ENDIF
 ### --- 
 
