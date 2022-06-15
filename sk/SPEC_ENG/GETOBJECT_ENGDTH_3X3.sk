@@ -10,22 +10,13 @@
     OBE_mode=SPEC_ENG
     COMMAND=GETOBJECT_ENGDTH_3X3
     Script_Author=Takagi
-    Script_Update=2022.05.02
+    Script_Update=2022.06.15
 </Header>
 
 
 <Default_Parameter>
-    RA=!STATS.RA
-    DEC=!STATS.DEC
-#    EQUINOX=!STATS.EQUINOX
+    EQUINOX=!STATS.EQUINOX
     DITHWIDTH=5
-#    INSROT_PA=!TSCL.INSROTPA_PF
-#    OFFSET_RA=0
-#    OFFSET_DEC=0
-#    DITH_RA=120.0
-#    DITH_DEC=120.0
-#    DATA_TYP=OBJECT
-#    OBJECT="OBJECT"
     EXPTIME=60
 </Default_Parameter>
 
@@ -39,10 +30,12 @@
 *SET EXPTIMLIM = ( $EXPTIME + 60 )
 #*SET EXPCMD="scienceObject exptime=$EXPTIME name=EXP_3X3DTH"
 
+*SET RA=!STATS.RA
+*SET DEC=!STATS.DEC
 
 :MAIN_START
 
-Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: 3x3 Dither" ObsInfo2=Clear ObsInfo3=$INFO3 ObsInfo4=Clear ObsInfo5=Clear ,
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: 3x3 Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 *SET INFO2="Exposing : $EXPTIME sec"
 
 
@@ -55,17 +48,12 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5,
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
 
 ### POS2 ###
 *Set INFO5="Dither : 2/9 (RA: [-1.0 x DITHWIDTH] arcsec, DEC: 0 arcsec)"
-
-*SET RA=!STATS.RA
-*SET DEC=!STATS.DEC
 
 #Calculate Next Pointing
 EXEC OBS CONVSECRADEC RASEC=(-1.0*$DITHWIDTH) DECSEC=0 RABASE=$RA DECBASE=$DEC ;
@@ -74,13 +62,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -95,13 +82,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -116,13 +102,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -137,13 +122,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -158,13 +142,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -179,13 +162,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -200,13 +182,12 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
 
@@ -221,15 +202,35 @@ EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
 EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
 
 {
     #Exposure
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
-#    Exec HSC EXP EXP=$EXPTIME FRAME=NOP OBJECT=$OBJECT ,
-#    Exec OBS SLEEP SLEEP_TIME=13 ;
 #    Exec OBS TIMER DURATION=$EXPTIME ,
 } ;
+
+
+### POS1 ###
+*Set INFO5="Retuering to initial position"
+
+#Calculate Next Pointing
+EXEC OBS CONVSECRADEC RASEC=0 DECSEC=0 RABASE=$RA DECBASE=$DEC ;
+EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+
+#Slew Telescope
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
+EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
+
+{
+    #Exposure
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ,
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="EXP_3X3DTH"' TIMELIM=$EXPTIMLIM ;
+#    Exec OBS TIMER DURATION=$EXPTIME ,
+} ;
+
 
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;
