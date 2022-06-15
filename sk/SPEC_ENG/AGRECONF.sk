@@ -7,6 +7,7 @@
 :Header
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
     SCRIPT_UPDATE=2021.11.10
+    SCRIPT_UPDATE=2022.06.14
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -14,7 +15,6 @@
 
     EXPTIME=NOP
     INTERVAL=NOP
-    FOCUS="no"
 
 :Command
 
@@ -43,15 +43,15 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *IF "$EXPTIME" != "NOP"
 
     *IF "$INTERVAL" != "NOP"
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG focus=$FOCUS" ;
+        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
     *ELSE
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG focus=$FOCUS" ;
+        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG" ;
     *ENDIF
 
 *ELSE
 
     *IF "$INTERVAL" != "NOP"
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG focus=$FOCUS" ;
+        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG" ;
     *ELSE
         EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Neither ExpT nor Int specified. " ;
     *ENDIF
