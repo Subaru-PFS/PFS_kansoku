@@ -1,12 +1,13 @@
 #**********************************************************************
 #
-# Start AG sequence
+# Setup Field from pfsDesign
 #   Field acquisition via AG actor
 #
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Takagi
     SCRIPT_UPDATE=2022.05.01
+    SCRIPT_UPDATE=2022.06.14
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -19,6 +20,7 @@
 # DESIGN_PATH example: /export/home/pfs/pfsDesign-0x0000000000000001.fits
   DESIGN_PATH="/data/pfsDesign"
   DESIGN_ID="NOP"
+  DRY_RUN="yes"
 </Default_Parameter>
 
 
@@ -44,7 +46,8 @@ EXEC pfs pfscmd actor="ag" cmd="autoguide stop" ;
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 *IF "$AG" == "ON"
     *Set GUIDE = "yes"
-    EXEC TSC AG_TRACKING MOTOR=ON ;
+    # comment out below for Jun. 2022 run
+    # EXEC TSC AG_TRACKING MOTOR=ON ;
 *ELSE
     *Set GUIDE = "no"
 *ENDIF
@@ -54,12 +57,12 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
 *IF "$DESIGN_ID" != "NOP"
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start" obsinfo3=INFO3 ,
-    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH design_id=$DESIGN_ID exposure_time=$EXPT_AG guide=$GUIDE " ;
+    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH design_id=$DESIGN_ID exposure_time=$EXPT_AG guide=$GUIDE dry_run=$DRY_RUN" ;
 
 *ELSE
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="No pfsDesign specified. " obsinfo3=INFO3 obsinfo4=INFO4 ,
-    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH exposure_time=$EXPT_AG guide=$GUIDE " ;
+    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH exposure_time=$EXPT_AG guide=$GUIDE dry_run=$DRY_RUN" ;
 
 
 *ENDIF
