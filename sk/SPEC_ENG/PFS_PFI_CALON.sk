@@ -62,7 +62,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Calib. Lamp on" obsinfo2=$INF
 
     EXEC OBS TIMER DURATION=($TIMEON) ;
 
-*ELIF $LAMP == "Halgen"
+*ELIF $LAMP == "Halogen"
 
     EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare halogen=$TIMEON" ;
     EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
