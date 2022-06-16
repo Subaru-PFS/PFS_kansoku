@@ -1,0 +1,43 @@
+#**********************************************************************
+#
+# Calibration lamp on: Xe
+#   note: time in seconds
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Koshida
+    SCRIPT_UPDATE=2022.06.15
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+#for PFS
+  TIMEON=5
+</Default_Parameter>
+
+<Command>
+:start
+
+*SET TIMELIM=($TIMEON + 5) ;
+
+:main_start
+
+*SET INFO2="Xenon: $TIMEON sec" ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Calib. Lamp on" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare xenon=$TIMEON" ;
+EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+EXEC OBS TIMER DURATION=($TIMEON) ;
+
+## Sound : file is in /gen2/conf/Sounds/
+    # ref:   EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+</Command>
