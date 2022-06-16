@@ -74,6 +74,47 @@ launchers:
     - sep
 
 #
+# PFI calibration lamp control
+#
+    -
+        label: "Cal: Argon"
+        cmd  : CALON_AR TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    -
+        label: "Cal: HgCd"
+        cmd  : CALON_HGCD TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    -
+        label: "Cal: Krypton"
+        cmd  : CALON_Kr TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    -
+        label: "Cal: Neon"
+        cmd  : CALON_NE TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    -
+        label: "Cal: Xenon"
+        cmd  : CALON_XE TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    -
+        label: "Cal: Halogen"
+        cmd  : CALON_HAL TIMEON=$VAL01
+        params:
+            - [ VAL01, INPUT, 8, 5, "in sec" ]
+
+    - sep
+
+#
 # Copy from COMMON for easy use
 #
 
