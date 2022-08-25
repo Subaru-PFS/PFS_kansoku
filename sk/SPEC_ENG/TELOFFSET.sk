@@ -1,0 +1,33 @@
+<Header>
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+    COMMAND=TELOFFSET
+    SCRIPT_ID=TELOFFSET.sk
+    Script_Author=Takagi
+    Script_Update=2022.06.15
+</Header>
+
+<Default_Parameter>
+## TELESCOPE
+    RA_OFFSET=0
+    DEC_OFFSET=0
+</Default_Parameter>
+
+<Command>
+:START
+
+    Exec OBS Sound Select=E_TELMOVE Volume=128 ;
+
+:MAIN_START
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="TELOFFSET" ObsInfo4="Slewing Telescope" ObsInfo5="$RA_OFFSET,$DEC_OFFSET" ;
+    Exec OBS CONVSECRADEC RASEC=$RA_OFFSET DECSEC=$DEC_OFFSET RABASE=!STATS.RA DECBASE=!STATS.DEC ;
+    Exec TSC TELDRIVE MOTOR=ON COORD=REL RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
+    #Exec OBS Set_Message Instrument_Name=FMOS ObsInfo4="Waiting for Telescope to Settle" , 
+    Exec OBS SLEEP SLEEP_TIME=3 ;
+    Exec OBS Set_Message Instrument_Name=FMOS ObsInfo4="Done" ;
+
+:MAIN_END
+
+:END
+</Command>

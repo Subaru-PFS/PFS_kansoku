@@ -7,6 +7,7 @@
 :Header
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
     SCRIPT_UPDATE=2021.11.10
+    SCRIPT_UPDATE=2022.06.14
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -14,15 +15,9 @@
 
     EXPTIME=NOP
     INTERVAL=NOP
-<<<<<<< HEAD
-    FOCUS="no"
 
 :Command
 
-=======
-
-:Command
->>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
 :start
 
 
@@ -32,22 +27,14 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *IF "$EXPTIME" != "NOP"
 
-<<<<<<< HEAD
     *Set EXPT_AG = INT($EXPTIME * 1000) 
-=======
-    *Set EXPT_AG = $EXPTIME * 1000 
->>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
     EXEC OBS Set_Message Instrument_name=PFS obsinfo4="ExpTime: $EXPTIME" ;
 
 *ENDIF
 
 *IF "$INTERVAL" != "NOP" 
 
-<<<<<<< HEAD
     *Set INT_AG = INT($INTERVAL * 1000)
-=======
-    *Set INT_AG = $INTERVAL * 1000
->>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
     EXEC OBS Set_Message Instrument_name=PFS obsinfo5="Int.: $INTERVAL" ;
 
 *ENDIF
@@ -56,25 +43,15 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *IF "$EXPTIME" != "NOP"
 
     *IF "$INTERVAL" != "NOP"
-<<<<<<< HEAD
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG focus=$FOCUS" ;
-    *ELSE
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG focus=$FOCUS" ;
-=======
         exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
     *ELSE
         exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG" ;
->>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
     *ENDIF
 
 *ELSE
 
     *IF "$INTERVAL" != "NOP"
-<<<<<<< HEAD
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG focus=$FOCUS" ;
-=======
         exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG" ;
->>>>>>> 2341024ed5f114f468e6a4931f85751cc9992403
     *ELSE
         EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Neither ExpT nor Int specified. " ;
     *ENDIF

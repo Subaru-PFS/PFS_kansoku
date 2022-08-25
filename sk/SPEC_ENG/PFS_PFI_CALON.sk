@@ -1,0 +1,87 @@
+#**********************************************************************
+#
+# PFI Calibration lamp on
+#   note: time in seconds
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Koshida
+    SCRIPT_UPDATE=2022.06.15
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+#for PFS
+  LAMP="NOP"
+  TIMEON=5
+</Default_Parameter>
+
+<Command>
+:start
+
+*SET TIMELIM=($TIMEON + 5) ;
+
+:main_start
+
+*SET INFO2="$LAMP: $TIMEON sec" ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Calib. Lamp on" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+*IF $LAMP == "Argon"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare argon=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELIF $LAMP == "HgCd"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare hgcd=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELIF $LAMP == "Krypton"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare krypton=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELIF $LAMP == "Neon"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare neon=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELIF $LAMP == "Xenon"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare xenon=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELIF $LAMP == "Halogen"
+
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare halogen=$TIMEON" ;
+    EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+
+    EXEC OBS TIMER DURATION=($TIMEON) ;
+
+*ELSE
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="No lamp named $LAMP" ;
+
+*ENDIF
+
+## Sound : file is in /gen2/conf/Sounds/
+    # ref:   EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+</Command>

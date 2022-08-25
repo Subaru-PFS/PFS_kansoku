@@ -74,6 +74,18 @@ launchers:
     - sep
 
 #
+# PFI calibration lamp control
+#
+    -
+        label: "Cal. ON"
+        cmd  : PFS_PFI_CALON LAMP=$VAL01 TIMEON=$VAL02
+        params:
+            - [ VAL01, LIST, ["Argon", "HgCd", "Krypton", "Neon", "Xenon", "Halogen"], "Lamp"]
+            - [ VAL02, INPUT, 8, 5, "in sec" ]
+
+    - sep
+
+#
 # Copy from COMMON for easy use
 #
 

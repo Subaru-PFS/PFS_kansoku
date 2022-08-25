@@ -335,7 +335,8 @@
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
-    EXEC TSC AG_TRACKING MOTOR=ON ;
+    # below is commented out for 2022 June run
+    #EXEC TSC AG_TRACKING MOTOR=ON ;
 
     # The command below is TBC
     EXEC pfs pfscmd actor="iic" cmd='agAcquireField' ;
