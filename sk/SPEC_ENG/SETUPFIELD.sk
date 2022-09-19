@@ -55,6 +55,9 @@
 
 *IF "$DESIGN_ID" == "NOP" AND "$DESIGN_PATH" == "/data/pfsDesign"
 
+# Reset summed AG offset
+*SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO  ;
+
 # With RA Dec
 
     {
