@@ -3,7 +3,6 @@
 # Setup Field of Telescope 
 #  
 #    2022.05.11 add pfsDesign option
-#
 #**********************************************************************
 :Header
         OBE_ID=PFS

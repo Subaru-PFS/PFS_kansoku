@@ -1,7 +1,7 @@
 # 
 # PFS Launcher File
 # As of 2018.10.26
-#
+# Updated: 2022.09.18 (Arai)
 
 tabname: "PFS"
 launchers:
@@ -38,6 +38,13 @@ launchers:
 
     - sep
     - sep
+
+#
+# POpt2 Hexapod Movement added 2022.09.18
+# nominal pos. (X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ=NOP)
+    -
+        label: "Hexapod (nominal position)" 
+        cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=SPEC_ENG COMP=HEXAPOD X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ="NOP"
 
 #
 # POpt2 Hexapod Movement
