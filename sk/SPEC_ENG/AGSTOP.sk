@@ -6,7 +6,7 @@
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Koshida, Arai
-    SCRIPT_UPDATE=2022.05.02
+    SCRIPT_UPDATE=2022.09.20
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -20,7 +20,7 @@
 
 :main_start
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGoff" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGstop" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
 # Stop auto-guiding
     # reference command:  exec pfs pfscmd actor="ag" cmd="autoguide start"

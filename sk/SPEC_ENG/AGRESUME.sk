@@ -1,12 +1,12 @@
 #**********************************************************************
 #
-# Restart AG sequence at the current position
+# Resume AG sequence at the current position
 #   sending a command to AG actor
 #
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
-    SCRIPT_UPDATE=2022.06.14
+    SCRIPT_UPDATE=2022.09.20
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -30,7 +30,7 @@
 
 :main_start
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGResume" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
 # prepare telescope for autoguiding
 #EXEC TSC AG_TRACKING MOTOR=ON ;
