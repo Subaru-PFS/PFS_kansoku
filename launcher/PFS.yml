@@ -37,14 +37,13 @@ launchers:
                 label: save }
 
     - sep
-    - sep
 
 #
 # POpt2 Hexapod Movement added 2022.09.18
 # nominal pos. (X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ=NOP)
     -
         label: "Hexapod (nominal position)" 
-        cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=SPEC_ENG COMP=HEXAPOD X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ="NOP"
+        cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=SPEC_ENG COMP=HEXAPOD X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5
 
 #
 # POpt2 Hexapod Movement
@@ -112,5 +111,9 @@ launchers:
                 label: Telscp }
             - { name: VAL02, type: INPUT, width: 7, value: 0.0,
                 label: Degree }
+
+    -
+        label: "M2 Setup(nominal position)"
+        cmd  : M2_SETUP OBE_ID=COMMON OBE_MODE=LAUNCHER X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ=NOP
 
 # End
