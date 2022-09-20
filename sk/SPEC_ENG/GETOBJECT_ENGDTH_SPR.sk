@@ -1,0 +1,122 @@
+#**********************************************************************
+#
+# GETOBJECT with dithering for engineering
+#   Dither pattern: SPR
+#
+#**********************************************************************
+
+<Header>
+    OBE_ID=PFS
+    OBE_mode=SPEC_ENG
+    COMMAND=GETOBJECT_ENGDTH_SPR
+    Script_Author=Takagi
+    Script_Update=2022.06.21
+</Header>
+
+
+<Default_Parameter>
+    EQUINOX=!STATS.EQUINOX
+    DITHWIDTH=5
+    EXPTIME=60
+    DITHPAT=[1 0 0 2 -1 0 3 -1 -1 4 0 -1 5 1 -1 6 1 0 7 1 1 8 0 1 9 -1 1 10 -2 1 11 -2 0 12 -2 -1 13 -2 -2 14 -1 -2 15 0 -2 16 1 -2 17 2 -2 18 2 -1 19 2 0 20 2 1 21 2 2 22 1 2 23 0 2 24 -1 2 25 -2 2 26 -3 2 27 -3 1 28 -3 0 29 -3 -1 30 -3 -2 31 -3 -3 32 -2 -3 33 -1 -3 34 0 -3 35 1 -3 36 2 -3 37 3 -3 38 3 -2 39 3 -1 40 3 0 41 3 1 42 3 2 43 3 3 44 2 3 45 1 3 46 0 3 47 -1 3 48 -2 3 49 -3 3 50 -4 3 51 -4 2 52 -4 1 53 -4 0 54 -4 -1 55 -4 -2 56 -4 -3 57 -4 -4 58 -3 -4 59 -2 -4 60 -1 -4 61 0 -4 62 1 -4 63 2 -4 64 3 -4 65 4 -4 66 4 -3 67 4 -2 68 4 -1 69 4 0 70 4 1 71 4 2 72 4 3 73 4 4 74 3 4 75 2 4 76 1 4 77 0 4 78 -1 4 79 -2 4 80 -3 4 81 -4 4]
+    START=1
+    STOP=81
+    AGEXP=NO
+    *AGEXP=YES,NO
+    WMODE=YES
+    *WMODE=YES,NO
+</Default_Parameter>
+
+
+<Command>
+
+:START
+
+
+### SETUP ###
+
+#Preparation for SPS exposure
+*SET EXPTIMLIM = ( $EXPTIME + 60 )
+
+*SET RA=!STATS.RA
+*SET DEC=!STATS.DEC
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: SPR Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
+
+
+
+:MAIN_START
+
+*FOR 81 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
+
+    *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
+
+        *SET DRA=($DRA_WIDTH * $DITHWIDTH)
+        *SET DDEC=($DDEC_WIDTH * $DITHWIDTH)
+        *Set INFO5="Dither $DNUM DRA=$DRA DDEC=$DDEC"
+
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5,
+
+        #Calculate Pointing
+        EXEC OBS CONVSECRADEC RASEC=$DRA DECSEC=$DDEC RABASE=$RA DECBASE=$DEC ;
+        EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+
+        #Slew Telescope
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
+        EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+        Exec OBS SLEEP SLEEP_TIME=3 ;
+
+        {
+            #Exposure
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ;
+            *IF "$WMODE" == "YES"
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ELSE
+                #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+        } ,
+        {
+            *IF "$AGEXP" == "YES"
+                *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1
+            *ENDIF
+        } ;
+    *ENDIF
+*ENDFOR
+
+
+
+### Go back to home ###
+*Set INFO5="Returing to initial position"
+
+#Calculate Pointing
+EXEC OBS CONVSECRADEC RASEC=0 DECSEC=0 RABASE=$RA DECBASE=$DEC ;
+EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
+
+#Slew Telescope
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
+EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+Exec OBS SLEEP SLEEP_TIME=3 ;
+
+{
+    #Exposure
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ,
+        *IF "$WMODE" == "YES"
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+        *ELSE
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+        *ENDIF
+} ,
+{
+    *IF "$AGEXP" == "YES"
+        *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1
+    *ENDIF
+} ;
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;
+
+
+:MAIN_END
+
+:END
+
+</Command>

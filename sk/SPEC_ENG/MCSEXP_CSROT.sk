@@ -1,0 +1,51 @@
+:Header
+    OBE_ID=PFS
+    OBE_mode=SPEC_ENG
+    COMMAND=MCSEXP_CSROT
+    Script_Author=Takagi
+    Script_Update=2022.06.20
+
+
+:Parameter
+    STARTANG=-270
+    DROT=30
+    EXPTIME=60
+
+:Command
+
+:start
+
+:main_start
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="MCSEXP_CSROT" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ;
+
+# Move rotator to Initial Position
+{
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Cs Rotator to $STARTANG deg" ,
+Exec TSC InsRot Motor=ON TELESCOPE=FREE Coord=ABS POSITION=$STARTANG;
+},
+
+# Preparation for MCS exposure
+{
+*SET TIMLIM = ( $EXPTIME + 60 )
+*SET STEP = ( 540 / $DROT )
+#*IF $DROT <= 0
+#    $STEP = $STEP * -1
+#*ENDIF
+};
+
+*FOR $STEP COUNT IN
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="MCS exposure: $EXPTIME sec" ,
+    EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
+    EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
+    EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Rotating Cs Rotator to $STARTANG+$DROT*$COUNT deg" ,
+    Exec TSC InsRot Motor=ON TELESCOPE=FREE Coord=ABS POSITION=($STARTANG+$DROT*$COUNT);
+*ENDFOR
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;
+
+:main_end
+
+:end
