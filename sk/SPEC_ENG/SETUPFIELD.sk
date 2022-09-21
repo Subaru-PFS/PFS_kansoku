@@ -24,9 +24,9 @@
 	TARGET = NOP
         DATASET_ID=DS000
 
-        DESIGN_PATH="/data/pfsDesign"
-	DESIGN_ID=NOP
-        VISIT_ID=0
+        #DESIGN_PATH="/data/pfsDesign"
+	#DESIGN_ID=NOP
+        #VISIT_ID=0
 	# Start AG after a field acquisition or not
 	AG=OFF
 
@@ -71,12 +71,12 @@
     #
 
     # Get pfsDesign RA and Dec. The command below is TBC
-    #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_PATH" ;
-    #EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_PATH" ;
+    #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_ID" ;
+    #EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
     #Exec OBS SLEEP SLEEP_TIME=5 ;
 
     *Set OBJECT=!PFS.DESIGN.NAME
-    #*Set DESIGN_ID=!PFS.DESIGN.ID
+    *Set DESIGN_ID=!PFS.DESIGN.ID
 
     *Set INFO2="ID : $DESIGN_ID, Target : $OBJECT"
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=$INFO2 ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear , 
