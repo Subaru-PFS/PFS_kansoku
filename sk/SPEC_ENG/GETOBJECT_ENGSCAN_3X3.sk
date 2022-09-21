@@ -10,7 +10,7 @@
     OBE_mode=SPEC_ENG
     COMMAND=GETOBJECT_ENGSCAN_3X3
     Script_Author=Takagi
-    Script_Update=2022.06.19
+    Script_Update=2022.09.21
 </Header>
 
 
@@ -38,6 +38,9 @@
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: 3x3 SCAN" ObsInfo2="Scanning time : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+
 # Warning about the fiber illuminator
 Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
 Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
@@ -64,6 +67,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
     ### POS2 ###
     *Set INFO5="Position : 2/9 (RA: -1*$DITHWIDTH arcsec, DEC: 0 arcsec)"
 
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=(-1.0*$DITHWIDTH) ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(-1.0*$DITHWIDTH) DECSEC=0 RABASE=$RA DECBASE=$DEC ;
     EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
@@ -77,6 +83,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
     ### POS3 ###
     *Set INFO5="Position : 3/9 (RA: -1*$DITHWIDTH arcsec, DEC: -1*$DITHWIDTH arcsec)"
+
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=(-1.0*$DITHWIDTH) ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=(-1.0*$DITHWIDTH) ;
 
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(-1.0*$DITHWIDTH) DECSEC=(-1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
@@ -92,6 +101,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
     ### POS4 ###
     *Set INFO5="Position : 4/9 (RA: 0 arcsec, DEC: -1*DITHWIDTH arcsec)"
 
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=(-1.0*$DITHWIDTH) ;
+
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=0 DECSEC=(-1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
     EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
@@ -105,6 +117,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
     ### POS5 ###
     *Set INFO5="Position : 5/9 (RA: $DITHWIDTH arcsec, DEC: -1*$DITHWIDTH arcsec)"
+
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DITHWIDTH ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=-1*$DITHWIDTH ;
 
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(1.0*$DITHWIDTH) DECSEC=(-1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
@@ -120,6 +135,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
     ### POS6 ###
     *Set INFO5="Position : 6/9 (RA: $DITHWIDTH arcsec, DEC: 0 arcsec)"
 
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DITHWIDTH ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(1.0*$DITHWIDTH) DECSEC=0 RABASE=$RA DECBASE=$DEC ;
     EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
@@ -134,6 +152,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
     ### POS7 ###
     *Set INFO5="Position : 7/9 (RA: $DITHWIDTH arcsec, DEC: $DITHWIDTH arcsec)"
 
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DITHWIDTH ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DITHWIDTH ;
+
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(1.0*$DITHWIDTH) DECSEC=(1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
     EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
@@ -147,6 +168,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
     ### POS8 ###
     *Set INFO5="Position : 8/9 (RA: 0 arcsec, DEC: $DITHWIDTH arcsec)"
+
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DITHWIDTH ;
 
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=0 DECSEC=(1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
@@ -163,6 +187,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
     ### POS9 ###
     *Set INFO5="Position : 9/9 (RA: -1*$DITHWIDTH arcsec, DEC: $DITHWIDTH arcsec)"
 
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=-1*$DITHWIDTH ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DITHWIDTH ;
+
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=(-1.0*$DITHWIDTH) DECSEC=(1.0*$DITHWIDTH) RABASE=$RA DECBASE=$DEC ;
     EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
@@ -176,6 +203,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
     ### POS1 ###
     *Set INFO5="Returing to initial position"
+
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 
     #Calculate Next Pointing
     EXEC OBS CONVSECRADEC RASEC=0 DECSEC=0 RABASE=$RA DECBASE=$DEC ;
