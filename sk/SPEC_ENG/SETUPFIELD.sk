@@ -2,7 +2,6 @@
 #
 # Setup Field of Telescope 
 #  
-#    2022.05.11 add pfsDesign option
 #**********************************************************************
 :Header
         OBE_ID=PFS
@@ -12,6 +11,10 @@
         Script_Author=cloomis
 	Transcribed=ejeschke, koshida
         Script_Update=2021.09.30
+	Script_Update=2022.05.11
+        ### Add pfsDesign option
+	Script_Update=2022.09.20
+        ### Remove RA, Dec option, etc. 
 #       Dispatcher_Version=1.0
 #             ESTIMATE=180
 
@@ -21,16 +24,6 @@
 	TARGET = NOP
         DATASET_ID=DS000
 
-        # Parameters only for RA Dec mode
-
-        OBJECT=NOP
-        RA=!STATS.RA
-        DEC=!STATS.DEC
-        ROTA=!STCS.INSROTPOS_PF
-
-
-	# Parameters only for pfsDesign mode
-
         DESIGN_PATH="/data/pfsDesign"
 	DESIGN_ID=NOP
         VISIT_ID=0
@@ -38,7 +31,7 @@
 	AG=OFF
 
         # Common parameters
-
+        ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
         OFFSET_RA=0
         OFFSET_DEC=0
         Z=!TSCL.Z
@@ -53,60 +46,8 @@
 
 :Main_Start
 
-*IF "$DESIGN_ID" == "NOP" AND "$DESIGN_PATH" == "/data/pfsDesign"
-
 # Reset summed AG offset
 *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO  ;
-
-# With RA Dec
-
-    {
-    #
-    # AG off
-    #
-
-    *SET TIMELIM = 60
-
-    EXEC TSC AG_TRACKING MOTOR=OFF ;
-    EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
-
-    *Set INFO3="Target : $OBJECT"
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=Clear ObsInfo3=$INFO3 ObsInfo4=Clear ObsInfo5=Clear , 
-
-    #
-    # calculate pointing
-    #
-    ## Siredeal tracking
-    *IF "$FILE" == "NOP"
-            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=$RA DECBASE=$DEC ;
-            EXEC OBS CALC_RADEC MODE=PLUS RABASE=$RA DECBASE=$DEC RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
-            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=$ROTA ;
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ,
-            EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
-    *ELSE
-    ## non sidereal tracking
-
-            EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=$ROTA ;
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo4="Non Sidereal Tracking" , 
-            EXEC TSC TELDRIVE COORD=FILE TARGET=$FILE DIRECTION=TSC ; 
-            EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATS.RA DECBASE=!STATS.DEC ;
-            Exec TSC TELDRIVE_Offset COORD=ABS RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT ;
-    *ENDIF
-    Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
-
-    };
-    # 
-    # chceck status
-    #
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Waiting for Rotator/Focus/WindScreen to Settle" , 
-    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-    Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
-    #    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
-    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
-    #
-
-*ELSE
 
 # With pfsDesign
 
@@ -132,6 +73,7 @@
     # Get pfsDesign RA and Dec. The command below is TBC
     #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_PATH" ;
     #EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_PATH" ;
+    #Exec OBS SLEEP SLEEP_TIME=5 ;
 
     *Set OBJECT=!PFS.DESIGN.NAME
     #*Set DESIGN_ID=!PFS.DESIGN.ID
@@ -187,6 +129,10 @@
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra configuration with rotator paused: Start." , 
     EXEC TSC InsRot_PF MOTOR=OFF Telescope=LINK COORD=abs ;
+
+    ### Pop-up window for checking the fiber illuminator status
+    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminator on?" Dialog=[OK] ;
 
     ## Cobra configuration
     EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign";
