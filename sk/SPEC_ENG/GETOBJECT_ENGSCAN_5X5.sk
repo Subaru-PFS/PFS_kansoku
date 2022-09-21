@@ -38,6 +38,9 @@
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: 5x5 SCAN" ObsInfo2="Scanning time : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 
+# Warning about the fiber illuminator
+Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
 
 ### START EXPOSURE ###
 

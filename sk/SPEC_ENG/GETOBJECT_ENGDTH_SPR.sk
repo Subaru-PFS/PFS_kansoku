@@ -47,6 +47,10 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: SPR Dither" ObsInf
 
 :MAIN_START
 
+# Warning about the fiber illuminator
+Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+
 *FOR 81 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
     *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
