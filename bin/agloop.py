@@ -29,11 +29,11 @@ while True:
     lastExpid = row['EXPID']
 
     if lineNum % 40 == 0:
-        print(f'EXPID    ALT    AZ       RA     DEC      INR    FOCUS')
+        print(f'EXPID       ALT       AZ         RA      DEC        INR    FOCUS')
 
-    print(f'{row["EXPID"]:-5d} {row["ALT_ERR"]: 7.3f} {row["AZ_ERR"]: 6.3f}'
-          f'   {row["RA_ERR"]: .3f} {row["DEC_ERR"]: 6.3f}'
-          f'   {row["INR_ERR"]: 6.3f} {row["FOCUS_ERR"]: 6.3f}')
+    print(f'{row["EXPID"]:-5d} {row["ALT_ERR"]: 8.3f} {row["AZ_ERR"]: 8.3f}'
+          f'   {row["RA_ERR"]: 8.3f} {row["DEC_ERR"]: 8.3f}'
+          f'   {row["INR_ERR"]: 8.3f} {row["FOCUS_ERR"]: 8.3f}')
 
     lineNum += 1
     
