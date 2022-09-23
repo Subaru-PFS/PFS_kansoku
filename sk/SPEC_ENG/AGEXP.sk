@@ -45,7 +45,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT pfsVisitId=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
     EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 *ENDFOR
