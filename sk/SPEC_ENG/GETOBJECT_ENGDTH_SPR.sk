@@ -45,6 +45,8 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: SPR Dither" ObsInf
 
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_PA_OFFSET_ASEC=0 ;
+
 # Exec OBS Confirmation Instrument_Name=!FITS.SBR.MAINOBCP Title="Check Position." Dialog=[OK] ;
 
 
