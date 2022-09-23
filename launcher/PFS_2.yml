@@ -1,0 +1,55 @@
+# 
+# PFS_2.yml -- Extra launchers
+#
+# E. Jeschke  2022.06.13
+#
+# This is a YAML file
+
+tabname: "PFS (ENG)"
+launchers:
+
+    -
+        label: "Start Correction Loop"
+        cmd  : CORRECTION_LOOP_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MOTOR=ON MODE=$VAL01
+        params:
+            - [ VAL01, LIST, [RADEC, AZEL], "Mode" ]
+
+    -
+        label: "Stop Correction Loop"
+        cmd  : CORRECTION_LOOP_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MOTOR=OFF
+
+    -
+        label: "Correct RA/DEC Once"
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC DELTA_RA=$VAL01 DELTA_DEC=$VAL02
+        params:
+            - { name: VAL01, type: INPUT, width: 20, value: "!PFS.AG.ERR.RA_ERR",
+                label: "dRA arcsec" }
+            - { name: VAL02, type: INPUT, width: 20, value: "!PFS.AG.ERR.DEC_ERR",
+                label: "dDEC arcsec" }
+
+    -
+        label: "Correct AZ/EL Once"
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=AZEL DELTA_AZ=$VAL01 DELTA_EL=$VAL02
+        params:
+            - { name: VAL01, type: INPUT, width: 20, value: "!PFS.AG.ERR.AZ_ERR",
+                label: "dAZ deg" }
+            - { name: VAL02, type: INPUT, width: 20, value: "!PFS.AG.ERR.ALT_ERR",
+                label: "dEL deg" }
+
+    -
+        label: "Correct Focus Once"
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=FOCUS DELTA_Z=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width: 20, value: "!PFS.AG.ERR.FOCUS_ERR", label: "dZ" }
+
+    -
+        label: "Correct Rotation Once"
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width: 20, value: "!PFS.AG.ERR.INR_ERR", label: "dROT" }
+
+    -
+        label: "Zero Guide Offsets"
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO
+
+#END

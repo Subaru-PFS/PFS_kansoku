@@ -38,16 +38,21 @@
 #Preparation for SPS exposure
 *SET EXPTIMLIM = ( $EXPTIME + 60 )
 
-*SET RA=!STATS.RA
-*SET DEC=!STATS.DEC
+# *SET RA=!STATS.RA
+# *SET DEC=!STATS.DEC
+
+*SET RA=!STATS.RA_CMD
+*SET DEC=!STATS.DEC_CMD
+
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: SPR Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
-Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_PA_OFFSET_ASEC=0 ;
-
 # Exec OBS Confirmation Instrument_Name=!FITS.SBR.MAINOBCP Title="Check Position." Dialog=[OK] ;
+
+# Wiping SPS
+Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
 
 :MAIN_START
@@ -56,12 +61,17 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_PA_OFFSET_ASEC=0 ;
 Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
 Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
 
+# Dithering Loop
+
 *FOR 81 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
     *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
 
         *IF ($DNUM) == 1
+            *Set DRA=0
+            *Set DDEC=0
             *Set INFO5="Dither $DNUM DRA=0 sec DDEC=0 sec"
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
         *ENDIF
 
         *IF ($DNUM) > 1
@@ -104,7 +114,7 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
 
 ### Go back to home ###
-*Set INFO5="Returing to initial position"
+*Set INFO5="Returning to initial position"
 
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0;
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0;
