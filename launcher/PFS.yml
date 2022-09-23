@@ -24,6 +24,23 @@ launchers:
             - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
             - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
 
+    -
+        label : "MCS Exp."
+        cmd   : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTIME=OBJECT OBJECT="iqtest"
+        params:
+            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+            - [ VAL02, INPUT, 9, 0.8, "ExpTime"]
+
+
+    - sep
+
+    -
+        label : "AG Exp."
+        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02
+        params:
+            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+            - [ VAL02, INPUT, 9, 1, "ExpTime"]
+
     - sep
 
 #
@@ -84,7 +101,7 @@ launchers:
 #
     -
         label: "Cal. ON"
-        cmd  : PFS_PFI_CALON LAMP=$VAL01 TIMEON=$VAL02
+        cmd  : PFS_PFI_CALON OBE_ID=PFS OBE_MODE=SPEC_ENG LAMP="$VAL01" TIMEON=$VAL02
         params:
             - [ VAL01, LIST, ["Argon", "HgCd", "Krypton", "Neon", "Xenon", "Halogen"], "Lamp"]
             - [ VAL02, INPUT, 8, 5, "in sec" ]
