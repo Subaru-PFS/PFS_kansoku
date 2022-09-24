@@ -2,9 +2,23 @@
 # PFS Launcher File
 # As of 2018.10.26
 # Updated: 2022.09.18 (Arai)
+# Updated: 2022.09.24 (Takagi)
 
 tabname: "PFS"
 launchers:
+
+
+# Test exposures
+
+    -
+        label: "Test Exp." 
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03
+        params:
+            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime" ]
+            - [ VAL03, INPUT, 8, 1, "NFrame" ]
+
+    - sep
 
 #
 # MCS: Multipule Exposure
@@ -36,7 +50,7 @@ launchers:
         label: "MCS Exp."
         cmd  : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 TELMOVE=$VAL07 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 ADCMOVE=$VAL08
         params:
-            - [ VAL03, LIST, [ "TEST", "OBJECT", "FLAT", "DARK",], "EXP Type" ]
+            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp Type" ]
             - [ VAL02, INPUT, 8, 0.8, "ExpTime" ]
             - [ VAL01, INPUT, 8, 1, "NFrame" ]
             - break
@@ -50,7 +64,7 @@ launchers:
     - sep
 
     -
-        label : "AG Exp."
+        label : "AG Exp. (centroid)"
         cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
