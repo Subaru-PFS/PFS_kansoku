@@ -2,13 +2,15 @@
 #
 # AG camera exposure
 #   Make exposures with AG cameras
-#   sending a command to AGCC
+#   sending a command to AG
 #   note: AG Actor takes an exposure time in milliseconds
+#
+#   note2: Modified to use ag acquire_field on 9/24/22
 #
 #**********************************************************************
 <Header>
-    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai
-    SCRIPT_UPDATE=2022.05.02
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
+    SCRIPT_UPDATE=2022.09.24
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -19,11 +21,11 @@
   NFRAME=1
   # Object type for AGCC actor
   # object type for AGCC: dark|test|object
-  OBJECT="object"
-  VISIT_ID=0 
+  # OBJECT="object"
+  # VISIT_ID=0 
   #Comment out "COMBINED" parameter since not used.
   #COMBINED=1
-  CENTROID=0
+  #CENTROID=0
   #Comment out "CMETHOD" since only sep is used.  
   #CMETHOD="sep"
 </Default_Parameter>
@@ -32,7 +34,7 @@
 :start
 
 # AGCC USES SECONDS!!! (NOT milliseconds)
-# *SET EXPT_AG=INT($EXPTIME * 1000) 
+*SET EXPTIME_MS=INT($EXPTIME * 1000) 
 
 # Timelimit for each exposure exposure passed to AGCC actor
 *SET TIMELIM=($EXPTIME + 30)
@@ -40,15 +42,18 @@
 :main_start
 *SET INFO2="$NFRAME x $EXPTIME sec"
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame" 
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
-    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
+    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF"
+    # EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
+    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 5) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 *ENDFOR
+
 
 ## Sound : file is in /gen2/conf/Sounds/
     # ref:   EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
