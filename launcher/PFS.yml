@@ -10,27 +10,41 @@ launchers:
 # MCS: Multipule Exposure
 #
     -
-        label: "Move Tel. & MCS Exp." 
-        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=SPS_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08 ADCMOVE=$VAL09
-        params:
-            - [ VAL01, INPUT, 6, 1, "NFrame" ]
-            - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
-            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
-            - [ VAL07, INPUT, 12, "test", "Obj. Name" ]
-            - [ VAL08, LIST, ["True", "False"], "DoCentroid"]
-            - break
-            - [ VAL04, INPUT, 6, "nop", "Az" ]
-            - [ VAL05, INPUT, 6, "nop", "El" ]
-            - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
-            - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
+#        label: "Move Tel. & MCS Exp." 
+#        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=SPS_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08 ADCMOVE=$VAL09
+#        params:
+#            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+#            - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
+#            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
+#            - [ VAL07, INPUT, 12, "test", "Obj. Name" ]
+#            - [ VAL08, LIST, ["True", "False"], "DoCentroid"]
+#            - break
+#            - [ VAL04, INPUT, 6, "nop", "Az" ]
+#            - [ VAL05, INPUT, 6, "nop", "El" ]
+#            - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
+#            - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
+#
+#    -
+#        label : "MCS Exp."
+#        cmd   : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=OBJECT OBJECT="$VAL03"
+#        params:
+#            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+#            - [ VAL02, INPUT, 9, 0.8, "ExpTime"]
+#            - [ VAL03, INPUT, 9, "test", "Object" ]
 
-    -
-        label : "MCS Exp."
-        cmd   : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=OBJECT OBJECT="$VAL03"
+
+        label: "MCS Exp."
+        cmd  : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 TELMOVE=$VAL07 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 ADCMOVE=$VAL08
         params:
-            - [ VAL01, INPUT, 6, 1, "NFrame" ]
-            - [ VAL02, INPUT, 9, 0.8, "ExpTime"]
-            - [ VAL03, INPUT, 9, "test", "Object" ]
+            - [ VAL03, LIST, [ "TEST", "OBJECT", "FLAT", "DARK",], "EXP Type" ]
+            - [ VAL02, INPUT, 8, 0.8, "ExpTime" ]
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - break
+            - [ VAL07, LIST, ["False", "True"], "Tel. Move"  ]
+            - [ VAL04, INPUT, 8, "!STATS.AZ", "Az" ]
+            - [ VAL05, INPUT, 8, "!STATS.EL", "El" ]
+            - [ VAL06, INPUT, 7, "!STATS.IROTPF_POS", "InsRot" ]
+            - [ VAL08, LIST, ["False", "True"], "ADC Move" ]
 
 
     - sep

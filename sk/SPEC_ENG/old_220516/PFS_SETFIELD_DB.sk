@@ -1,0 +1,72 @@
+#**********************************************************************
+#
+# Start AG sequence 
+#   Initialize the AG status and start AG sequense
+#   sending a command to IIC and AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.16
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  EXPTIME=2
+  AG="OFF"
+# DESIGN_PATH exapmple: /export/home/pfs/pfsDesign-0x0000000000000001.fits
+  DESIGN_PATH="NOP"
+  DESIGN_ID="NOP"
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+#*SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
+
+:main_start
+
+*Set EXPT_AG = $EXPTIME * 1000 
+*Set INT_AG = $INTERVAL * 1000
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Field acquisition from pfsDesign: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
+EXEC pfs pfscmd actor="ag" cmd="autoguide stop" ;
+
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
+*IF "$AG" == "ON"
+    *Set GUIDE = "yes"
+    # EXEC TSC AG_TRACKING MOTOR=ON ; 
+*ELSE
+    *Set GUIDE = "no"
+*ENDIF
+
+*Set INFO3 = "ExpTime : $EXPTIME"
+
+*IF "$DESIGN_ID" != "NOP"
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start" obsinfo3=INFO3 ,
+    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH design_id=$DESIGN_ID exposure_time=$EXPT_AG guide=$GUIDE " ;
+
+*ELSE
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="No pfsDesign specipided. " obsinfo3=INFO3 obsinfo4=INFO4 ,
+    EXEC pfs pfscmd actor="ag" cmd="acquire_field design_path=$DESIGN_PATH exposure_time=$EXPT_AG guide=$GUIDE " ;
+
+
+*ENDIF
+
+# EXEC TSC AG_TRACKING MOTOR=ON ;
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+*IF "$DESIGN_ID" != "NOP"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Done. " ;
+*ENDIF
+
+:main_end
+
+:end

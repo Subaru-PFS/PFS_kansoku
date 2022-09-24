@@ -2,7 +2,7 @@
 #
 # Start AG sequence
 #   Initialize the AG status and start AG sequence
-#   sending a command to IIC and AG actor
+#   sending commands through AG actor
 #
 #**********************************************************************
 <Header>
@@ -19,11 +19,12 @@
   EXPTIME=2
   AG="ON"
 # DESIGN_PATH example: /export/home/pfs/pfsDesign-0x0000000000000001.fits
-  DESIGN_PATH=NOP
+  DESGIN_PATH="/data/pfsDesign"
+#  DESIGN_PATH=NOP
   INTERVAL=10
-  DESIGN_ID=1
+  DESIGN_ID=NOP
 # VISIT_ID Default 0
-  VISIT_ID=0
+  VISIT_ID=NOP
   FCENTER=NOP
   LIMMAG=20
   FROM_SKY="no"
@@ -48,31 +49,39 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Auto Guiding: " obsinfo2=clea
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
 EXEC pfs pfscmd actor="ag" cmd="autoguide stop" ;
 
-
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquiring field" ;
-*IF "$AG" == "ON"
-    *Set GUIDE = "yes"
+IF "$AG" == "ON"
+    asn GUIDE = "yes"
     #EXEC TSC AG_TRACKING MOTOR=ON ;
-*ELSE
-    *Set GUIDE = "no"
-*ENDIF
+ELSE
+    asn GUIDE = "no"
+ENDIF
 
 *Set INFO3 = "ExpTime : $EXPTIME"
 *Set INFO4 = "Interval : $INTERVAL"
 
-*IF "$DESIGN_PATH" != "NOP"
+IF "$DESIGN_ID" != "NOP"
+
+# pfsDesign mode
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG w/ pfsDesign" obsinfo3=INFO3 obsinfo4=INFO4 ,
-    EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY dry_run=$DRY_RUN" ;
 
-*ELSE
+    IF "$VISIT_ID" == "NOP"
+        EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY dry_run=$DRY_RUN" ;
+    ESLE
+        EXEC pfs pfscmd actor="ag" cmd="autoguide start design_id=$DESIGN_ID visit_id=$VISIT_ID exposure_time=$EXPT_AG cadence=$INT_AG from_sky=$FROM_SKY dry_run=$DRY_RUN" ;
+    ENDIF
 
+ELSE
+
+# On the fly mode
+#
     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG in OTF mode" obsinfo3=INFO3 obsinfo4=INFO4 ,
-#    EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=$GUIDE" ;
+#    EXEC pfs pfscmd actor="ag" cmd="aquire_field otf visit_id=0 exposure_time=$EXPT_AG guide=@GUIDE" ;
 #    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="yes"' ;
     EXEC pfs pfscmd actor="ag" cmd="autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky='no' center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN" ;
 
-*ENDIF
+ENDIF
 
 # EXEC TSC AG_TRACKING MOTOR=ON ;
 

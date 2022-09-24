@@ -1,0 +1,52 @@
+#**********************************************************************
+#
+# Restart AG sequence at the current position
+#   sending a command to AG actor
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
+    SCRIPT_UPDATE=2022.06.14
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+#for PFS
+  EXPTIME=2
+  DESIGN_ID=NOP
+  #DESIGN_PATH default: "/data/pfsDesign"
+  DESIGN_PATH="/data/pfsDesign"
+  VISIT_ID=0
+  FROM_SKY="no"
+  DRY_RUN="yes"
+</Default_Parameter>
+
+<Command>
+:start
+
+#Calculate exptime in milliseconds
+*SET EXPT_AG=INT($EXPTIME*1000)
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGon" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+# prepare telescope for autoguiding
+#EXEC TSC AG_TRACKING MOTOR=ON ;
+#Set AG_TRACKING OFF for June 2022 run
+EXEC TSC AG_TRACKING MOTOR=OFF ;
+
+*IF "$DESIGN_ID" != "NOP"
+    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH design_id=$DESIGN_ID visit_id=$VISIT_ID cadence=3000 from_sky=$FROM_SKY dry_run=$DRY_RUN' ;
+*ELSE
+    EXEC pfs pfscmd actor="ag" cmd="autoguide restart" ;
+*ENDIF
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end
+</Command>

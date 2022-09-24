@@ -1,0 +1,21 @@
+import subprocess
+import time
+
+def getAgRow():
+    raw = subprocess.check_output(['get_status', 'PFS.AG'])
+    lines = raw.decode('latin-1').split('\n')
+
+    d = {}
+    for l in lines:
+        name, val = l.split(':')
+        name = name.trim()
+        name = name.split('.')[-1]
+        val = val.trim()
+        d[name] = float(val)
+
+    return d
+    
+while True:
+    print(getAgRow())
+    time.sleep(1)
+    

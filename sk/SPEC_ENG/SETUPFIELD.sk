@@ -136,7 +136,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     ### Pop-up window for checking the fiber illuminator status
     Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-    Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminator on?" Dialog=[OK] ;
+    Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
 
     ## Cobra configuration
     EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8" timelim=600;
@@ -144,7 +144,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     ### Pause and wait with a pop-up window
 
     Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-    Exec OBS Confirmation Instrument_Name=PFS Title="Cobras are already converged?" Dialog=[OK] ;
+    Exec OBS Confirmation Instrument_Name=PFS Title="Are Cobras already converged?" Dialog=[OK] ;
 
     # restart rotator move 
 
