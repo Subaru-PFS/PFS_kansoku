@@ -82,12 +82,14 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
             *IF $OFFSET == ABS
                 *SET DRA=($DRA_WIDTH * $DITHWIDTH)
                 *SET DDEC=($DDEC_WIDTH * $DITHWIDTH)
+                *Set INFO5="Dither $DNUM DRA=$DRA sec DDEC=$DDEC sec"
+
             *ELIF $OFFSET == REL
                 *SET DRA =( ( $DRA_WIDTH - $DRA_PRE )   * $DITHWIDTH )
                 *SET DDEC=( ( $DDEC_WIDTH - $DDEC_PRE ) * $DITHWIDTH )
+                *Set INFO5="Dither $DNUM DRA=($DRA_WIDTH*$DITHWIDTH)  sec DDEC=($DDEC_WIDTH*$DITHWIDTH) sec"
             *ENDIF
 
-            *Set INFO5="Dither $DNUM DRA=$DRA sec DDEC=$DDEC sec"
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
 
             #Calculate Pointing
@@ -117,8 +119,14 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
                 EXEC TSC TELDRIVE MOTOR=ON COORD=REL RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT EQUINOX=!STATS.EQUINOX Direction=TSC ;
             *ENDIF
 
-            Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DRA,
-            Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DDEC ;
+            *IF $OFFSET == ABS
+                Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DRA,
+                Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DDEC ;
+            *ELIF $OFFSET == REL
+	        Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
+                Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=($DDEC_WIDTH*$DITHWIDTH) ;
+	    *ENDIF
+
 
             #*IF $CORRECT == "YES"
             #    Exec OBS SLEEP SLEEP_TIME=20 ;
