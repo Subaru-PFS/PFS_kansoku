@@ -7,6 +7,8 @@
 :Header
     SCRIPT_AUTHOR=Koshida, Moritani
     SCRIPT_UPDATE=2022.03.18
+    # add domeflat option (Arai)
+    SCRIPT_UPDATE=2022.09.25
     OBE_ID=PFS
 ## Overwrite Gen2 FITS.PFS.OBS-MOD status
     OBE_MODE=SPEC_ENG
@@ -85,6 +87,8 @@ elif $EXPTYPE == "trace"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "object"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject expTime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+elif $EXPTYPE == "flat"
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat expTime=$EXPTIME duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
 endif
