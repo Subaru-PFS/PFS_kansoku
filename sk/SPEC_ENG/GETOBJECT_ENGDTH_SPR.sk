@@ -87,7 +87,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
             *ELIF $OFFSET == REL
                 *SET DRA =( ( $DRA_WIDTH - $DRA_PRE )   * $DITHWIDTH )
                 *SET DDEC=( ( $DDEC_WIDTH - $DDEC_PRE ) * $DITHWIDTH )
-                *Set INFO5="Dither $DNUM DRA=($DRA_WIDTH*$DITHWIDTH)  sec DDEC=($DDEC_WIDTH*$DITHWIDTH) sec"
+		*SET DRA_INFO=($DRA_WIDTH * $DITHWIDTH)
+		*SET DDEC_INFO=($DDEC_WIDTH * $DITHWIDTH)
+                *Set INFO5="Dither $DNUM DRA=$DRA_INFO  sec DDEC=$DDEC_INFO sec"
             *ENDIF
 
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
@@ -176,6 +178,8 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 *ENDIF
 *Set INFO5="Returning to initial position"
 
+
+
 #Calculate Pointing
 *IF $CORRECT == "YES"
     EXEC OBS CONVSECRADEC RASEC=$DRA-!PFS.AG.ERR.RA_ERR DECSEC=$DDEC-!PFS.AG.ERR.DEC_ERR RABASE=$RA DECBASE=$DEC ;
@@ -189,6 +193,22 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
 #Slew Telescope
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Slewing Telescope" ObsInfo5=$INFO5 ,
+
+*IF $OFFSET == ABS
+    #Telescope offset by ABS
+    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+*ELIF $OFFSET == REL
+    #TELESCOPE offset by REL
+    EXEC TSC TELDRIVE MOTOR=ON COORD=REL RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT EQUINOX=!STATS.EQUINOX Direction=TSC ;
+*ENDIF
+
+*IF $OFFSET == ABS
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=$DRA,
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=$DDEC ;
+*ELIF $OFFSET == REL
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
+    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=($DDEC_WIDTH*$DITHWIDTH) ;
+*ENDIF
 
 *IF $OFFSET == ABS
     #Telescope offset by ABS
