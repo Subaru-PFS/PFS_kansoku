@@ -5,8 +5,8 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2021.09.22
+    SCRIPT_AUTHOR=Moritani, Takagi
+    SCRIPT_UPDATE=2022.09.24
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -17,7 +17,7 @@
   NFRAME=2
   EXPTIME=1
   EXPTYPE=OBJECT
-  DOCENTROID=FALSE
+# DOCENTROID=FALSE
 # Telescope
   AZ=!STATS.AZ
   EL=!STATS.EL
@@ -60,13 +60,23 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS exposure: 
 #*ENDFOR
 
 # Sound : file is in /gen2/conf/Sounds/
-EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
 
+
+# Testing purpose (commented out from this sk on 09/24/22)
+#*IF $EXPTYPE == "TEST"
+#    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+#    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" ;
+#    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+
+EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    
 EXEC PFS PFSCMD ACTOR="iic" CMD="fpsLoop expTime=$EXPTIME cnt=$NFRAME" TIMELIM=$TIMELIM;
 
 #EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
 EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
 
 :main_end
 

@@ -12,6 +12,7 @@
         Script_Version=0.1
         Script_Author=koshida
         Script_Update=2022.05.14
+	script_Update=2022.09.20
 
 :Parameter
 
@@ -39,6 +40,8 @@
         EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
     
     *ENDIF
+
+    Exec OBS SLEEP SLEEP_TIME=5 ;
 
     *Set INFO2="ID : !PFS.DESIGN.ID, Target : !PFS.DESIGN.NAME" 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=$INFO2 ; 

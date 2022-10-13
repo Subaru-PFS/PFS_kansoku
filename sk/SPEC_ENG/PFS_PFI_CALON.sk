@@ -20,11 +20,11 @@
 <Command>
 :start
 
-*SET TIMELIM=($TIMEON + 5) ;
+*SET TIMELIM=($TIMEON + 5) 
 
 :main_start
 
-*SET INFO2="$LAMP: $TIMEON sec" ;
+*SET INFO2="$LAMP: $TIMEON sec" 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Calib. Lamp on" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
 *IF $LAMP == "Argon"
@@ -35,6 +35,8 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Calib. Lamp on" obsinfo2=$INF
     EXEC OBS TIMER DURATION=($TIMEON) ;
 
 *ELIF $LAMP == "HgCd"
+
+    *SET TIMELIM=($TIMEON + 150)
 
     EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare hgcd=$TIMEON" ;
     EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;

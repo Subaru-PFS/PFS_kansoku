@@ -1,0 +1,79 @@
+#**********************************************************************
+#
+# Take test exposure with MCS, AG, SPS
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2022.09.24
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+
+:Parameter
+#for PFS
+  CAM=MCS
+  *CAM=MCS, AG, SPS
+  NFRAME=2
+  EXPTIME=1
+
+:Command
+:start
+
+# Calc timelimit for sequence of exposure
+#*SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
+
+:main_start
+
+*IF $CAM == "MCS"
+  *SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
+
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS exposure: $NFRAME X $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+  EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+  Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" ;
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+*ENDIF
+
+*IF $CAM == "AG"
+  *SET TIMELIM=($EXPTIME + 30)
+  
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="AG exposure: $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+  
+  *FOR $NFRAME COUNT IN
+    *SET INFO3="$COUNT / $NFRAME frame" 
+    EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
+    EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object visit=0 exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
+    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+  *ENDFOR
+
+  EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+*ENDIF
+
+
+*IF $CAM == "SPS"
+  *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
+  *SET SPSCOMMENT = "\"test_command\""
+  *SET SPSNAME = "\"fromGen\""
+  
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+  EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+  EXEC OBS TIMER DURATION=$TIMELIM ,
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
+  EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+*ENDIF
+
+
+
+:main_end
+
+:end
+
+

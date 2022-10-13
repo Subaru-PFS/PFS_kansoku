@@ -1,28 +1,87 @@
 # 
 # PFS Launcher File
 # As of 2018.10.26
-#
+# Updated: 2022.09.18 (Arai)
+# Updated: 2022.09.24 (Takagi)
 
 tabname: "PFS"
 launchers:
+
+
+# Test exposures
+
+    -
+        label: "Test Exp." 
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03
+        params:
+            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime" ]
+            - [ VAL03, INPUT, 8, 1, "NFrame" ]
+
+    - sep
 
 #
 # MCS: Multipule Exposure
 #
     -
-        label: "Move Tel. & MCS Exp." 
-        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=SPS_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08 ADCMOVE=$VAL09
+#        label: "Move Tel. & MCS Exp." 
+#        cmd  : PFS_MCS_MULTI_EXP OBE_ID=PFS OBE_MODE=SPS_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 OBJECT=$VAL07 DOCENTROID=$VAL08 ADCMOVE=$VAL09
+#        params:
+#            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+#            - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
+#            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
+#            - [ VAL07, INPUT, 12, "test", "Obj. Name" ]
+#            - [ VAL08, LIST, ["True", "False"], "DoCentroid"]
+#            - break
+#            - [ VAL04, INPUT, 6, "nop", "Az" ]
+#            - [ VAL05, INPUT, 6, "nop", "El" ]
+#            - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
+#            - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
+#
+#    -
+#        label : "MCS Exp."
+#        cmd   : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=OBJECT OBJECT="$VAL03"
+#        params:
+#            - [ VAL01, INPUT, 6, 1, "NFrame" ]
+#            - [ VAL02, INPUT, 9, 0.8, "ExpTime"]
+#            - [ VAL03, INPUT, 9, "test", "Object" ]
+
+
+        label: "MCS Exp."
+        cmd  : PFS_MCS_MULTI_EXP_IIC OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 EXPTYPE=$VAL03 TELMOVE=$VAL07 AZ=$VAL04 EL=$VAL05 ROTA=$VAL06 ADCMOVE=$VAL08
+        params:
+            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp Type" ]
+            - [ VAL02, INPUT, 8, 0.8, "ExpTime" ]
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - break
+            - [ VAL07, LIST, ["False", "True"], "Tel. Move"  ]
+            - [ VAL04, INPUT, 8, "!STATS.AZ", "Az" ]
+            - [ VAL05, INPUT, 8, "!STATS.EL", "El" ]
+            - [ VAL06, INPUT, 7, "!STATS.IROTPF_POS", "InsRot" ]
+            - [ VAL08, LIST, ["False", "True"], "ADC Move" ]
+
+
+    - sep
+
+    -
+        label : "AG Exp. (centroid)"
+        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
-            - [ VAL02, INPUT, 6, 1.0, "Texp (s)" ]
-            - [ VAL03, LIST, [ "OBJECT", "FLAT", "DARK",], "Exp. Type" ]
-            - [ VAL07, INPUT, 12, "test", "Obj. Name" ]
-            - [ VAL08, LIST, ["True", "False"], "DoCentroid"]
-            - break
-            - [ VAL04, INPUT, 6, "nop", "Az" ]
-            - [ VAL05, INPUT, 6, "nop", "El" ]
-            - [ VAL06, INPUT, 6, "!STATS.IROTPF_POS", "InsRot" ]
-            - [ VAL09, LIST, ["True", "False"], "ADCMove" ]
+            - [ VAL02, INPUT, 9, 1, "ExpTime"]
+
+    -
+        label : "AG Loop (Dry)"
+        cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 dryRun'
+        params:
+            - [ VAL01, INPUT, 9, 2000, "ExpTime(ms)" ]
+            - [ VAL02, INPUT, 9, 5000, "Cadence(ms)"]
+    
+    -
+        label : "Stop AG Loop (Dry)"
+        cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStop'
+
+
 
     - sep
 
@@ -37,7 +96,32 @@ launchers:
                 label: save }
 
     - sep
+
+#
+# Fiber illuminator power control 
+#
+
+    -
+        label: "Fiber illum. ON"
+        cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=$VAL01 SF=ON SF_POWER=$VAL02
+        params:
+            - [ VAL01, INPUT, 8, 1, "FF Power" ]
+            - [ VAL02, INPUT, 8, 40, "SF Power"]
+
+
+    -
+        label: "Fiber illum. OFF"
+        cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF
+
+
+
     - sep
+#
+# POpt2 Hexapod Movement added 2022.09.18
+# nominal pos. (X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ=NOP)
+    -
+        label: "Hexapod (nominal position)" 
+        cmd  : PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=SPEC_ENG COMP=HEXAPOD X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5
 
 #
 # POpt2 Hexapod Movement
@@ -78,7 +162,7 @@ launchers:
 #
     -
         label: "Cal. ON"
-        cmd  : PFS_PFI_CALON LAMP=$VAL01 TIMEON=$VAL02
+        cmd  : PFS_PFI_CALON OBE_ID=PFS OBE_MODE=SPEC_ENG LAMP="$VAL01" TIMEON=$VAL02
         params:
             - [ VAL01, LIST, ["Argon", "HgCd", "Krypton", "Neon", "Xenon", "Halogen"], "Lamp"]
             - [ VAL02, INPUT, 8, 5, "in sec" ]
@@ -105,5 +189,9 @@ launchers:
                 label: Telscp }
             - { name: VAL02, type: INPUT, width: 7, value: 0.0,
                 label: Degree }
+
+    -
+        label: "M2 Setup(nominal position)"
+        cmd  : M2_SETUP OBE_ID=COMMON OBE_MODE=LAUNCHER X=-1.6 Y=-2.5 Z=2.9 TX=1.2 TY=2.5 TZ=NOP
 
 # End

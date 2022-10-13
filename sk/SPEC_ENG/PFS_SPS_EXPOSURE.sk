@@ -7,6 +7,8 @@
 :Header
     SCRIPT_AUTHOR=Koshida, Moritani
     SCRIPT_UPDATE=2022.03.18
+    # add domeflat option (Arai)
+    SCRIPT_UPDATE=2022.09.25
     OBE_ID=PFS
 ## Overwrite Gen2 FITS.PFS.OBS-MOD status
     OBE_MODE=SPEC_ENG
@@ -25,6 +27,7 @@
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
+  XE=0.0
   NE=0.0
   KR=0.0
   HAL=0.0
@@ -51,20 +54,20 @@
 #endif
 #
 #*SET TIMELIM = ($LAMP_WARM + 30 + ($EXPTIME + 60) * $NFRAME)
-if $EXPTYPE == "bias"
+*if $EXPTYPE == "bias"
 # bias: no overhead, zero exposure time
   *SET TIMELIM = 30 + 60 * $NFRAME
-elif $EXPTYPE == "arc" or $EXPTYPE == "trace"
+*elif $EXPTYPE == "arc" or $EXPTYPE == "trace"
 # arc or trace: cal-lamps needs 100sec to warm up
   *SET TIMELIM = 130 + ($EXPTIME + 60) * $NFRAME
-else
+*else
 # others mode (i.e. dark or object): no additional overhead
   *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
-endif
+*endif
 
 :main_start
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4='Type: \\"$EXPTYPE\\"' obsinfo5=clear ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4='Type: $EXPTYPE' obsinfo5=clear ;
 
 # Sound : file is in /gen2/conf/Sounds/
 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
@@ -74,16 +77,18 @@ EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads)
 { 
 # Note: Case sensitive!!
 if $EXPTYPE == "bias"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name=\\"$SEQ_NAME\\" comments=\\"$SEQ_COMMENT\\"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 #  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME comments="test exposure"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "dark"
   EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "arc"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR neon=$NE krypton=$KR duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "trace"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "object"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject expTime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+elif $EXPTYPE == "flat"
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat expTime=$EXPTIME duplicate=$NFRAME  cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
 endif
