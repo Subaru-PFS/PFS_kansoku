@@ -8,6 +8,7 @@
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
     SCRIPT_UPDATE=2022.06.14
+    SCRIOT_UPDATE=2022.10.26
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -19,7 +20,7 @@
 # NOP or other
   ADJ_Z="NOP"
 # if not specified the recent one will be used
-  VISIT_ID=0
+  #VISIT_ID=0
 #  COMBINED=1
 #  CENTROID=1
 #  OBJECT="object"
@@ -39,7 +40,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2
 EXEC TSC TelFocus MOTOR=ON COORD=TSC Z=$Z ;
 
 *SET EXPT_AG = INT($EXPTIME * 1000)
-EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG visit_id=$VISIT_ID" ;
+EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG " ;
 
 ### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. ---
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;

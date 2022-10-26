@@ -6,6 +6,7 @@
 :Header
     SCRIPT_AUTHOR=Takagi
     SCRIPT_UPDATE=2022.09.24
+    SCRIPT_UPDATE=2022.10.26
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -45,7 +46,7 @@
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object visit=0 exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
     EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
   *ENDFOR
