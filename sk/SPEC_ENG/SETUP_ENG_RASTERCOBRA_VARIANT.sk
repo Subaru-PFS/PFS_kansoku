@@ -47,17 +47,21 @@
 
     *IF "$ADD" == "NO"
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making variance files x $N_VARIANT" ,  
-        EXEC pfs pfscmd actor="iic" cmd="createVariants nVariants = $N_VARIANT" ;
+        EXEC pfs pfscmd actor="iic" cmd="createVariants nVariants=$N_VARIANT" ;
         Exec OBS SLEEP SLEEP_TIME=10 ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
+        Exec pfs pfscdm actor="iic" cmd='getGroupId groupName="$GROUP_NAME"'; 
+        Exec OBS SLEEP SLEEP_TIME=5 ;
+
     *ELSE # if ADD=yes or others
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making additional variance files x $N_VARIANT" ,  
-        EXEC pfs pfscmd actor="iic" cmd="createVariants addVariants = $N_VARIANT" ;
+        EXEC pfs pfscmd actor="iic" cmd='createVariants addVariants="$N_VARIANT"' ;
         Exec OBS SLEEP SLEEP_TIME=10 ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
+        Exec pfs pfscdm actor="iic" cmd='getGroupId groupName="$GROUP_NAME" @continue=true'; 
+        Exec OBS SLEEP SLEEP_TIME=5 ;
     *ENDIF
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
-    Exec pfs pfscdm actor="iic" cmd="getGroupId groupName =$GROUP_NAME @continue=true";
-    Exec OBS SLEEP SLEEP_TIME=5 ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Setup Raster Scan by Cobra: Done" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear;
 
@@ -67,5 +71,6 @@
 
 </Command>
 
+# find getGropuId in shell-ics
 
 

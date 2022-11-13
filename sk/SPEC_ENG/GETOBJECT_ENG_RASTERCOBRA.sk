@@ -1,7 +1,7 @@
 #**********************************************************************
-#
 # GETOBJECT_RASTERCOBRA.sk [Get object for Raster Scan by Cobra] 
-#  
+# ARGS: str DESIGN_ID, str GROPU_NAME, str? GROUP_ID, int N_START, int N_STOP, str WMODE
+# find getGropuId in shell-ics
 #**********************************************************************
 <Header>
         OBE_ID=PFS
@@ -17,7 +17,9 @@
 
     DESIGN_PATH="/data/pfsDesign"
 	DESIGN_ID=NOP
+
     GROUP_NAME="RSC_FIELD+DEG_SET"
+    GROUP_ID=NOP
 
     N_START=1
     N_STOP=9
@@ -52,10 +54,10 @@ asn ROTA=(!PFS.DESIGN.PA)
 # preparation for the ObsInfo
 asn INFO1="Raster Scan by Cobra"
 asn INFO2="ID : @PFSDESIGN_ID, Target : @OBJECT"
-asn INFO3="Group Name : $GROUP_NAME (Variant x $N_TOTAL, exp=$EXPTIME sec)"
+asn INFO3="GroupID: $GROUP_ID GroupName : $GROUP_NAME (Variant x $N_TOTAL, exp=$EXPTIME sec)"
 
 #Preparation for SPS exposure
-*SET EXPTIMLIM = INT( $EXPTIME + 60 )
+*SET EXPTIMLIM = INT($EXPTIME + 60)
 #Wiping SPS
 Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
@@ -72,19 +74,20 @@ MAIN_START:
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ELSE
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ENDIF
 } ;
+
 
 # Proc 5--8.
 *FOR $N_TOTAL COUNT IN 
     *SET N_VARIANT = INT($N_START + $COUNT-1);
     
-    {# subroutine of Raster:  from rotator stop to SpS exposure
+# subroutine of Raster:  from rotator stop to SpS exposure
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Variant No: $N_VARIANT/$N_END",
         
         # 5. rotator stop
@@ -110,7 +113,7 @@ MAIN_START:
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Cobra configuration: Done" ObsInfo5="Rotator: Resumed.";
         } ;
 
-        # 7. field aquision 
+        # 7. field acquisition 
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear, 
 
         # 7. Check the Finishing Field Acquisition
@@ -130,20 +133,19 @@ MAIN_START:
             *IF "$WMODE" == "YES"
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ELSE
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
         } ;
-    };
 *ENDFOR
 
 
 # Proc 9.  Move fiber to variance=0 position, and an SpS exposure at variance=0.
 *SET N_VARIANT = 0
-{# subroutine of Raster: from rotator stop to SpS exposure
+# subroutine of Raster: from rotator stop to SpS exposure
     # 1. rotator stop
     { 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Cobra configuration with rotator stop" , 
@@ -156,7 +158,7 @@ MAIN_START:
         Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
         Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Cobra configuration: Variant No = $N_VARIANT" ,
-        Exec PFS pfscmd Actor="iic" cmd='iic update cobras pfsDesignId="$DESIGN_ID" variants=$N_VARIANT';
+        Exec PFS pfscmd Actor="iic" cmd="iic update cobras designId=$DESIGN_ID variants=$N_VARIANT";
     } ;
 
     # 3. resume rotator
@@ -187,14 +189,13 @@ MAIN_START:
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME gropuId="$GROUP_ID" name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ENDIF
     } ;
-};
 
 :MAIN_END
 :END
