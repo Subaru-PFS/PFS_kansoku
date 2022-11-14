@@ -16,8 +16,11 @@
 
 <Default_Parameter>
     EQUINOX=!STATS.EQUINOX
+    DESIGN_PATH="/data/pfsDesign"
     DESIGN_ID=NOP
-    GROUP_NAME=NOP # this will be given as "RasterScanByCobra_FILEDNAME+/-DEG_SET[00]"
+
+    GROUP_NAME=NOP
+    # this will be given as "RasterScanByCobra_FILEDNAME+/-DEG_SET[00]"
     N_VARIANT=9
     ADD=NO
     *ADD=YES,NO
@@ -28,16 +31,15 @@
 :START
     ### SETUP ###
     #SET pfsDesignId0
-    DESIGN_PATH="/data/pfsDesign"
-	DESIGN_ID=NOP
 
+    # These 2 commands below can work only after declareCurrentPfsDesign... Koshida 
     asn OBJECT=(!PFS.DESIGN.NAME)
     asn PFSDESIGN_ID=(!PFS.DESIGN.ID)
 
     asn INFO2="ID : @PFSDESIGN_ID, Target : @OBJECT"
     asn INFO3="Group Name : $GROUP_NAME"
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Setup for Raster Scan by Cobra" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Setup for Raster Scan by Cobra" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear;
 
 :MAIN_START
 
@@ -53,7 +55,8 @@
         Exec pfs pfscdm actor="iic" cmd='getGroupId groupName="$GROUP_NAME"'; 
         Exec OBS SLEEP SLEEP_TIME=5 ;
 
-    *ELSE # if ADD=yes or others
+    *ELSE
+    # if ADD=yes or others
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making additional variance files x $N_VARIANT" ,  
         EXEC pfs pfscmd actor="iic" cmd='createVariants addVariants="$N_VARIANT"' ;
         Exec OBS SLEEP SLEEP_TIME=10 ;

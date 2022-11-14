@@ -16,7 +16,7 @@
     EQUINOX=!STATS.EQUINOX
 
     DESIGN_PATH="/data/pfsDesign"
-	DESIGN_ID=NOP
+    DESIGN_ID=NOP
 
     GROUP_NAME="RSC_FIELD+DEG_SET"
     GROUP_ID=NOP
@@ -36,7 +36,7 @@
 
 <Command>
 
-START:
+:START
 
 ### SETUP ###
 
@@ -63,7 +63,7 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
 
 
-MAIN_START:
+:MAIN_START
 # Proc 4. Take an SpS exposure (will be replace to a subroutine command) at the field center.
 { #subroutine of SpS exposure  
     # Warning about the fiber illuminator
@@ -85,16 +85,16 @@ MAIN_START:
 
 # Proc 5--8.
 *FOR $N_TOTAL COUNT IN 
-    *SET N_VARIANT = INT($N_START + $COUNT-1);
-    
+    *SET N_VARIANT = INT($N_START + $COUNT-1)
+
 # subroutine of Raster:  from rotator stop to SpS exposure
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Variant No: $N_VARIANT/$N_END",
-        
+
         # 5. rotator stop
-        { 
+        {
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Cobra configuration with rotator stop" , 
             EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Rotator: Stopped";  
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Rotator: Stopped";
         } ;
 
         # 6. iic update cobra
