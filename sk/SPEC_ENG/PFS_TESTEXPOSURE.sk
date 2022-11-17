@@ -61,12 +61,13 @@
   *SET SPSCOMMENT = "\"test_command\""
   *SET SPSNAME = "\"fromGen\""
   
-  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
-
+  #EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Bias): $NFRAME" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
   EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
   EXEC OBS TIMER DURATION=$TIMELIM ,
   #EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+ EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
   EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
   EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 *ENDIF

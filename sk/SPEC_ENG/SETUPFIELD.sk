@@ -42,6 +42,10 @@
         # non-sidereal tracking file
         FILE=NOP
 
+        # For FITS header
+        OBJECT=NOP
+        #RA=!STATS.RA
+        #DEC=!STATS.DEC
         EQUINOX=!STATS.EQUINOX
 
 :Command
@@ -81,10 +85,10 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
     Exec OBS SLEEP SLEEP_TIME=10 ;
 
-    asn OBJECT=!PFS.DESIGN.NAME
+    asn DSGN_FNAME=!PFS.DESIGN.NAME
     asn PFSDESIGN_ID=!PFS.DESIGN.ID
 
-    asn INFO2="ID : @PFSDESIGN_ID, Target : @OBJECT"
+    asn INFO2="ID : @PFSDESIGN_ID, Target : @DSGN_FNAME"
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=@INFO2 ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear , 
 
     # Sidereal tracking

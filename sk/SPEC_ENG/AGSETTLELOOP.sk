@@ -1,0 +1,52 @@
+#**********************************************************************
+#
+# AGSETTLELOOP
+#   Settle down the AG loop automatically
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2022.11.15
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+DRA=0.3
+DDEC=0.3
+DINR=20
+SUBMODE=COS
+</Default_Parameter>
+
+<Command>
+:start
+
+:main_start
+
+exec obs memory instrument_name=PFS CORRECTION_LOOP=ON ;
+
+while (!MEMORY.PFS.CORRECTION_LOOP == "ON") {
+
+    # wait for a new exposure, then error items are updated
+    exec obs check_status mode=OR timeout=0060 \
+        c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] \
+        c2=[MEMORY.PFS.CORRECTION_LOOP NE MEMORY.PFS.CORRECTION_LOOP] ;
+
+    #Check ERRORS
+    IF !PFS.AG.ERR.RA_ERR < $DRA AND !PFS.AG.ERR.DEC_ERR < $DDEC AND !PFS.AG.ERR.RA_ERR < $DINR
+        exec obs memory instrument_name=PFS CORRECTION_LOOP=OFF ;
+    ENDIF
+
+    IF !MEMORY.PFS.CORRECTION_LOOP == "ON"
+        # mode should be RADEC or AZEL
+        *SUB CORRECT_PFS obe_id=COMMON obe_mode=CMDTEST mode=RADEC submode=$SUBMODE;
+        # correct rotation
+        *SUB CORRECT_PFS obe_id=COMMON obe_mode=CMDTEST mode=ROTATION ;
+    ENDIF
+}
+
+:main_end
+
+:end
+
+</Command>

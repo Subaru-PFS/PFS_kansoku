@@ -23,7 +23,7 @@
   EXPTIME=1
   EXPTYPE=OBJECT
 ## Which camera to be used
-  CAMERA="b1,r1"
+  #CAMERA="b1,r1"
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
@@ -59,7 +59,7 @@
   *SET TIMELIM = 30 + 60 * $NFRAME
 *elif $EXPTYPE == "arc" or $EXPTYPE == "trace"
 # arc or trace: cal-lamps needs 100sec to warm up
-  *SET TIMELIM = 130 + ($EXPTIME + 60) * $NFRAME
+  *SET TIMELIM = 260 + ($EXPTIME + 60) * $NFRAME
 *else
 # others mode (i.e. dark or object): no additional overhead
   *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME

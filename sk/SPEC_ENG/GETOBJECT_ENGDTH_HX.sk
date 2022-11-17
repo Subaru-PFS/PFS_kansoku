@@ -18,7 +18,7 @@
     EQUINOX=!STATS.EQUINOX
     DITHWIDTH=5
     EXPTIME=60
-    DITH_PAT=[1 0 0 2 -1 0 3 -0.5 0.87 4 0.5 0.87 5 1 0 6 0.5 -0.87 7 -0.5 0.87 8 -1.5 -0.87 9 -2 0 10 -1.5 0.87 11 -1 1.73 12 0 1.73 13 1 1.73 14 1.5 0.87 15 2 0 16 1.5 -0.87 17 1 -1.73 18 0 -1.73 19 -1 -1.73]
+    DITH_PAT=[1 0 0 2 -1 0 3 -0.5 0.87 4 0.5 0.87 5 1 0 6 0.5 -0.87 7 -0.5 -0.87 8 -1.5 -0.87 9 -2 0 10 -1.5 0.87 11 -1 1.73 12 0 1.73 13 1 1.73 14 1.5 0.87 15 2 0 16 1.5 -0.87 17 1 -1.73 18 0 -1.73 19 -1 -1.73]
     START=1
     STOP=19
     AGEXP=NO
@@ -130,11 +130,11 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
         *ENDIF
         } ;
         #{
@@ -199,11 +199,11 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ,
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ENDIF
 } ;
 #{

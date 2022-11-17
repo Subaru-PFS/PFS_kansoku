@@ -1,7 +1,7 @@
 # 
 # PFS_2.yml -- Extra launchers
 #
-# E. Jeschke  2022.06.13
+# E. Jeschke  2022.11.14
 #
 # This is a YAML file
 
@@ -10,22 +10,35 @@ launchers:
 
     -
         label: "Start Correction Loop"
-        cmd  : CORRECTION_LOOP_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MOTOR=ON MODE=$VAL01
+        cmd  : CORRECTION_LOOP_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MOTOR=ON MODE=$VAL01 SUBMODE=$VAL02
         params:
             - [ VAL01, LIST, [RADEC, AZEL], "Mode" ]
+            - [ VAL02, LIST, [COS, NOCOS], "Submode" ]
 
     -
         label: "Stop Correction Loop"
         cmd  : CORRECTION_LOOP_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MOTOR=OFF
 
     -
+        label: "Settle LOOP"
+        cmd  : AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$VAL01 DDEC=$VAL02 DINR=$VAL03 SUBMODE=$VAL04
+        params:
+            - { name: VAL01, type: INPUT, width: 6, value: 0.3, label: "dRA" }
+            - { name: VAL02, type: INPUT, width: 6, value: 0.3, label: "dDEC" }
+            - { name: VAL03, type: INPUT, width: 6, value: 20, label: "dINR" }
+            - { name: VAL04, type: LIST, values: [COS,NOCOS], label: "Submode" }
+
+    - sep
+
+    -
         label: "Correct RA/DEC Once"
-        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC DELTA_RA=$VAL01 DELTA_DEC=$VAL02
+        cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=$VAL03 DELTA_RA=$VAL01 DELTA_DEC=$VAL02
         params:
             - { name: VAL01, type: INPUT, width: 20, value: "!PFS.AG.ERR.RA_ERR",
                 label: "dRA arcsec" }
             - { name: VAL02, type: INPUT, width: 20, value: "!PFS.AG.ERR.DEC_ERR",
                 label: "dDEC arcsec" }
+            - [ VAL03, LIST, [COS, NOCOS], "Submode" ]
 
     -
         label: "Correct AZ/EL Once"
