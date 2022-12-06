@@ -7,6 +7,7 @@
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
     SCRIPT_UPDATE=2022.09.20
+    SCRIPT_UPDATE=2022.10.26
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -38,7 +39,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGResume" obsinfo2=clear obsi
 EXEC TSC AG_TRACKING MOTOR=OFF ;
 
 *IF "$DESIGN_ID" != "NOP"
-    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH design_id=$DESIGN_ID visit_id=$VISIT_ID cadence=3000 from_sky=$FROM_SKY dry_run=$DRY_RUN' ;
+    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH design_id=$DESIGN_ID cadence=3000 from_sky=$FROM_SKY dry_run=$DRY_RUN' ;
 *ELSE
     EXEC pfs pfscmd actor="ag" cmd="autoguide restart" ;
 *ENDIF

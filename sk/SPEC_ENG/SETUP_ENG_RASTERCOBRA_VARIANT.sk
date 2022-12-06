@@ -1,0 +1,85 @@
+#**************************************************************************************************
+# SETUP_ENG_RASTER_COBRA_VARIANT.sk [Set up fiber variance for Raster Scan by Cobra] 
+#
+# OPE) SETUP_ENG_RASTER_COBRA_VARIANT DESING_ID="pfsDesign_file" GROUP_NAME="RSC_FIELD+DEG_SET" N_VARIANT=INT
+# N_ARGS = 3
+#****************************************************************************************************
+
+<Header>
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=SETUP_ENG_RASTERCOBRA_VARIANT.sk
+        Script_Version=0.1
+        Script_Author=Arai
+        Script_Update=2022.11.14
+</Header>
+
+<Default_Parameter>
+    EQUINOX=!STATS.EQUINOX
+    DESIGN_PATH="/data/pfsDesign"
+    DESIGN_ID=NOP
+
+    GROUP_NAME=NOP
+    # this will be given as "RasterScanByCobra_FILEDNAME+/-DEG_SET[00]"
+    N_VARIANT=9
+    SIGMA=1.0
+    ADD=NO
+    *ADD=YES,NO
+    CONTINUE=NO
+    *CONTINUE=YES,NO
+</Default_Parameter>
+
+
+<Command>
+:START
+    ### SETUP ###
+    #SET pfsDesignId0
+
+    asn OBJECT=!PFS.DESIGN.NAME
+    asn PFSDESIGN_ID=(!PFS.DESIGN.ID)
+
+    asn INFO2="ID : @PFSDESIGN_ID, Target : @OBJECT"
+    asn INFO3="Group Name : $GROUP_NAME"
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Setup for Raster Scan by Cobra" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear;
+
+:MAIN_START
+
+#    Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(1/3) Reading pfsDesign file", 
+#    EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
+#    Exec OBS SLEEP SLEEP_TIME=10 ;
+
+    *IF "$ADD" == "NO"
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making variance files x $N_VARIANT" ,  
+        EXEC pfs pfscmd actor="iic" cmd="createVariants nVariants=$N_VARIANT sigma=$SIGMA";
+        Exec OBS SLEEP SLEEP_TIME=10 ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
+        Exec pfs pfscmd actor="iic" cmd='getGroupId groupName="$GROUP_NAME"'; 
+        Exec OBS SLEEP SLEEP_TIME=5 ;
+
+    *ELSE
+    # if ADD=yes or others
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making additional variance files x $N_VARIANT" ,  
+        EXEC pfs pfscmd actor="iic" cmd="createVariants addVariants=$N_VARIANT sigma=$SIGMA" ;
+        Exec OBS SLEEP SLEEP_TIME=10 ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
+        *IF "$CONTINUE" == "YES"
+            Exec pfs pfscmd actor="iic" cmd='getGroupId groupName="$GROUP_NAME" continue'; 
+        *ELSE 
+            Exec pfs pfscmd actor="iic" cmd='getGroupId groupName="$GROUP_NAME"';
+        *ENDIF
+        Exec OBS SLEEP SLEEP_TIME=5 ;
+    *ENDIF
+
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Setup Raster Scan by Cobra: Done" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear;
+
+:MAIN_END
+
+:END
+
+</Command>
+
+# find getGropuId in shell-ics
+
+

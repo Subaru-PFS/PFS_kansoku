@@ -1,0 +1,226 @@
+#**********************************************************************
+# GETOBJECT_RASTERCOBRA.sk [Get object for Raster Scan by Cobra] 
+# ARGS: str DESIGN_ID, str GROPU_NAME, str? GROUP_ID, int N_START, int N_STOP, str WMODE
+# find getGropuId in shell-ics
+#**********************************************************************
+<Header>
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=GETOBJECT_ENG_RASTERCOBRA_Z.sk
+        Script_Version=0.1
+        Script_Author=Arai
+        Script_Update=2022.11.12
+</Header>
+
+<Default_Parameter>
+    EQUINOX=!STATS.EQUINOX
+
+    DESIGN_PATH="/data/pfsDesign"
+    DESIGN_ID=NOP
+
+    GROUP_NAME="RSC_FIELD+DEG_SET"
+    GROUP_ID=NOP
+
+    N_START=1
+    N_END=9
+
+    EXPTIME=60
+    WMODE=YES
+    *WMODE=YES,NO
+
+    Z_AG=2.82
+    Z_PFI=3.22   
+ 
+    DRA=0.1
+    DDEC=0.1
+    DINR=2
+    SUBMODE="NOCOS"
+
+#    AGEXP=NO
+#    *AGEXP=YES,NO
+#    CORRECT=YES
+</Default_Parameter>
+
+
+<Command>
+
+:START
+
+### SETUP ###
+
+#Clear the ObsInfo
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=Clear ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ;
+
+# calc. raster variant number
+*SET N_TOTAL = INT($N_END - $N_START + 1) # if N_START=10, N_END=18, then N_TOTAL = 9.
+
+# get infor from pfsDesign
+asn OBJECT=!PFS.DESIGN.NAME
+asn PFSDESIGN_ID=!PFS.DESIGN.ID
+asn ROTA=(!PFS.DESIGN.PA) 
+
+# preparation for the ObsInfo
+asn INFO1="Raster Scan by Cobra"
+asn INFO3="$GROUP_NAME"
+#asn INFO3="GroupID: $GROUP_ID GroupName : $GROUP_NAME (Variant x $N_TOTAL, exp=$EXPTIME sec)"
+
+#Preparation for SPS exposure
+*SET EXPTIMLIM = INT($EXPTIME + 60)
+#Wiping SPS
+Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
+
+
+
+:MAIN_START
+# Proc 4. Take an SpS exposure (will be replace to a subroutine command) at the field center.
+{ #subroutine of SpS exposure  
+    # Warning about the fiber illuminator
+    Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ;
+    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = 0" ;
+    *IF "$WMODE" == "YES"
+        EXEC OBS TIMER DURATION=($EXPTIME) ;
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+    *ELSE
+        EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+    *ENDIF
+} ;
+
+
+# Proc 5--8.
+*FOR $N_TOTAL COUNT IN 
+    *SET N_VARIANT = INT($N_START + $COUNT-1)
+
+# subroutine of Raster:  from rotator stop to SpS exposure
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2=Clear ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No: $N_VARIANT/$N_END",
+
+        # 5. rotator stop
+        {
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Cobra configuration with rotator stop" , 
+            EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Rotator: Stopped";
+        } ;
+
+        # 6. iic update cobra
+        { 
+            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+            Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+
+	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration" ObsInfo3=@INFO3 ObsInfo4="Variant No = $N_VARIANT" ,
+ 	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID" variant=$N_VARIANT';
+	    Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
+            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+	    Exec OBS Confirmation Instrument_Name=PFS Title="Is Fiber moving completed ?" Dialog=[OK] ;
+        } ;
+
+        # 7. resume rotator
+        {    # Resume Rotator
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Resuming Rotator: Waiting for Rotator to Settle" , 
+            Exec TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+            Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Cobra configuration: Done" ObsInfo5="Rotator: Resumed.";
+        } ;
+
+        # 7. field acquisition 
+            Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear,
+            Exec OBS SLEEP SLEEP_TIME=5;             
+
+        # 7. Check the Finishing Field Acquisition
+        {
+            *SUB AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$DRA DDEC=$DDEC DINR=$DINR SUBMODE=$SUBMODE;            
+            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+            Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? " Dialog=[OK];
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field  Acquisition: Done" ObsInfo5=Clear,
+        } ;
+
+        # 7. sps exposure (will be replace to a subroutine command)
+        {
+            # Warning about the fiber illuminator
+            Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ; 
+            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+            Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+            
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT" ;
+            *IF "$WMODE" == "YES"
+                EXEC OBS TIMER DURATION=($EXPTIME) ;
+                EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            *ELSE
+                EXEC OBS TIMER DURATION=($EXPTIME) ;
+                EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+        } ;
+*ENDFOR
+	
+
+# Proc 9.  Move fiber to variance=0 position, and an SpS exposure at variance=0.
+*SET N_VARIANT = 0
+# subroutine of Raster: from rotator stop to SpS exposure
+    # 1. rotator stop
+    { 
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration with rotator stop" ObsInfo3=@INFO3, 
+        EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Rotator: Stopped";  
+    } ;
+
+    # 2. iic update cobra
+    {
+        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration:" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT",
+	Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID"';
+	Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
+        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+	Exec OBS Confirmation Instrument_Name=PFS Title="Is Fiber moving completed?" Dialog=[OK] ;
+    } ;
+
+    # 3. resume rotator
+    {    # Resume Rotator
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Resuming Rotator: Waiting for Rotator to Settle" , 
+        Exec TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+        Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration: Done" ObsInfo3=@INFO3 ObsInfo4="Rotator: Resumed" ObsInfo5="Variant No = $N_VARIANT";
+    } ;
+
+    # 4. field aquision 
+        Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Field Acquisition" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear, 
+
+    # 5. Check the Finishing Field Acquisition
+    {
+        *SUB AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$DRA DDEC=$DDEC DINR=$DINR SUBMODE=$SUBMODE;
+        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? " Dialog=[OK];
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Field  Acquisition: Done" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear,
+    } ;
+
+    # 6. sps exposure (will be replace to a subroutine command)
+    {
+        # Warning about the fiber illuminator
+        Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ;
+        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT (Field Center)";
+        
+        *IF "$WMODE" == "YES"
+            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        *ELSE
+            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        *ENDIF
+    } ;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Raster Scan by Cobra: Done";
+
+:MAIN_END
+:END
+</Command>
