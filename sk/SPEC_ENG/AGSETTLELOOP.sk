@@ -21,6 +21,8 @@ SUBMODE=COS
 <Command>
 :start
 
+from "math" import fabs
+
 :main_start
 
 exec obs memory instrument_name=PFS CORRECTION_LOOP=ON ;
@@ -33,7 +35,7 @@ while (!MEMORY.PFS.CORRECTION_LOOP == "ON") {
         c2=[MEMORY.PFS.CORRECTION_LOOP NE MEMORY.PFS.CORRECTION_LOOP] ;
 
     #Check ERRORS
-    IF !PFS.AG.ERR.RA_ERR < $DRA AND !PFS.AG.ERR.DEC_ERR < $DDEC AND !PFS.AG.ERR.RA_ERR < $DINR
+    IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
         exec obs memory instrument_name=PFS CORRECTION_LOOP=OFF ;
     ENDIF
 

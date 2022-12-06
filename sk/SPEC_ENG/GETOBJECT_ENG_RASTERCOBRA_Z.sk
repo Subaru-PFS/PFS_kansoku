@@ -59,6 +59,9 @@ asn INFO1="Raster Scan by Cobra"
 asn INFO3="$GROUP_NAME"
 #asn INFO3="GroupID: $GROUP_ID GroupName : $GROUP_NAME (Variant x $N_TOTAL, exp=$EXPTIME sec)"
 
+#Clear the ObsInfoi
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ;
+
 #Preparation for SPS exposure
 *SET EXPTIMLIM = INT($EXPTIME + 60)
 #Wiping SPS
@@ -104,31 +107,33 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         # 6. iic update cobra
         { 
             Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-            Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+            Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminators on?" Dialog=[OK] ;
 
 	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration" ObsInfo3=@INFO3 ObsInfo4="Variant No = $N_VARIANT" ,
  	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID" variant=$N_VARIANT';
 	    Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
-            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-	    Exec OBS Confirmation Instrument_Name=PFS Title="Is Fiber moving completed ?" Dialog=[OK] ;
-        } ;
+            
+     } ;
 
         # 7. resume rotator
         {    # Resume Rotator
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Resuming Rotator: Waiting for Rotator to Settle" , 
             Exec TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+            Exec OBS SLEEP SLEEP_TIME=3 ;
             Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+            #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+            #Exec OBS Confirmation Instrument_Name=PFS Title="Is Cobra Configuration Completed?" Dialog=[OK] ;
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Cobra configuration: Done" ObsInfo5="Rotator: Resumed.";
         } ;
-
+	
         # 7. field acquisition 
-            Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
+        {   # Set focus and wait for stopping rotator
+	    Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ,
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear, 
-
-        # 7. Check the Finishing Field Acquisition
-        {
+            Exec OBS SLEEP SLEEP_TIME=15 ;
+            # pop-up
             Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-            Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? " Dialog=[OK];
+            Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? (use Settle LOOP)" Dialog=[OK];
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field  Acquisition: Done" ObsInfo5=Clear,
         } ;
 
@@ -145,7 +150,7 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
                 EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ELSE
-                EXEC OBS TIMER DURATION=($EXPTIME) ;
+                EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
                 EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
@@ -167,31 +172,34 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     {
         Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
         Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration:" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT",
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra Configuration:" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT",
 	Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID"';
 	Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
-        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-	Exec OBS Confirmation Instrument_Name=PFS Title="Is Fiber moving completed?" Dialog=[OK] ;
     } ;
 
     # 3. resume rotator
     {    # Resume Rotator
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo5="Resuming Rotator: Waiting for Rotator to Settle" , 
         Exec TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+        Exec OBS SLEEP SLEEP_TIME=3 ;
         Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration: Done" ObsInfo3=@INFO3 ObsInfo4="Rotator: Resumed" ObsInfo5="Variant No = $N_VARIANT";
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+	#Exec OBS Confirmation Instrument_Name=PFS Title="Is Cobra Configuraion Completed?" Dialog=[OK] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration: Done" ObsInfo3=@INFO3 ObsInfo4="Rotator: Resumed" ObsInfo5="Variant No = $N_VARIANT (return to field center)";
     } ;
 
-    # 4. field aquision 
-        Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Field Acquisition" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear, 
 
-    # 5. Check the Finishing Field Acquisition
-    {
+    # 7. field acquisition 
+    {   # Set focus and wait for stopping rotator
+	Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear, 
+        Exec OBS SLEEP SLEEP_TIME=15 ;
+        # pop-up
         Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-        Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? " Dialog=[OK];
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Field  Acquisition: Done" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear,
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? (use Settle LOOP)" Dialog=[OK];
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field  Acquisition: Done" ObsInfo5=Clear,
     } ;
+
 
     # 6. sps exposure (will be replace to a subroutine command)
     {
@@ -206,7 +214,7 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
             EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ELSE
-            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
             EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ENDIF

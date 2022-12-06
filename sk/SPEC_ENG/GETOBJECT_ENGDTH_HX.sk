@@ -63,6 +63,11 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
 # Dithering Loop
 
+*SET DRA_PRE=0
+*SET DDEC_PRE=0
+*SET DRA_INFO=0
+*SET DDEC_INFO=0
+
 *FOR 19 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
     *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
@@ -130,13 +135,26 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
+            *IF $OFFSET == ABS
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ELIF $OFFSET == REL
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+        
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
+            *IF $OFFSET == ABS
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ELIF $OFFSET == REL
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+            
         *ENDIF
         } ;
+    
         #{
         #*IF "$AGEXP" == "YES"
         #    *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1

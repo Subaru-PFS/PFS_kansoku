@@ -159,6 +159,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Waiting for Rotator to Settle" , 
         EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+        Exec OBS SLEEP SLEEP_TIME=3 ;
         Exec OBS Check_Status Mode=AND Timeout=0120 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,

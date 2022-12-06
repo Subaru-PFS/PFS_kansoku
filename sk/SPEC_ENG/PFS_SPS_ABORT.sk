@@ -23,7 +23,7 @@
 :main_start
 
 if $SAVE == "TRUE"
-   EXEC PFS PFSCMD ACTOR="iic" cmd="sps finishExposure" ;
+   EXEC PFS PFSCMD ACTOR="iic" cmd="sps finishExposure now" ;
 else
    EXEC PFS PFSCMD ACTOR="iic" cmd="sps abortExposure" ;
 endif
