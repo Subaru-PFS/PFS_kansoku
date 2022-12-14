@@ -30,14 +30,23 @@ exec obs memory instrument_name=PFS CORRECTION_LOOP=ON ;
 while (!MEMORY.PFS.CORRECTION_LOOP == "ON") {
 
     # wait for a new exposure, then error items are updated
-    exec obs check_status mode=OR timeout=0060 \
-        c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] \
-        c2=[MEMORY.PFS.CORRECTION_LOOP NE MEMORY.PFS.CORRECTION_LOOP] ;
+    exec obs check_status mode=OR timeout=0060 c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] ;
 
-    #Check ERRORS
+    #Check errors
     IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
-        exec obs memory instrument_name=PFS CORRECTION_LOOP=OFF ;
+        
+        #Check errors again
+        # wait for a new exposure, then error items are updated
+        exec obs check_status mode=OR timeout=0060 c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] ;
+
+        IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+            exec obs memory instrument_name=PFS CORRECTION_LOOP=OFF ;
+        ENDIF
+
     ENDIF
+
+    # Put a wait to make sure that the gen2 status is updated correctly... (no need?)
+    Exec OBS SLEEP SLEEP_TIME=1;
 
     IF !MEMORY.PFS.CORRECTION_LOOP == "ON"
         # mode should be RADEC or AZEL
