@@ -33,6 +33,9 @@
 	AG=OFF
         # cobra convergence flag (default:YES or NO)
         COBRA=YES
+        *COBRA=YES,NO
+        DRY_RUN=YES
+        *DRY_RUN=YES,NO
 
         # Common parameters
         ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
@@ -43,10 +46,15 @@
         FILE=NOP
 
         # For FITS header
-        OBJECT=NOP
+        #OBJECT=NOP
         #RA=!STATS.RA
         #DEC=!STATS.DEC
         EQUINOX=!STATS.EQUINOX
+
+        # Parameters which can stay default
+        
+        AGEXPT=2
+        AGINT=10
 
 :Command
 :Start
@@ -68,8 +76,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     *SET TIMELIM = 60
 
-    #EXEC TSC AG_TRACKING MOTOR=OFF ;
-    #EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+    IF "$DRY_RUN" == "no"
+        EXEC TSC AG_TRACKING MOTOR=OFF ;
+        EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
+    ENDIF
+    #EXEC PFS PFSCMD ACTOR="AG" CMD="autoguide stop" TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
 
 
     # SpS grating setting: No operation in 2022.05 run
@@ -82,7 +94,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     # Get pfsDesign RA and Dec. The command below is TBC
     #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_ID" ;
-    EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
+    EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" TIMELIM=$TIMELIM ;
     Exec OBS SLEEP SLEEP_TIME=10 ;
 
     asn DSGN_FNAME=!PFS.DESIGN.NAME
@@ -174,7 +186,10 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
     # below is commented out for 2022 June run
-    #EXEC TSC AG_TRACKING MOTOR=ON ;
+    IF "$DRY_RUN" == "no"
+        EXEC TSC AG_TRACKING MOTOR=ON ;
+        EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
+    ENDIF
 
     # The command below is TBC
     EXEC pfs pfscmd actor="iic" cmd='acquireField' ;
@@ -183,19 +198,20 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     *IF "$AG"=="ON"
     # when AG should be started in SetupField
 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide: Start" , 
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="AutoGuideReady: on" , 
         # The command below is TBC?
-        #EXEC pfs pfscmd actor="iic" cmd='agStartGuiding' ;
-        EXEC pfs pfscmd actor="iic" cmd='autoguideStart' ;
+        #EXEC TSC AG_TRACKING MOTOR=ON ;
+        #EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$AGEXPT cadence=$AGINT ' ;
 
     *ELSE   
 
-        EXEC TSC AG_TRACKING MOTOR=OFF ;
+        IF "$DRY_RUN" == "no"
+            EXEC TSC AG_TRACKING MOTOR=OFF ;
+        ENDIF
         #EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
         EXEC pfs pfscmd actor="iic" cmd='autoguideStop' ;
 
     *ENDIF
-
 
 :Main_End
 
