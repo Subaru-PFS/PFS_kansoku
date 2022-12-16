@@ -10,6 +10,9 @@
         Script_Version=0.1
         Script_Author=Arai
         Script_Update=2022.11.12
+        Script_Update=2022.12.14 
+            #1. In moveToPfsDesign, add groupId="GROUP_ID" name="$GROUP_NAME" options
+            #2. In Line 60--63, add a process to get GroupID from Gen2's PFS status if not given. The status will be created in December run.
 </Header>
 
 <Default_Parameter>
@@ -49,10 +52,15 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=Clear ObsInfo2=Clear ObsInfo3=
 # calc. raster variant number
 *SET N_TOTAL = INT($N_END - $N_START + 1) # if N_START=10, N_END=18, then N_TOTAL = 9.
 
-# get infor from pfsDesign
+# get info from pfsDesign
 asn OBJECT=!PFS.DESIGN.NAME
 asn PFSDESIGN_ID=!PFS.DESIGN.ID
 asn ROTA=(!PFS.DESIGN.PA) 
+
+# get groupID from gen2 pfs status
+*IF "$GROUP_ID" == "NOP"
+    asn GROUP_ID=!PFS.GROUP.ID    # !!!! need to check the status name !!!!
+*ENDIF
 
 # preparation for the ObsInfo
 asn INFO1="Raster Scan by Cobra"
@@ -111,7 +119,7 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
 	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration" ObsInfo3=@INFO3 ObsInfo4="Variant No = $N_VARIANT" ,
  	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID" variant=$N_VARIANT';
-	    Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
+	    Exec PFS pfscmd Actor="iic" cmd='moveToPfsDesign noHome nIteration=4 tolerance=0.030 groupId="GROUP_ID" name="$GROUP_NAME" ' TIMELIM=450;
             
      } ;
 
@@ -173,8 +181,8 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
         Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra Configuration:" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT",
-	Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID"';
-	Exec PFS pfscmd Actor="iic" cmd="moveToPfsDesign noHome nIteration=4 tolerance=0.030" TIMELIM=450;
+	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID"';
+	    Exec PFS pfscmd Actor="iic" cmd='moveToPfsDesign noHome nIteration=4 tolerance=0.030 groupId="GROUP_ID" name="$GROUP_NAME" ' TIMELIM=450;
     } ;
 
     # 3. resume rotator
