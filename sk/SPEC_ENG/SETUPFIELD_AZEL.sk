@@ -43,7 +43,7 @@
 
 *SET TIMELIM = 5
 
-#EXEC TSC AG_TRACKING MOTOR=OFF ;
+EXEC TSC AG_TRACKING MOTOR=OFF CALC_REGION=PFS ;
 EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
 
 
@@ -69,7 +69,13 @@ EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
 #        Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
         Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
-#
+
+# Moon distance calculation
+
+        Exec OBS Calc_Moon EQUINOX=2000.0 ;
+
+
+
 :MAIN_END
 :END
 </Command>

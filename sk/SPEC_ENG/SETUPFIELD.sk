@@ -77,7 +77,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     *SET TIMELIM = 60
 
     IF "$DRY_RUN" == "no"
-        EXEC TSC AG_TRACKING MOTOR=OFF ;
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
         EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
     ENDIF
     #EXEC PFS PFSCMD ACTOR="AG" CMD="autoguide stop" TIMELIM=$TIMELIM ;
@@ -145,6 +145,9 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Done" ;  
 
+    # Moon distance calculation 
+    Exec OBS Calc_Moon EQUINOX=2000.0 ;
+
     #
     # PFS settings
     #
@@ -177,7 +180,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
 
     *ELSE
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="skipped Cobra convergence" ,         
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra convergence skipped" ,         
 
     *ENDIF
 
@@ -185,28 +188,28 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
-    # below is commented out for 2022 June run
-    IF "$DRY_RUN" == "no"
-        EXEC TSC AG_TRACKING MOTOR=ON ;
-        EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
-    ENDIF
-
     # The command below is TBC
     EXEC pfs pfscmd actor="iic" cmd='acquireField' ;
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." , 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ,
+
+    # below is commented out for 2022 June run
+    IF "$DRY_RUN" == "no"
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+        EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
+    ENDIF
 
     *IF "$AG"=="ON"
     # when AG should be started in SetupField
 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="AutoGuideReady: on" , 
         # The command below is TBC?
-        #EXEC TSC AG_TRACKING MOTOR=ON ;
+        #EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
         #EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$AGEXPT cadence=$AGINT ' ;
 
     *ELSE   
 
         IF "$DRY_RUN" == "no"
-            EXEC TSC AG_TRACKING MOTOR=OFF ;
+            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
         ENDIF
         #EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
         EXEC pfs pfscmd actor="iic" cmd='autoguideStop' ;
