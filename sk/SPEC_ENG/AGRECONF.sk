@@ -8,6 +8,7 @@
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
     SCRIPT_UPDATE=2021.11.10
     SCRIPT_UPDATE=2022.06.14
+    SCRIPT_UPDATE=2023.02.16
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -15,11 +16,11 @@
 
     EXPTIME=NOP
     INTERVAL=NOP
+    DRY_RUN=NOP
 
 :Command
 
 :start
-
 
 :main_start
 
@@ -28,33 +29,52 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *IF "$EXPTIME" != "NOP"
 
     *Set EXPT_AG = INT($EXPTIME * 1000) 
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="ExpTime: $EXPTIME" ;
+    *Set INFO_EXPT = "ExpTime: $EXPTIME, " 
+    *Set COM_EXPT = " exposure_time=$EXPT_AG" 
+
+*ELSE
+
+    *Set INFO_EXPT = "" 
+    *Set COM_EXPT = ""
 
 *ENDIF
 
 *IF "$INTERVAL" != "NOP" 
 
     *Set INT_AG = INT($INTERVAL * 1000)
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo5="Int.: $INTERVAL" ;
-
-*ENDIF
-
-#exec pfs pfscmd actor="ag" cmd="autoguide start"
-*IF "$EXPTIME" != "NOP"
-
-    *IF "$INTERVAL" != "NOP"
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG cadence=$INT_AG" ;
-    *ELSE
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure exposure_time=$EXPT_AG" ;
-    *ENDIF
+    *Set INFO_INT = "Int.: $INTERVAL, " 
+    *Set COM_INT = " cadence=$INT_AG"
 
 *ELSE
 
-    *IF "$INTERVAL" != "NOP"
-        exec pfs pfscmd actor="ag" cmd="autoguide reconfigure cadence=$INT_AG" ;
-    *ELSE
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Neither ExpT nor Int specified. " ;
-    *ENDIF
+    *Set INFO_INT = ""
+    *Set COM_INT = "" 
+
+*ENDIF
+
+*IF "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
+
+    *Set INFO_DRY_RUN = "DRY_RUN: $DRY_RUN"
+    *Set COM_DRY_RUN = " dry_run=$DRY_RUN"
+
+*ELSE
+
+    *Set INFO_DRY_RUN = ""
+    *Set COM_DRY_RUN = ""
+
+*ENDIF
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo4="$INFO_EXPT$INFO_INT$INFO_DRY_RUN" ;
+
+# exec pfs pfscmd actor="ag" cmd="autoguide start"
+
+*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
+
+    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure $COM_EXPT$COM_INT$COM_DRY_RUN" TIMELIM=60 ;
+
+*ELSE
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No parameter specified. " ;
 
 *ENDIF
 

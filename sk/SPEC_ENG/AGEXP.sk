@@ -10,7 +10,7 @@
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
-    SCRIPT_UPDATE=2022.09.24
+    SCRIPT_UPDATE=2023.02.15
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -28,6 +28,7 @@
   #CENTROID=0
   #Comment out "CMETHOD" since only sep is used.  
   #CMETHOD="sep"
+  FIT_DSCALE=NOP
 </Default_Parameter>
 
 <Command>
@@ -48,7 +49,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" ;
+    *IF $FIT_DSCALE=="NOP"
+        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" TIMELIM=$TIMELIM ;
+    *ELIF $FIT_DSCALE=="YES" OR $FIT_DSCALE=="NO" 
+        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF fit_dscale=$FIT_DSCALE" TIMELIM=$TIMELIM ;
+    *ENDIF
     # EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
     EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 5) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;

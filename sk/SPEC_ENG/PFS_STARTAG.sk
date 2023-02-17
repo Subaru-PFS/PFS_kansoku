@@ -9,6 +9,7 @@
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Takagi
     SCRIPT_UPDATE=2021.05.01
     SCRIPT_UPDATE=2022.06.14
+    SCRIPT_UPDATE=2023.02.15
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -29,6 +30,7 @@
   LIMMAG=20
   FROM_SKY="no"
   DRY_RUN="yes"
+  FIT_DSCALE=NOP
 </Default_Parameter>
 
 
@@ -46,14 +48,14 @@
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Auto Guiding: " obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
-## Stop running AG process if any
-#EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
-#
-##EXEC pfs pfscmd actor="ag" cmd="autoguide stop" TIMELIM=30 ;
-#EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=30;
-#
+# Stop running AG process if any
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
+
+#EXEC pfs pfscmd actor="ag" cmd="autoguide stop" TIMELIM=30 ;
+EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=30;
+
 #IF "$DRY_RUN" == "no"
-#    EXEC TSC AG_TRACKING MOTOR=OFF ;
+#    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
 #    # Check the guideready flag is off
 #    EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ; 
 #ENDIF
@@ -96,15 +98,32 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo4=INFO4 ;
 ## pfsDesign mode
 IF "$DESIGN_ID" != "NOP"
 
-    #EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" dry_run=$DRY_RUN' TIMELIM=600;
-    EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG" TIMELIM=600 ;
+    IF "$FIT_DSCALE" == "NOP"
+
+        #EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" dry_run=$DRY_RUN' TIMELIM=600;
+        EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG" TIMELIM=600 ;
+
+    ELIF "$FIT_DSCALE" == "no" OR "$FIT_DSCALE" == "yes"
+
+        EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG fit_dScale=$FIT_DSCALE" TIMELIM=600 ;
+
+    ENDIF
 
 ELSE
 
 # On the fly mode
 
-#    EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="yes"' ;
-    EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN' TIMELIM=600;
+    IF "$FIT_DSCALE" == "NOP"
+
+#        EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="yes"' ;
+        EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN' TIMELIM=600;
+
+    ELIF "$FIT_DSCALE" == "no" OR "$FIT_DSCALE" == "yes"
+
+        Exec pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN fit_dscale=$FIT_DSCALE' TIMELIM=600;
+
+    ENDIF
+
 
 ENDIF
 
@@ -112,7 +131,7 @@ ENDIF
 #
 #IF "$DRY_RUN" == "no"
 #    #Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
-#    EXEC TSC AG_TRACKING MOTOR=ON ;
+#    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
 #ENDIF
 
 #EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
