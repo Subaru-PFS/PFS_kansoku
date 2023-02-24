@@ -29,10 +29,13 @@
   #Comment out "CMETHOD" since only sep is used.  
   #CMETHOD="sep"
   FIT_DSCALE=NOP
+  *FIT_DSCALE=yes,no
 </Default_Parameter>
 
 <Command>
 :start
+
+from "pfsmisc" import lower
 
 # AGCC USES SECONDS!!! (NOT milliseconds)
 *SET EXPTIME_MS=INT($EXPTIME * 1000) 
@@ -44,15 +47,17 @@
 *SET INFO2="$NFRAME x $EXPTIME sec"
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
+asn fit_dscale=@lower("$FIT_DSCALE")
+
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame" 
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    *IF $FIT_DSCALE=="NOP"
+    *IF @fit_dscale=="nop"
         Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" TIMELIM=$TIMELIM ;
-    *ELIF $FIT_DSCALE=="YES" OR $FIT_DSCALE=="NO" 
-        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF fit_dscale=$FIT_DSCALE" TIMELIM=$TIMELIM ;
+    *ELIF @fit_dscale=="yes" OR @fit_dscale=="no" 
+        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF fit_dscale=@fit_dscale" TIMELIM=$TIMELIM ;
     *ENDIF
     # EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
     EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 5) ; 
