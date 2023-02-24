@@ -1,6 +1,6 @@
 import math
 
-## sybbolic link from $OBSHOME/COMMON/pfsmisc.py to this file
+## symbolic link from $OBSHOME/COMMON/task/pfsmisc.py to this file
 def adc_pos(el,cnf):
 
     e={"WAVE1":[-0.0351, 11.7567, -0.8698,  0.7315, -0.1987],
@@ -28,4 +28,10 @@ def adc_pos(el,cnf):
 
     #return pos
     return pos2
+
+## lower case of characters
+
+def lower(s) :
+
+    return s.lower()
 
