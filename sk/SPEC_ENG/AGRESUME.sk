@@ -35,12 +35,12 @@
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGResume" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
 # prepare telescope for autoguiding
-#EXEC TSC AG_TRACKING MOTOR=ON ;
+#EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
 #Set AG_TRACKING OFF for June 2022 run
-#EXEC TSC AG_TRACKING MOTOR=OFF ;
+#EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
 
 IF "$DRY_RUN" == "no"
-    EXEC TSC AG_TRACKING MOTOR=ON ;
+    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
     EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
 ENDIF
 
