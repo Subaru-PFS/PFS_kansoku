@@ -57,6 +57,12 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
     *Set INFO_DRY_RUN = "DRY_RUN: $DRY_RUN"
     *Set COM_DRY_RUN = " dry_run=$DRY_RUN"
 
+    IF "$DRY_RUN" == "yes"
+
+        Exec TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+
+    ENDIF
+
 *ELSE
 
     *Set INFO_DRY_RUN = ""
@@ -71,6 +77,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo4="$INFO_EXPT$INFO_INT$INFO_DRY_
 *IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
 
     exec pfs pfscmd actor="ag" cmd="autoguide reconfigure $COM_EXPT$COM_INT$COM_DRY_RUN" TIMELIM=60 ;
+
+    IF "$DRY_RUN" == "no"
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+    ENDIF
 
 *ELSE
 
