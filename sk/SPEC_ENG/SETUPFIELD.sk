@@ -33,7 +33,11 @@
 	AG=OFF
         # cobra convergence flag (default:YES or NO)
         COBRA=YES
-
+        *COBRA=YES,NO
+        DRY_RUN=YES
+        *DRY_RUN=YES,NO
+        FIT_DSCALE=NOP
+        *FIT_DSCALE=NOP,YES,NO
         # Common parameters
         ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
         OFFSET_RA=0
@@ -43,14 +47,20 @@
         FILE=NOP
 
         # For FITS header
-        OBJECT=NOP
+        #OBJECT=NOP
         #RA=!STATS.RA
         #DEC=!STATS.DEC
         EQUINOX=!STATS.EQUINOX
 
+        # Parameters which can stay default
+        
+        AGEXPT=2
+        AGINT=10
+
 :Command
 :Start
 
+from "pfsmisc" import lower
 
 :Main_Start
 
@@ -68,8 +78,10 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     *SET TIMELIM = 60
 
-    #EXEC TSC AG_TRACKING MOTOR=OFF ;
-    #EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
+    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+    EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
+    #EXEC PFS PFSCMD ACTOR="AG" CMD="autoguide stop" TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
 
 
     # SpS grating setting: No operation in 2022.05 run
@@ -82,7 +94,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     # Get pfsDesign RA and Dec. The command below is TBC
     #EXEC pfs pfscmd actor="iic" cmd="finalize $DESIGN_ID" ;
-    EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" ;
+    EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" TIMELIM=$TIMELIM ;
     Exec OBS SLEEP SLEEP_TIME=10 ;
 
     asn DSGN_FNAME=!PFS.DESIGN.NAME
@@ -133,6 +145,9 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Done" ;  
 
+    # Moon distance calculation 
+    Exec OBS Calc_Moon EQUINOX=2000.0 ;
+
     #
     # PFS settings
     #
@@ -165,37 +180,71 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
 
     *ELSE
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="skipped Cobra convergence" ,         
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra convergence skipped" ,         
 
     *ENDIF
 
-    # Acquire Field
+    # Acquire Field and AG
+
+    asn fit_dscale=@lower("$FIT_DSCALE")
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
-    # below is commented out for 2022 June run
-    #EXEC TSC AG_TRACKING MOTOR=ON ;
+    IF "$AG"=="ON"
+    # when AG loop is supporsed to be started in SetupField command
 
-    # The command below is TBC
-    EXEC pfs pfscmd actor="iic" cmd='acquireField' ;
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." , 
+        IF "$DRY_RUN" == "YES"
 
-    *IF "$AG"=="ON"
-    # when AG should be started in SetupField
+            IF @fit_dscale != "nop"
+                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun fit_dScale=@fit_dscale' TIMELIM=180;
+            ELSE
+                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun' TIMELIM=180;
+            ENDIF
 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide: Start" , 
-        # The command below is TBC?
-        #EXEC pfs pfscmd actor="iic" cmd='agStartGuiding' ;
-        EXEC pfs pfscmd actor="iic" cmd='autoguideStart' ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
-    *ELSE   
+        ELSE 
 
-        EXEC TSC AG_TRACKING MOTOR=OFF ;
-        #EXEC PFS PFSCMD ACTOR="AG" CMD="autguide stop" TIMELIM=$TIMELIM ;
-        EXEC pfs pfscmd actor="iic" cmd='autoguideStop' ;
+            IF @fit_dscale != "nop"
+                EXEC pfs pfscmd actor="iic" cmd='acquireField fit_dScale=@fit_dscale' TIMELIM=180;
+            ELSE
+                EXEC pfs pfscmd actor="iic" cmd='acquireField' TIMELIM=180;
+            ENDIF
 
-    *ENDIF
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
+            # Make AG loop settle
+            Exec OBS Confirmation Instrument_Name=PFS Title="Please stabilize AG loop with launcher commands. Is that completed?" Dialog=[OK] ;
+
+            # Start Telescope AG
+            Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+
+        ENDIF
+
+    ELSE   
+
+        IF "$DRY_RUN" == "YES"
+
+            IF @fit_dscale != "nop"
+                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun guideOff fit_dScale=@fit_dscale' TIMELIM=180;
+            ELSE
+                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun guideOff' TIMELIM=180;
+            ENDIF
+
+        ELSE
+
+            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+            IF @fit_dscale != "nop"
+                EXEC pfs pfscmd actor="iic" cmd='acquireField guideOff fit_dScale=@fit_dscale' TIMELIM=180;
+            ELSE
+                EXEC pfs pfscmd actor="iic" cmd='acquireField guideOff' TIMELIM=180;
+            ENDIF
+            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+
+        ENDIF
+
+    ENDIF
 
 :Main_End
 

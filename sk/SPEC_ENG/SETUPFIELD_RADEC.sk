@@ -90,7 +90,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     #        Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
 	    Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
 	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;  
-    #
+    # Moon distance calculation
+            Exec OBS Calc_Moon EQUINOX=2000.0 ;
 
 :Main_End
 

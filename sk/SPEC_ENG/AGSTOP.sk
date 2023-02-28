@@ -12,6 +12,8 @@
 </Header>
 
 <Default_Parameter>
+    DRY_RUN="Yes"
+    *DRY_RUN=Yes,No
 </Default_Parameter>
 
 <Command>
@@ -22,12 +24,16 @@
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGstop" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
 
-# Stop auto-guiding
-    # reference command:  exec pfs pfscmd actor="ag" cmd="autoguide start"
-EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
-
 # turn off TSC AG_Tracking mode
-#EXEC TSC AG_TRACKING MOTOR=OFF ;
+
+IF "$DRY_RUN" == "no"
+    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+ENDIF
+
+# Stop auto-guiding
+# reference command:  exec pfs pfscmd actor="ag" cmd="autoguide start"
+#EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
+EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=60 ;
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
