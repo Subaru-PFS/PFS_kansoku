@@ -38,6 +38,8 @@
         *DRY_RUN=YES,NO
         FIT_DSCALE=NOP
         *FIT_DSCALE=NOP,YES,NO
+        FIT_DINR=NOP
+	*FIT_DINR=NOP,YES,NO
         # Common parameters
         ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
         OFFSET_RA=0
@@ -187,62 +189,56 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     # Acquire Field and AG
 
     asn fit_dscale=@lower("$FIT_DSCALE")
+    asn fit_dinr=@lower("$FIT_DINR")
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
-    IF "$AG"=="ON"
-    # when AG loop is supporsed to be started in SetupField command
+    IF "$DRY_RUN" == "YES"
+        asn cmdopt1 = " dryRun"
+    ELSE
+        asn cmdopt1 = ""
+    ENDIF
+
+    IF "$AG" == "ON"
+        asn cmdopt2 = ""
+    ELSE
+        asn cmdopt2 = " guideoff"
+    ENDIF
+
+    IF @fit_dscale == "no" OR @fit_dscale == "yes"
+        asn cmdopt3 = " fit_dScale=@fit_dscale"
+    ELSE
+        asn cmdopt3 = ""
+    ENDIF
+
+    IF @fit_dinr == "no" OR @fit_dinr == "yes"
+        asn cmdopt4 = " fit_dInR=@fit_dinr"
+    ELSE
+        asn cmdopt4 = ""
+    ENDIF
+
+    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4" 
+
+    EXEC pfs pfscmd actor="iic" cmd='acquireField@cmdopt' TIMELIM=180;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+
+    IF "$AG" == "ON"
 
         IF "$DRY_RUN" == "YES"
 
-            IF @fit_dscale != "nop"
-                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun fit_dScale=@fit_dscale' TIMELIM=180;
-            ELSE
-                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun' TIMELIM=180;
-            ENDIF
+            # Make AG settle
+            Exec OBS Confirmation Instrument_Name=PFS Title="Please stabilize AG and start AG loop with launcher. Is that completed?" Dialog=[OK] ;
 
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
-
-        ELSE 
-
-            IF @fit_dscale != "nop"
-                EXEC pfs pfscmd actor="iic" cmd='acquireField fit_dScale=@fit_dscale' TIMELIM=180;
-            ELSE
-                EXEC pfs pfscmd actor="iic" cmd='acquireField' TIMELIM=180;
-            ENDIF
-
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
-
-            # Make AG loop settle
-            Exec OBS Confirmation Instrument_Name=PFS Title="Please stabilize AG loop with launcher commands. Is that completed?" Dialog=[OK] ;
+        ELIF "$DRY_RUN" == "NO"
 
             # Start Telescope AG
-            Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+            Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
             EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-
         ENDIF
 
-    ELSE   
+    ELSE
 
-        IF "$DRY_RUN" == "YES"
-
-            IF @fit_dscale != "nop"
-                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun guideOff fit_dScale=@fit_dscale' TIMELIM=180;
-            ELSE
-                EXEC pfs pfscmd actor="iic" cmd='acquireField dryRun guideOff' TIMELIM=180;
-            ENDIF
-
-        ELSE
-
-            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-            IF @fit_dscale != "nop"
-                EXEC pfs pfscmd actor="iic" cmd='acquireField guideOff fit_dScale=@fit_dscale' TIMELIM=180;
-            ELSE
-                EXEC pfs pfscmd actor="iic" cmd='acquireField guideOff' TIMELIM=180;
-            ENDIF
-            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
-
-        ENDIF
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
 
     ENDIF
 

@@ -31,6 +31,7 @@
   FROM_SKY="no"
   DRY_RUN="yes"
   FIT_DSCALE=NOP
+  FIT_DINR=NOP
 </Default_Parameter>
 
 
@@ -97,45 +98,57 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo4=INFO4 ;
 ## pfsDesign mode
 
 asn fit_dscale=@lower("$FIT_DSCALE")
+asn fit_dinr=@lower("$FIT_DINR")
+
 IF "$DESIGN_ID" != "NOP"
 
-    IF @fit_dscale == "nop"
+    IF @fit_dscale == "no" OR @fit_dscale == "yes"
+        asn cmdopt1=" fit_dScale=@fit_dscale"
+    ELSE
+        asn cmdopt1=""
+    ENDIF 
 
-        #EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" dry_run=$DRY_RUN' TIMELIM=600;
-        EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG" TIMELIM=60 ;
-
-    ELIF @fit_dscale == "no" OR @fit_dscale == "yes"
-
-        EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG fit_dScale=@fit_dscale" TIMELIM=60 ;
-
+    IF @fit_dinr == "no" OR @fit_dinr == "yes"
+        asn cmdopt2=" fit_dInR=@fit_dinr"
+    ELSE
+        asn cmdopt2=""
     ENDIF
+
+    asn cmdopt="@cmdopt1@cmdopt2"
+
+    EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG@cmdopt" TIMELIM=60 ;
 
 ELSE
 
 # On the fly mode
 
-    IF @fit_dscale == "nop"
-
-#        EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG cadence=$INT_AG from_sky="yes"' ;
-        EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN' TIMELIM=60;
-
-    ELIF @fit_dscale == "no" OR @fit_dscale == "yes"
-
-        Exec pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN fit_dscale=@fit_dscale' TIMELIM=60;
-
+    IF @fit_dscale == "no" OR @fit_dscale == "yes"
+        asn cmdopt1=" fit_dscale=@fit_dscale"
+    ELSE
+        asn cmdopt1=""
     ENDIF
 
+    IF @fit_dinr == "no" OR @fit_dinr == "yes"
+        asn cmdopt2=" fit_dinr=@fit_dinr"
+    ELSE
+        asn cmdopt2=""
+    ENDIF
+
+    asn cmdopt="@cmdopt1@cmdopt2"
+
+    EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN@cmdopt' TIMELIM=60;
 
 ENDIF
 
 ## Settle AG
 
-Exec OBS Confirmation Instrument_Name=PFS Title="Please stabilize AG loop with launcher commands. Is that completed?" Dialog=[OK] ;
+IF "$DRY_RUN" == "yes"
+
+    Exec OBS Confirmation Instrument_Name=PFS Title="Please stabilize AG and start AG loop with launcher. Is that completed?" Dialog=[OK] ;
 
 ## Start Telescope guide on
-
-IF "$DRY_RUN" == "no"
-    Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+ELIF "$DRY_RUN" == "no"
+    Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
 ENDIF
 
