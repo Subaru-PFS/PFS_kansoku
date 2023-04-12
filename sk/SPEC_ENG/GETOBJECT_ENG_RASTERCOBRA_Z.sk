@@ -11,6 +11,7 @@
         Script_Author=Arai
         Script_Update=2022.11.12
         Script_Update=2022.12.14 
+        Script_Update=2023.04.12
             #1. In moveToPfsDesign, add groupId="GROUP_ID" name="$GROUP_NAME" options
             #2. In Line 60--63, add a process to get GroupID from Gen2's PFS status if not given. The status will be created in December run.
 </Header>
@@ -37,6 +38,8 @@
 #    AGEXP=NO
 #    *AGEXP=YES,NO
 #    CORRECT=YES
+
+    arm="b,r,n"
 </Default_Parameter>
 
 
@@ -89,11 +92,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ELSE
         EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ENDIF
 } ;
 
@@ -156,11 +159,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
             *IF "$WMODE" == "YES"
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ELSE
                 EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
         } ;
 *ENDFOR
@@ -220,11 +223,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ENDIF
     } ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Raster Scan by Cobra: Done";

@@ -10,6 +10,7 @@
         Script_Version=0.1
         Script_Author=Arai
         Script_Update=2022.11.12
+        Script_Update=2023.04.12
 </Header>
 
 <Default_Parameter>
@@ -31,6 +32,8 @@
 #    AGEXP=NO
 #    *AGEXP=YES,NO
 #    CORRECT=YES
+
+    ARM="b,r,n"
 </Default_Parameter>
 
 
@@ -74,11 +77,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ELSE
         EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ENDIF
 } ;
 
@@ -137,11 +140,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
             *IF "$WMODE" == "YES"
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ELSE
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
         } ;
 *ENDFOR
@@ -196,11 +199,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ENDIF
     } ;
 
