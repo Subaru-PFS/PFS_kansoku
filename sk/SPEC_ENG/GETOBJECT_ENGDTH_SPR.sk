@@ -11,6 +11,7 @@
     COMMAND=GETOBJECT_ENGDTH_SPR
     Script_Author=Takagi
     Script_Update=2022.09.20
+    Script_Update=2023.04.12
 </Header>
 
 
@@ -28,6 +29,7 @@
     CORRECT=YES
     OFFSET=REL
     *OFFSET=ABS,REL
+    ARM="b,r,n"
 </Default_Parameter>
 
 
@@ -65,6 +67,9 @@ Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
 Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
 
 # Dithering Loop
+
+*SET DRA_PRE=0
+*SET DDEC_PRE=0
 
 *FOR 81 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
@@ -133,13 +138,26 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
+            *IF $OFFSET == ABS
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ELIF $OFFSET == REL
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM name="SPRDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+        
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
+            *IF $OFFSET == ABS
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM name="SPRDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            *ELIF $OFFSET == REL
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM name="SPRDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+            *ENDIF
+
         *ENDIF
         } ;
+        
         #{
         #*IF "$AGEXP" == "YES"
         #    *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1
@@ -203,11 +221,11 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ,
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM name="SPRDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ENDIF
 } ;
 #{
