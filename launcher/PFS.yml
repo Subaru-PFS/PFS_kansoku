@@ -85,11 +85,13 @@ launchers:
 
     -
         label : "Reconf. AG Param."
-        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03
+        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05
         params:
             - [ VAL01, INPUT, 9, "NOP", "ExpTime(s)" ]
             - [ VAL02, INPUT, 9, "NOP", "Interval(s)" ]
-            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run"]
+            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run" ]
+            - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]
+            - [ VAL05, LIST, ["NOP", "yes", "no"], "InR fit" ]
 
     - sep
 
