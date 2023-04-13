@@ -65,14 +65,4 @@ launchers:
         label: "Zero Guide Offsets"
         cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO
 
-    - sep
-
-    -
-        label : "Reconf. AG Param."
-        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03
-        params:
-            - [ VAL01, INPUT, 9, "NOP", "ExpTime(s)" ]
-            - [ VAL02, INPUT, 9, "NOP", "Interval(s)" ]
-            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run"]
-      
 #END
