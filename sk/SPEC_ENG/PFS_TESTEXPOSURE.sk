@@ -71,7 +71,7 @@
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,
     # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm="$ARM" doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
@@ -83,7 +83,7 @@
     EXEC OBS TIMER DURATION=$TIMELIM ,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
     # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm="$ARM" doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
     

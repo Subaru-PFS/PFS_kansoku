@@ -80,28 +80,28 @@ EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads)
 { 
 # Note: Case sensitive!!
 if $EXPTYPE == "bias"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME comments="test exposure"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "dark"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "arc"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "trace"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "object"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "flat"
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm="$ARM" name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 else
