@@ -23,15 +23,21 @@
 #  DESIGN_PATH=NOP
   INTERVAL=10
 # DESIGN_ID could be NOP, Declared, or any pfsDesign ID
+## This command does not slew the telescope. SetupField is the better choice for start AG with a telescope pointing.
   DESIGN_ID=NOP
 # VISIT_ID Default 0
   VISIT_ID=NOP
-  FCENTER=NOP
-  LIMMAG=20
   FROM_SKY="no"
   DRY_RUN="yes"
   FIT_DSCALE=NOP
   FIT_DINR=NOP
+
+# OTF mode option (if DESIGN_ID==NOP)
+  FCENTER=NOP
+  *FCENTER="RA,DEC,PA"
+  LIMMAG=NOP
+  *LIMMAG=20
+
 </Default_Parameter>
 
 
@@ -79,8 +85,6 @@ IF "$DESIGN_ID" != "NOP"
     asn INFO3="ID : @PFSDESIGN_ID, Target : @DSGN_FNAME"
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear , 
 
-#    EXEC pfs pfscmd actor="ag" cmd='acquire_field exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" dry_run=$DRY_RUN' TIMELIM=600;
-
 ## On the fly mode
 ELSE
 #
@@ -95,11 +99,10 @@ ENDIF
 *Set INFO4 = "ExpTime : $EXPTIME, Interval : $INTERVAL"
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo4=INFO4 ;
 
-## pfsDesign mode
-
 asn fit_dscale=@lower("$FIT_DSCALE")
 asn fit_dinr=@lower("$FIT_DINR")
 
+## pfsDesign mode
 IF "$DESIGN_ID" != "NOP"
 
     IF @fit_dscale == "no" OR @fit_dscale == "yes"
@@ -118,9 +121,8 @@ IF "$DESIGN_ID" != "NOP"
 
     EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG@cmdopt" TIMELIM=60 ;
 
+## On the fly mode
 ELSE
-
-# On the fly mode
 
     IF @fit_dscale == "no" OR @fit_dscale == "yes"
         asn cmdopt1=" fit_dscale=@fit_dscale"
@@ -134,9 +136,21 @@ ELSE
         asn cmdopt2=""
     ENDIF
 
-    asn cmdopt="@cmdopt1@cmdopt2"
+    IF "$FCENTER" != NOP
+        asn cmdopt3=" center=$FCENTER"
+    ELSE
+        asn cmdopt3=""
+    ENDIF
 
-    EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG from_sky="no" center=$FCENTER magnitude=$LIMMAG dry_run=$DRY_RUN@cmdopt' TIMELIM=60;
+    IF "$LIMMAG" !=NOP
+        asn cmdopt4=" magnitude=$LIMMAG"
+    ELSE 
+        asn cmdopt4=""
+    ENDIF  
+
+    asn cmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4"
+
+    EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG dry_run=$DRY_RUN@cmdopt' TIMELIM=60;
 
 ENDIF
 
