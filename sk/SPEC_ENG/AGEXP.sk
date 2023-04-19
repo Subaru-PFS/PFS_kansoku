@@ -30,6 +30,8 @@
   #CMETHOD="sep"
   FIT_DSCALE=NOP
   *FIT_DSCALE=yes,no
+  FIT_DINR=NOP
+  *FIT_DINR=yes,no
 </Default_Parameter>
 
 <Command>
@@ -48,19 +50,32 @@ from "pfsmisc" import lower
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Camera exposure" obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
 asn fit_dscale=@lower("$FIT_DSCALE")
+IF @fit_dscale=="nop"
+    asn cmdopt1=""
+ELSE
+    asn cmdopt1=" fit_dscale=@fit_dscale"
+ENDIF
+
+asn fit_dinr=@lower("$FIT_DINR")
+IF @fit_dinr=="nop"
+    asn cmdopt2=""
+ELSE
+    asn cmdopt2=" fit_dinr=@fit_dinr"
+ENDIF
 
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame" 
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    *IF @fit_dscale=="nop"
-        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" TIMELIM=$TIMELIM ;
-    *ELIF @fit_dscale=="yes" OR @fit_dscale=="no" 
-        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF fit_dscale=@fit_dscale" TIMELIM=$TIMELIM ;
-    *ENDIF
+    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF@cmdopt1@cmdopt2" TIMELIM=$TIMELIM ;
+#    *IF @fit_dscale=="nop"
+#        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" TIMELIM=$TIMELIM ;
+#    *ELIF @fit_dscale=="yes" OR @fit_dscale=="no" 
+#        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF fit_dscale=@fit_dscale" TIMELIM=$TIMELIM ;
+#    *ENDIF
     # EXEC PFS PFSCMD ACTOR="agcc" CMD="expose $OBJECT visit=$VISIT_ID exptime=$EXPTIME centroid=$CENTROID" TIMELIM=$TIMELIM ;
-    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 5) ; 
+    #EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 5) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 *ENDFOR
 
