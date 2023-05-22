@@ -1,0 +1,61 @@
+#**************************************************************************************************
+# SETUP_ENG_GROUPID.sk [Create a Group ID without generating pfsDesign variants] 
+#
+# OPE) SETUP_ENG_GROUPID DESING_ID="pfsDesign_file" GROUP_NAME="RSC_FIELD+DEG_SET" 
+#****************************************************************************************************
+
+<Header>
+        OBE_ID=PFS
+        OBE_mode=SPEC_ENG
+        COMMAND=SETUP_ENG_GROUPID
+        Script_Version=0.1
+        Script_Author=Arai, Koshida
+        Script_Update=2023.04.20
+</Header>
+
+<Default_Parameter>
+
+    GROUP_NAME=NOP
+    # this will be given as "RasterScanByCobra_FILEDNAME+/-DEG_SET[00]"
+ 
+</Default_Parameter>
+
+
+<Command>
+:START
+
+    asn INFO2="Group Name : $GROUP_NAME"
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Creating Group ID" ObsInfo2=@INFO2 ObsInfo3=clear ObsInfo4=Clear ObsInfo5=Clear;
+
+:MAIN_START
+
+    # get old value
+    asn oldgn = !PFS.GROUPID.NAME
+    asn oldgi = !PFS.GROUPID.ID
+    asn oldgd = !PFS.GROUPID.DATE
+    Exec OBS SLEEP SLEEP_TIME=1 ;
+
+    Exec pfs pfscmd actor="iic" cmd='getGroupId groupName="$GROUP_NAME"'; 
+    Exec OBS SLEEP SLEEP_TIME=5 ;
+
+    # waiting for status update
+    while (oldgd == !PFS.GROUPID.DATE) {
+        Exec OBS SLEEP SLEEP_TIME=3 ;
+    }
+
+    # Get new group ID
+    asn GROUP_ID=!PFS.GROUPID.ID
+
+    asn INFO3 = "Group ID: @GROUP_ID"
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Creating Group ID: Done" ObsInfo2=@INFO2 ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5=Clear;
+
+:MAIN_END
+
+:END
+
+</Command>
+
+# find getGropuId in shell-ics
+
+
