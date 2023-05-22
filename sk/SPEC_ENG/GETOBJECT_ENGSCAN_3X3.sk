@@ -19,7 +19,7 @@
     EQUINOX=!STATS.EQUINOX
     DITHWIDTH=5
     EXPTIME=60
-    ARM="b,r,n"
+    ARM="b,r"
 </Default_Parameter>
 
 

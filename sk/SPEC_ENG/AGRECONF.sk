@@ -84,7 +84,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *ENDIF
 
-*IF "$FIT_DINR" == "yes" OR "$FIT_INR" == "no"
+*IF "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
 
     *Set INFO_FIT_DINR = " InR fit: $FIT_DINR"
     *Set COM_FIT_DINR = " fit_dinr=$FIT_DINR"

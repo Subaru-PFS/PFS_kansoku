@@ -29,7 +29,7 @@
     CORRECT=YES
     OFFSET=REL
     *OFFSET=ABS,REL
-    ARM="b,r,n"
+    ARM="b,r"
 </Default_Parameter>
 
 

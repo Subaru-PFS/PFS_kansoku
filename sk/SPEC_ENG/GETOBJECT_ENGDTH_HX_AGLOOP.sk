@@ -37,7 +37,7 @@
     SUBMODE=NOCOS
     *SUBMODE=COS,NOCOS
     FOCUS=2.8
-    ARM="b,r,n"
+    ARM="b,r"
 </Default_Parameter>
 
 

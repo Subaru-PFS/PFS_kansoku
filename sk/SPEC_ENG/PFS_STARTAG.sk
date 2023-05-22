@@ -61,11 +61,11 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Auto Guiding: " obsinfo2=clea
 EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Stop running AG" ,
 
 EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
 # Check the guideready flag is off
-EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
-
 #EXEC pfs pfscmd actor="ag" cmd="autoguide stop" TIMELIM=30 ;
 EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=30;
+EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
 
 ## Field acquisition
 #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Acquire field" ;

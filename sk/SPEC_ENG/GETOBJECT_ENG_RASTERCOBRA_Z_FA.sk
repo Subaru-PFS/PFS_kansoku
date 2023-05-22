@@ -41,7 +41,7 @@
 #    *AGEXP=YES,NO
 #    CORRECT=YES
 
-    ARM="b,r,n"
+    ARM="b,r"
 </Default_Parameter>
 
 

@@ -20,7 +20,7 @@
   EXPTIME=1
   MODE=BIAS
   *MODE=BIAS, DARK
-  ARM="b,r,n"
+  ARM="b,r"
 
 :Command
 :start

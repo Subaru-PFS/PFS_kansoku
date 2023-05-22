@@ -9,7 +9,7 @@
     OBE_ID=PFS
     OBE_mode=SPEC_ENG
     COMMAND=GETOBJECT_ENGDTH_HX
-    Script_Author=Takagi
+    Script_Author=Takagi, Koshida
     Script_Update=2022.12.14
     Script_Update=2023.04.12
 </Header>
@@ -24,20 +24,20 @@
     STOP=19
     WMODE=YES
     *WMODE=YES,NO
-    #CORRECT=YES
     OFFSET=REL
     *OFFSET=ABS,REL
     SUBMODE=NOCOS
     *SUBMODE=COS,NOCOS
-    FOCUS=2.8
-    GROUP_NAME="RSC_FIELD+DEG_SET"
-    GROUP_ID=NOP
+    #FOCUS=2.8
+    #GROUP_NAME="RSC_FIELD+DEG_SET"
+    #GROUP_ID=NOP
     AG=GEN2
     *AG=GEN2,MLP,NO
-    DRA=0.15
-    DDEC=0.15
-    DINR=20
-    ARM="b,r,n"
+    GERR_RA=0.15
+    GERR_DEC=0.15
+    GERR_INR=20
+    ARM="b,r"
+    #CORRECT=YES
 </Default_Parameter>
 
 
@@ -67,6 +67,9 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
 
+# assign GroupID
+*SET GROUP_ID=!PFS.GROUPID.ID
+
 :MAIN_START
 
 # Warning about the fiber illuminator
@@ -81,7 +84,8 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 *SET DRA_INFO=0
 *SET DDEC_INFO=0
 
-*SET DEFOCUS=$FOCUS + 0.57
+#setting focus value (no more needed, new glass is installed)
+#*SET DEFOCUS=$FOCUS + 0.57
 
 *FOR 19 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
@@ -112,6 +116,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 
 
             #Calculate Pointing
+
+            #Correct guide error when slewing to next destination 
+            ## commented out because this is not needed when AG is used
 
             #*IF $CORRECT == "YES"
             #    #Calculate AGERR * COS(DEC)
@@ -154,8 +161,8 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
             #Field acquisition
 
             *IF $AG == "GEN2"
-                Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via Gen2..." ObsInfo4="Move Z to AG focus position...",
-                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
+                #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via Gen2..." ObsInfo4="Move Z to AG focus position...",
+                #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
     
                 #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
                 #Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? (use Settle LOOP)" Dialog=[OK];
@@ -163,15 +170,15 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
                 Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="AGSETTLELOOP running...",
                 *SUB AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$DRA DDEC=$DDEC DINR=$DINR SUBMODE=$SUBMODE ;     
              
-                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
-                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
+                #Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+                #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
 
                 Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Done.", 
                 Exec OBS Sleep Sleep_Time=1 ;
 
             *ELIF $AG == "MLP"
-                Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via MLP..." ObsInfo4="Move Z to AG focus position...",
-                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
+                #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via MLP..." ObsInfo4="Move Z to AG focus position...",
+                #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
 
                 # Stop running AG if any
                 Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Stop running AG if any...",
@@ -193,13 +200,13 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
                 while (!TSCV.PFS.AG.AutoGuideReady == 1) {
 
                     #Check errors
-                    IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+                    IF @fabs(!PFS.AG.ERR.RA_ERR) < $GERR_RA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $GERR_DEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $GERR_INR
         
                         #Check errors again
                         # wait for a new exposure, then error items are updated
                         exec obs check_status mode=OR timeout=0060 c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] ;
 
-                        IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+                        IF @fabs(!PFS.AG.ERR.RA_ERR) < $GERR_RA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $GERR_DEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $GERR_INR
                             EXEC TSC AG_TRACKING MOTOR=OFF ;
                             EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
                             EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ; 
@@ -211,8 +218,8 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
                     ENDIF
                 }
 
-                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
-                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
+                #Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+                #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
 
             *ELSE 
                 Exec OBS SLEEP SLEEP_TIME=3;
@@ -230,9 +237,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
 
             *IF $OFFSET == ABS
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
             *ELIF $OFFSET == REL
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
         
         *ELSE
@@ -240,19 +247,13 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
 
             *IF $OFFSET == ABS
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
             *ELIF $OFFSET == REL
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA_INFO asec_DEC:$DDEC_INFO asec"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
             
         *ENDIF
         } ;
-    
-        #{
-        #*IF "$AGEXP" == "YES"
-        #    *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1
-        #*ENDIF
-        #} ;
     
         *SET DRA_PRE=$DRA_WIDTH
         *SET DDEC_PRE=$DDEC_WIDTH
@@ -317,8 +318,8 @@ Exec OBS SLEEP SLEEP_TIME=5;
 #Field acquisition
 
 *IF $AG == "GEN2"
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via Gen2..." ObsInfo4="Move Z to AG focus position...",
-    *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via Gen2..." ObsInfo4="Move Z to AG focus position...",
+    #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
 
     #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
     #Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? (use Settle LOOP)" Dialog=[OK];
@@ -326,15 +327,15 @@ Exec OBS SLEEP SLEEP_TIME=5;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="AGSETTLELOOP running...",
     *SUB AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$DRA DDEC=$DDEC DINR=$DINR SUBMODE=$SUBMODE ;     
  
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
-    *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+    #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
     
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Done.", 
     Exec OBS Sleep Sleep_Time=1 ;
 
 *ELIF $AG == "MLP"
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via MLP..." ObsInfo4="Move Z to AG focus position...",
-    *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via MLP..." ObsInfo4="Move Z to AG focus position...",
+    #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$FOCUS ;
     
     # Stop running AG if any
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Stop running AG if any...",
@@ -356,13 +357,13 @@ Exec OBS SLEEP SLEEP_TIME=5;
     while (!TSCV.PFS.AG.AutoGuideReady == 1) {
     
         #Check errors
-        IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+        IF @fabs(!PFS.AG.ERR.RA_ERR) < $GERR_RA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $GERR_DEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $GERR_INR
 
             #Check errors again
             # wait for a new exposure, then error items are updated
             exec obs check_status mode=OR timeout=0060 c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] ;
         
-            IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+            IF @fabs(!PFS.AG.ERR.RA_ERR) < $GERR_RA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $GERR_DEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $GERR_INR
                 EXEC TSC AG_TRACKING MOTOR=OFF ;
                 EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
                 EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ; 
@@ -373,8 +374,8 @@ Exec OBS SLEEP SLEEP_TIME=5;
             *SUB CORRECT_PFS obe_id=COMMON obe_mode=CMDTEST mode=ROTATION ;
         ENDIF
     }
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
-    *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+    #*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$DEFOCUS ;
 
 *ELSE 
     Exec OBS SLEEP SLEEP_TIME=3;
@@ -388,20 +389,13 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsI
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="$GROUP_NAME HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
 *ENDIF
 } ;
-#{
-#*IF "$AGEXP" == "YES"
-#    *SUB AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=5 NFRAME=1
-#*ELSE
-#    Exec OBS SLEEP SLEEP_TIME=1;
-#*ENDIF
-#} ;
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ObsInfo3=Clear ObsInfo5=Clear ;
 

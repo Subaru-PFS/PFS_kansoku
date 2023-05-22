@@ -23,7 +23,7 @@
   EXPTYPE=OBJECT
 ## Which camera to be used
   #CAMERA="b1,r1"
-  ARM="b,r,n"
+  ARM="b,r"
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
