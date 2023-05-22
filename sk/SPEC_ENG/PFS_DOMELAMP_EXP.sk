@@ -7,6 +7,7 @@
 :Header
     SCRIPT_AUTHOR=Moritani
     SCRIPT_UPDATE=2020.09.23
+    SCRIPT_UPDARE=2023.04.11
     OBE_ID=PFS
 ## Overwrite Gen2 FITS.PFS.OBS-MOD status
     OBE_MODE=SPEC_ENG
@@ -21,7 +22,8 @@
   EXPTIME=1
   EXPTYPE=OBJECT
 ## Which camera to be used
-  CAMERA="b1,r1"
+  #CAMERA="b1,r1"
+  ARM="b,r"
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
@@ -58,12 +60,14 @@ EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads)
 { 
 if $EXPTYPE == "arc"
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  # EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "trace"
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 else
-  EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Sorry. No option for $EXPTYPE" obsinfo5=clear ;
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No option for $EXPTYPE" obsinfo5=clear ;
 endif
 };
 
@@ -75,5 +79,3 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 :main_end
 
 :end
-
-

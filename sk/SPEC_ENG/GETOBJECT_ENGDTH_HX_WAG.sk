@@ -1,0 +1,225 @@
+#**********************************************************************
+#
+# GETOBJECT with dithering for engineering
+#   Dither pattern: Hexagonal
+#   Dither the telescope by giving the offset to AG (not dithering the telescope from this sk)
+#
+#**********************************************************************
+
+<Header>
+    OBE_ID=PFS
+    OBE_mode=SPEC_ENG
+    COMMAND=GETOBJECT_ENGDTHbyAG_HX
+    Script_Author=Takagi
+    Script_Update=2023.04.21
+</Header>
+
+
+<Default_Parameter>
+    EQUINOX=!STATS.EQUINOX
+    DITHWIDTH=5
+    EXPTIME=60
+    DITH_PAT=[1 -1 0 2 -0.5 0.87 3 0.5 0.87 4 1 0 5 0.5 -0.87 6 -0.5 -0.87 7 -1.5 -0.87 8 -2 0 9 -1.5 0.87 10 -1 1.73 11 0 1.73 12 1 1.73 13 1.5 0.87 14 2 0 15 1.5 -0.87 16 1 -1.73 17 0 -1.73 18 -1 -1.73]
+    START=1
+    STOP=18
+    WMODE=YES
+    *WMODE=YES,NO
+    ARM="b,r"
+</Default_Parameter>
+
+
+<Command>
+
+:START
+
+from "math" import fabs
+
+### SETUP ###
+
+#Preparation for SPS exposure
+*SET EXPTIMLIM = ( $EXPTIME + 60 )
+
+#Set sleep time used to wait the integration
+*SET WAITTIME =  ( $EXPTIME + 8 )
+
+*SET RA=!STATS.RA_CMD
+*SET DEC=!STATS.DEC_CMD
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: HX Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
+
+# Wiping SPS
+Exec PFS PFSCMD ACTOR="iic" cmd="sps erase arm=b,r" ;
+
+# assign GroupID
+*SET GROUP_ID=!PFS.GROUPID.ID
+
+
+
+:MAIN_START
+
+# Warning about the fiber illuminator
+Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+
+
+# Dithering Loop
+
+*Set DRA=0
+*Set DDEC=0
+*Set INFO5="Dither 1 DRA=0 sec DDEC=0 sec"
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
+
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 ;
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+
+
+*FOR 18 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
+
+    *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
+    
+        {
+        #Exposure
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+        *IF "$WMODE" == "YES"
+            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+        
+        *ELSE
+            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            
+        *ENDIF
+        },
+
+        {
+        #Wait readout to start
+        Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
+
+        # STOP AG
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+        EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=60 ;
+
+        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to dither?" Dialog=[OK] ;
+
+        # Calculate dithering width
+
+        *SET DITHPOS=INT($DNUM+1)
+
+        *SET DRA=($DRA_WIDTH * $DITHWIDTH)
+        *SET DDEC=($DDEC_WIDTH * $DITHWIDTH)
+        *Set INFO5="Dither $DITHPOS DRA=$DRA sec DDEC=$DDEC sec"
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
+  
+        # Move telescope
+        EXEC OBS CONVSECRADEC RASEC=$DRA DECSEC=$DDEC RABASE=$RA DECBASE=$DEC ;
+        Exec OBS Sleep Sleep_Time=1 ;
+        EXEC TSC TELDRIVE MOTOR=ON COORD=REL RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT EQUINOX=!STATS.EQUINOX Direction=TSC ,
+        Exec OBS Sleep Sleep_Time=3 ;
+
+        #Send offset to the AG
+    	Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
+        Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=($DDEC_WIDTH*$DITHWIDTH) ;
+
+        # restart AG
+        EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=3000 cadence=5000 fit_dScale=yes fit_dInR=yes'
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON
+
+        # Check errors
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
+	    EXEC OBS Sleep Sleep_Time=20 ;
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0090 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
+
+        };
+
+    *ENDIF
+
+*ENDFOR
+
+
+#Exposure for the last dither position
+
+{
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+*IF "$WMODE" == "YES"
+    EXEC OBS TIMER DURATION=($EXPTIME) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    
+*ELSE
+    EXEC OBS TIMER DURATION=($EXPTIME) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+        
+*ENDIF
+},
+
+
+{
+#Wait readout to start
+Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
+
+# STOP AG
+EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=60 ;
+
+Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to send offsets?" Dialog=[OK] ;
+
+# Calculate dithering width
+### Go back to home ###
+*SET DRA=0
+*SET DDEC=0
+*Set INFO5="Returning to initial position"
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
+
+# Move telescope
+
+EXEC OBS CONVSECRADEC RASEC=$DRA DECSEC=$DDEC RABASE=$RA DECBASE=$DEC ;
+Exec OBS Sleep Sleep_Time=1 ;
+EXEC TSC TELDRIVE MOTOR=ON COORD=REL RA=!STATOBS.RARELOUT DEC=!STATOBS.DECRELOUT EQUINOX=!STATS.EQUINOX Direction=TSC ,
+Exec OBS Sleep Sleep_Time=3 ;
+
+#Send offset to the AG
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0,
+Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
+
+# restart AG
+EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=3000 cadence=5000 fit_dScale=yes fit_dInR=yes'
+EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON
+
+# Check errors
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
+EXEC OBS Sleep Sleep_Time=20 ;
+EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0090 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
+Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
+
+};
+
+{
+#Exposure
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear,
+*IF "$WMODE" == "YES"
+    EXEC OBS TIMER DURATION=($EXPTIME) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+*ELSE
+    EXEC OBS TIMER DURATION=($EXPTIME) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+*ENDIF
+} ;
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ObsInfo3=Clear ObsInfo5=Clear ;
+
+
+:MAIN_END
+
+:END
+
+</Command>

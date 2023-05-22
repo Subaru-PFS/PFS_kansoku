@@ -35,3 +35,7 @@ def lower(s) :
 
     return s.lower()
 
+def random_song(music1,music2,music3):
+    import random
+    song = [music1,music2,music3]    
+    return random.choice(song)

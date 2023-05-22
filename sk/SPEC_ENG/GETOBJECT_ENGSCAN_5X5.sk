@@ -11,6 +11,7 @@
     COMMAND=GETOBJECT_ENGDTH_5X5
     Script_Author=Takagi
     Script_Update=2022.09.21
+    Script_Update=2023.04.12
 </Header>
 
 
@@ -18,6 +19,7 @@
     EQUINOX=!STATS.EQUINOX
     DITHWIDTH=5
     EXPTIME=60
+    ARM="b,r"
 </Default_Parameter>
 
 
@@ -50,7 +52,7 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 {
     #Exposure
     EXEC PFS PFSCMD ACTOR="iic" cmd='sps erase' TIMELIM=$EXPTIMLIM ;
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME name="5X5SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME arm=$ARM name="5X5SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
 } ,
 
 

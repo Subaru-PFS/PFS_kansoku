@@ -3,6 +3,9 @@
 # As of 2018.10.26
 # Updated: 2022.09.18 (Arai)
 # Updated: 2022.09.24 (Takagi)
+# Updated: 2023.04.21 (Koshida, change command of 'Stop AG Loop')
+# Updated: 2023.04.28 (Arai, add 'SpS Red resolution')
+
 
 tabname: "PFS"
 launchers:
@@ -81,15 +84,21 @@ launchers:
     
     -
         label : "Stop AG Loop"
-        cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStop'
+        #cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStop'
+        cmd   : AGSTOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRY_RUN=$VAL01
+
+        params: 
+            - [ VAL01, LIST, ["NO", "YES"], "Dry run" ]
 
     -
         label : "Reconf. AG Param."
-        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03
+        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05
         params:
             - [ VAL01, INPUT, 9, "NOP", "ExpTime(s)" ]
             - [ VAL02, INPUT, 9, "NOP", "Interval(s)" ]
-            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run"]
+            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run" ]
+            - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]
+            - [ VAL05, LIST, ["NOP", "yes", "no"], "InR fit" ]
 
     - sep
 
@@ -102,6 +111,17 @@ launchers:
         params:
             - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
                 label: save }
+
+
+#
+# SpS Change Resolution
+#
+    -
+        label: "SpS Red resolution"
+        cmd  : Exec pfs pfscmd actor="iic" cmd='sps rdaMove $VAL01' TIMELIM=180
+        params:
+            - {name: VAL01, type: LIST, values: ["low", "med"],
+                label: resolution}
 
     - sep
 

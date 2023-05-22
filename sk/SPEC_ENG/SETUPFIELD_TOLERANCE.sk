@@ -67,6 +67,9 @@ from "pfsmisc" import random_song
 
 :Main_Start
 
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=clear ObsInfo3=Clear ObsInfo4=clear ObsInfo5=Clear ;
+
 # Reset summed AG offset
 *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO  ;
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_ASEC=0 DITHER_PA_OFFSET_ASEC=0 ;
@@ -108,7 +111,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     asn INFO2="ID : @PFSDESIGN_ID"
     asn INFO4="Target : @DSGN_FNAME"
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=@INFO2 ObsInfo3=Clear ObsInfo4=@INFO4 ObsInfo5=Clear , 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=@INFO2 ObsInfo4=@INFO4 , 
 
     # Sidereal tracking
     *IF "$FILE" == "NOP"
@@ -170,11 +173,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
 
         ### Sound during cobraconvergence
-        #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 ,
-        *SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 , 
+        #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 , 
+        #Exec OBS Sound Select="Korobushka_LONG" Volume=64 ,
+        *SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 ,
 
         ## Cobra configuration
-        EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8" timelim=600;
+        EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 tolerance=0.005" timelim=600;
 
         ### Pause and wait with a pop-up window
 

@@ -7,6 +7,7 @@
     SCRIPT_AUTHOR=Takagi
     SCRIPT_UPDATE=2022.09.24
     SCRIPT_UPDATE=2022.10.26
+    SCRIPT_UPDATE=2023.04.11
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -19,6 +20,7 @@
   EXPTIME=1
   MODE=BIAS
   *MODE=BIAS, DARK
+  ARM="b,r"
 
 :Command
 :start
@@ -68,7 +70,8 @@
     
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,
-    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+    # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
@@ -79,7 +82,8 @@
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+    # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
     

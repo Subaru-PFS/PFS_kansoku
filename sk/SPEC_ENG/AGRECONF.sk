@@ -17,6 +17,8 @@
     EXPTIME=NOP
     INTERVAL=NOP
     DRY_RUN=NOP
+    FIT_DSCALE=NOP
+    FIT_DINR=NOP
 
 :Command
 
@@ -29,7 +31,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *IF "$EXPTIME" != "NOP"
 
     *Set EXPT_AG = INT($EXPTIME * 1000) 
-    *Set INFO_EXPT = "ExpTime: $EXPTIME, " 
+    *Set INFO_EXPT = " ExpTime: $EXPTIME, " 
     *Set COM_EXPT = " exposure_time=$EXPT_AG" 
 
 *ELSE
@@ -42,7 +44,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *IF "$INTERVAL" != "NOP" 
 
     *Set INT_AG = INT($INTERVAL * 1000)
-    *Set INFO_INT = "Int.: $INTERVAL, " 
+    *Set INFO_INT = " Int.: $INTERVAL, " 
     *Set COM_INT = " cadence=$INT_AG"
 
 *ELSE
@@ -54,7 +56,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *IF "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
 
-    *Set INFO_DRY_RUN = "DRY_RUN: $DRY_RUN"
+    *Set INFO_DRY_RUN = " DRY_RUN: $DRY_RUN"
     *Set COM_DRY_RUN = " dry_run=$DRY_RUN"
 
     IF "$DRY_RUN" == "yes"
@@ -70,13 +72,38 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *ENDIF
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo4="$INFO_EXPT$INFO_INT$INFO_DRY_RUN" ;
+*IF "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no"
+
+    *Set INFO_FIT_DSCALE = " Scale fit: $FIT_DSCALE"
+    *Set COM_FIT_DSCALE = " fit_dscale=$FIT_DSCALE"
+
+*ELSE
+
+    *Set INFO_FIT_DSCALE = ""
+    *Set COM_FIT_DSCALE = ""
+
+*ENDIF
+
+*IF "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
+
+    *Set INFO_FIT_DINR = " InR fit: $FIT_DINR"
+    *Set COM_FIT_DINR = " fit_dinr=$FIT_DINR"
+
+*ELSE
+
+    *Set INFO_FIT_DINR = ""
+    *Set COM_FIT_DINR = ""
+
+*ENDIF
+
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo4="$INFO_EXPT$INFO_INT$INFO_DRY_RUN$INFO_FIT_DSCALE$INFO_FIT_DINR" ;
 
 # exec pfs pfscmd actor="ag" cmd="autoguide start"
 
-*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
+*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
 
-    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure $COM_EXPT$COM_INT$COM_DRY_RUN" TIMELIM=60 ;
+    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure $COM_EXPT$COM_INT$COM_DRY_RUN$COM_FIT_DSCALE$COM_FIT_DINR" TIMELIM=60 ;
 
     IF "$DRY_RUN" == "no"
         Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
