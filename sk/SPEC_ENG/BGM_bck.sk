@@ -1,0 +1,32 @@
+#********************************************************************
+# BGM.sk 
+# usage: BGM $DEF_PFSENG VOLUME=64,
+# - Random BGM selection for the cobra convergence -
+# base: Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 ,
+# using randome_song in /gen2/share/Git/kansoku/PFS/task/mics.py
+#********************************************************************
+
+<Header>
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2023.05.01
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+    VOLUME=64
+</Default_Parameter>
+
+<Command>
+:start
+
+from "pfsmisc" import random_song
+
+:main_start
+
+*Set BGM = random_song('Colonel_Bogey_March_LONG','Korobushka_LONG','Turkish_March_LONG') 
+Exec OBS Sound Select="$BGM" Volume=$VOLUME ;
+
+:main_end
+:end
+</Command>
