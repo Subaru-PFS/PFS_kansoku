@@ -5,6 +5,7 @@
 # Updated: 2022.09.24 (Takagi)
 # Updated: 2023.04.21 (Koshida, change command of 'Stop AG Loop')
 # Updated: 2023.04.28 (Arai, add 'SpS Red resolution')
+# Updated: 2023.07.05 (Koshida, test exposure and AG start)
 
 
 tabname: "PFS"
@@ -14,13 +15,37 @@ launchers:
 # Test exposures
 
     -
-        label: "Test Exp." 
-        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03 MODE=$VAL04
+#        label: "Test Exp." 
+#        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03 MODE=$VAL04
+#        params:
+#            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
+#            - [ VAL03, INPUT, 8, 1.0, "ExpTime" ]
+#            - [ VAL02, INPUT, 8, 1, "NFrame" ]
+#            - [ VAL04, LIST, [ "BIAS", "DARK" ], "Mode (SpS)" ]  
+#
+#    - 
+        label: "MCS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=$VAL01 MODE="object"
         params:
-            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
-            - [ VAL03, INPUT, 8, 1.0, "ExpTime" ]
-            - [ VAL02, INPUT, 8, 1, "NFrame" ]
-            - [ VAL04, LIST, [ "BIAS", "DARK" ], "Mode (SpS)" ]  
+            - [ VAL01, INPUT, 8, 1.0, "ExpTime (sec, DARK or OBJECT)" ]
+            - [ VAL02, LIST, [ "BIAS", "DARK", "OBJECT" ], "Mode" ]
+
+    -
+        label: "AG Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE="object"
+        params:
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+
+    -
+        label: "SpS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03 SELECT=$VAL04 SELVAL=$VAL05
+        params:
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+            - [ VAL03, LIST, [ "BIAS", "DARK" ], "Mode" ]
+            - [ VAL04, LIST, [ "NOP", "cam", "specNum", "arm" ], "Select method" ]
+            - [ VAL05, INPUT, 36, "NOP", "Selected cam/SM/arm" ]
 
     - sep
 
@@ -68,13 +93,14 @@ launchers:
     - sep
 
     -
-        label : "AG Exp. (centroid)"
-        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 FIT_DSCALE=$VAL03
+        #label : "AG Exp. (centroid)"
+        label : "Acquire Field (OTF)"
+        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
             - [ VAL02, INPUT, 9, 1, "ExpTime(s)"]
-            - [ VAL03, LIST, ["NOP", "yes", "no"], "Fit dScale"]
-
+            - [ VAL03, LIST, ["NOP", "yes", "no"], "Scale fit"]
+            - [ VAL04, LIST, ["NOP", "yes", "no"], "InR fit" ]
     -
         label : "AG Loop (Dry)"
         cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 dryRun'
