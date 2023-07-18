@@ -65,4 +65,29 @@ launchers:
         label: "Zero Guide Offsets"
         cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO
 
+    - sep
+
+    -
+        label: "Acquire Field (pfsDesign)"
+        cmd  : EXEC pfs pfscmd actor="iic" cmd='acquireField exptime=$VAL01 fit_dScale=$VAL02 fit_dInR=$VAL03'
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
+            - { name: VAL02, type: LIST, values: ["no", "yes"], label: "Scale fit" }
+            - { name: VAL03, type: LIST, values: ["yes", "no"], label: "InR fit" }
+
+    -
+        label: "Start AG (pfsDesign)"
+        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
+            - { name: VAL02, type: INPUT, width:8, value: "5000", lable: "Cadence(ms)" }
+            - { name: VAL03, type: LIST, values: ["no", "yes"], label: "Scale fit" }
+            - { name: VAL04, type: LIST, values: ["yes", "no"], label: "InR fit" }
+
+    -
+        label: "Tel. AG Ready"
+        cmd  : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
+        params:
+            - {name: VAL01, type: LIST, values: ["OFF", "ON"], label: "MOTOR" }
+
 #END

@@ -7,6 +7,7 @@
 <Header>
     SCRIPT_AUTHOR=Koshida
     SCRIPT_UPDATE=2023.04.18
+    SCRIPT_UPDATE=2023.07.12
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -15,6 +16,10 @@
 #for PFS
   EXPTIME=2
   NFRAME=1
+  EXPDLY=NOP
+  *EXPDLY=0.1
+  TECOFF=NOP
+  *TECOFF=yes,no
   INR_INI=!TSCL.INSROTPA_PF
   DINR=30.0
   INRDIR=POS
@@ -65,11 +70,24 @@ ELSE
     asn cmdopt2=" fit_dinr=@fit_dinr"
 ENDIF
 
-asn agexpcmdopt="@cmdopt1@cmdopt2"
+asn exposure_delay=@lower("$EXPDLY")
+IF @exposure_delay=="nop"
+    asn cmdopt3=""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn cmdopt3=" exposure_delay=@expdly_ms"
+ENDIF
 
+asn tec_off=@lower("$TECOFF")
+IF @tec_off=="nop"
+    asn cmdopt4=""
+ELSE
+    asn cmdopt4=" tec_off=@tec_off"
+ENDIF
+
+asn agexpcmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4"
 
 :main_start
-
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Rotcenter measurement with AG camera" obsinfo2=clear obsinfo3="Moving rotator to the initial position." obsinfo4=clear obsinfo5=clear ;
 
@@ -121,7 +139,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO03 ;
     EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2" TIMELIM=$TIMELIM ;
+    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
 *ENDFOR
 
@@ -161,7 +179,7 @@ while ( (@tmpcnt <= @limcnt1+1) and (@tmpcnt <= @postot)) {
         EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
         EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2" TIMELIM=$TIMELIM ;
+        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
         EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
     *ENDFOR
 
@@ -195,7 +213,7 @@ IF @tmpcnt <= @postot
             EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
             EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2" TIMELIM=$TIMELIM ;
+            Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
             EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
         *ENDFOR
 

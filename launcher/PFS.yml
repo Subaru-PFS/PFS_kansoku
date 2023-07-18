@@ -5,6 +5,7 @@
 # Updated: 2022.09.24 (Takagi)
 # Updated: 2023.04.21 (Koshida, change command of 'Stop AG Loop')
 # Updated: 2023.04.28 (Arai, add 'SpS Red resolution')
+# Updated: 2023.07.05 (Koshida, test exposure and AG start)
 
 
 tabname: "PFS"
@@ -14,13 +15,37 @@ launchers:
 # Test exposures
 
     -
-        label: "Test Exp." 
-        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03 MODE=$VAL04
+#        label: "Test Exp." 
+#        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM=$VAL01 NFRAME=$VAL02 EXPTIME=$VAL03 MODE=$VAL04
+#        params:
+#            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
+#            - [ VAL03, INPUT, 8, 1.0, "ExpTime" ]
+#            - [ VAL02, INPUT, 8, 1, "NFrame" ]
+#            - [ VAL04, LIST, [ "BIAS", "DARK" ], "Mode (SpS)" ]  
+#
+#    - 
+        label: "MCS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=$VAL01 MODE="object"
         params:
-            - [ VAL01, LIST, [ "MCS", "AG", "SPS",], "Camera" ]
-            - [ VAL03, INPUT, 8, 1.0, "ExpTime" ]
-            - [ VAL02, INPUT, 8, 1, "NFrame" ]
-            - [ VAL04, LIST, [ "BIAS", "DARK" ], "Mode (SpS)" ]  
+            - [ VAL01, INPUT, 8, 1.0, "ExpTime (sec)" ]
+            - [ VAL02, LIST, [ "BIAS", "DARK", "OBJECT" ], "Mode" ]
+
+    -
+        label: "AG Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE="object"
+        params:
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+
+    -
+        label: "SpS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03 SELECT=$VAL04 SELVAL=$VAL05
+        params:
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+            - [ VAL03, LIST, [ "BIAS", "DARK" ], "Mode" ]
+            - [ VAL04, LIST, [ "NOP", "cam", "specNum", "arm" ], "Cam. Select mthd." ]
+            - [ VAL05, INPUT, 36, "NOP", "Cam. selected" ]
 
     - sep
 
@@ -68,20 +93,37 @@ launchers:
     - sep
 
     -
-        label : "AG Exp. (centroid)"
-        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 FIT_DSCALE=$VAL03
+        #label : "AG Exp. (centroid)"
+        label : "Acquire Field (OTF)"
+        cmd   : AGEXP OBE_ID=PFS OBE_MODE=SPEC_ENG NFRAME=$VAL01 EXPTIME=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04
         params:
             - [ VAL01, INPUT, 6, 1, "NFrame" ]
             - [ VAL02, INPUT, 9, 1, "ExpTime(s)"]
-            - [ VAL03, LIST, ["NOP", "yes", "no"], "Fit dScale"]
+            - [ VAL03, LIST, ["NOP", "yes", "no"], "Scale fit"]
+            - [ VAL04, LIST, ["NOP", "yes", "no"], "InR fit" ]
+    - 
+        label : "Acquire Field (pfsDesign)"
+        cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
+        params:
+            - [ VAL01, LIST, [ "yes", "no" ], "Scale fit" ]
+            - [ VAL02, LIST, [ "yes", "no" ], "InR fit" ]
 
     -
-        label : "AG Loop (Dry)"
+        label : "Start AG Loop (Dry)"
         cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 dryRun'
         params:
             - [ VAL01, INPUT, 9, 2000, "ExpTime(ms)" ]
             - [ VAL02, INPUT, 9, 5000, "Cadence(ms)"]
     
+    -
+        label: "Start AG (pfsDesign)"
+        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
+            - { name: VAL02, type: INPUT, width:8, value: "5000", lable: "Cadence(ms)" }
+            - { name: VAL03, type: LIST, values: ["no", "yes"], label: "Scale fit" }
+            - { name: VAL04, type: LIST, values: ["yes", "no"], label: "InR fit" }
+
     -
         label : "Stop AG Loop"
         #cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStop'
@@ -91,14 +133,26 @@ launchers:
             - [ VAL01, LIST, ["NO", "YES"], "Dry run" ]
 
     -
+        label : "Resume AG Loop"
+        cmd   : AGRESUME OBE_ID=PFS OBE_MODE=SPEC_ENG
+
+    -
+        label : "Tel. AG Ready"
+        cmd   : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
+        params: 
+            - [ VAL01, LIST, [ "ON", "OFF" ], "Motor" ] 
+
+    -
         label : "Reconf. AG Param."
-        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05
+        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07
         params:
             - [ VAL01, INPUT, 9, "NOP", "ExpTime(s)" ]
             - [ VAL02, INPUT, 9, "NOP", "Interval(s)" ]
             - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run" ]
             - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]
             - [ VAL05, LIST, ["NOP", "yes", "no"], "InR fit" ]
+            - [ VAL06, INPUT, 9, "NOP", "Exp. Delay(s)" ]
+            - [ VAL07, LIST, [ "NOP", "yes", "no" ], "AG coolers off" ]
 
     - sep
 
