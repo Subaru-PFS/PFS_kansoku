@@ -99,14 +99,21 @@ from "pfsmisc" import sps_chk_sel
   *SET SPSNAME = "\"fromGen\""
   
   IF $SELECT == "NOP" OR $SELVAL="NOP"
+    asn invalid_input = 0
     asn comopt = ""
-  ELIF @sps_chk_sel($SELECT, $SELVAL) == 1 
+  ELIF @sps_chk_sel($SELECT, $SELVAL) == 1
+    asn invalid_input = 0 
     asn comopt = "$SELECT=$SELVAL"
   ELSE
-    asn compot = ""
+    asn invalid_input = 1
+    asn comopt = "$SELECT=$SELVAL"
   ENDIF
 
-  *IF $MODE == "BIAS"
+  IF @invalid_input == 1
+    EXEC OBS SOUND SELECT=E_CANCEL Volume=64 ,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure ($MODE): $NFRAME" obsinfo3="Invalid input: @comopt" obsinfo4=clear obsinfo5=clear ;
+
+  ELIF $MODE == "BIAS"
     *SET TIMELIM = 30 + 60 * $NFRAME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Bias): $NFRAME @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
     
@@ -118,7 +125,7 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
-  *ELIF $MODE == "DARK"
+  ELIF $MODE == "DARK"
     *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
@@ -131,7 +138,7 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
     
-  *ENDIF
+  ENDIF
 
 *ENDIF
 
