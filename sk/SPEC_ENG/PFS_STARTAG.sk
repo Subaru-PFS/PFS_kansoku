@@ -10,6 +10,7 @@
     SCRIPT_UPDATE=2021.05.01
     SCRIPT_UPDATE=2022.06.14
     SCRIPT_UPDATE=2023.02.15
+    SCRIPT_UPDATE=2023.07.12
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -18,6 +19,8 @@
 <Default_Parameter>
 #for PFS
   EXPTIME=2
+  EXPDLY=NOP
+  TECOFF=NOP
 # DESIGN_PATH example: /export/home/pfs/pfsDesign-0x0000000000000001.fits
   DESGIN_PATH="/data/pfsDesign"
 #  DESIGN_PATH=NOP
@@ -96,8 +99,8 @@ ENDIF
 
 # Start AG
 
-*Set INFO4 = "ExpTime : $EXPTIME, Interval : $INTERVAL"
-EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo4=INFO4 ;
+asn INFO4 = "ExpTime : $EXPTIME, Interval : $INTERVAL"
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Start AG" obsinfo4=@INFO4 ;
 
 asn fit_dscale=@lower("$FIT_DSCALE")
 asn fit_dinr=@lower("$FIT_DINR")
@@ -116,6 +119,8 @@ IF "$DESIGN_ID" != "NOP"
     ELSE
         asn cmdopt2=""
     ENDIF
+
+    ### iic option for exposure_delay and tec_off here ###
 
     asn cmdopt="@cmdopt1@cmdopt2"
 
@@ -148,7 +153,22 @@ ELSE
         asn cmdopt4=""
     ENDIF  
 
-    asn cmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4"
+    asn exposure_delay=@lower("$EXPDLY")
+    IF @exposure_delay=="nop"
+        asn cmdopt5=""
+    ELSE
+        asn expdly_ms = INT($EXPDLY * 1000)
+        asn cmdopt5=" exposure_delay=@expdly_ms"
+    ENDIF
+
+    asn tec_off=@lower("$TECOFF")
+    IF @tec_off=="nop"
+        asn cmdopt6=""
+    ELSE
+        asn cmdopt6=" tec_off=@tec_off"
+    ENDIF
+
+    asn cmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6"
 
     EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG dry_run=$DRY_RUN@cmdopt' TIMELIM=60;
 

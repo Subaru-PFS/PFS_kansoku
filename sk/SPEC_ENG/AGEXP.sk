@@ -19,6 +19,9 @@
 #for PFS
   EXPTIME=2
   NFRAME=1
+  EXPDLY=NOP
+  TECOFF=NOP
+  *TECOFF=yes,no
   # Object type for AGCC actor
   # object type for AGCC: dark|test|object
   # OBJECT="object"
@@ -63,12 +66,28 @@ ELSE
     asn cmdopt2=" fit_dinr=@fit_dinr"
 ENDIF
 
+asn exposure_delay=@lower("$EXPDLY")
+IF @exposure_delay=="nop"
+    asn cmdopt3=""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn cmdopt3=" exposure_delay=@expdly_ms"
+ENDIF
+
+asn tec_off=@lower("$TECOFF")
+IF @tec_off=="nop"
+    asn cmdopt4=""
+ELSE
+    asn cmdopt4=" tec_off=@tec_off"
+ENDIF
+
+
 *FOR $NFRAME COUNT IN
     *SET INFO3="$COUNT / $NFRAME frame" 
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF@cmdopt1@cmdopt2" TIMELIM=$TIMELIM ;
+    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
 #    *IF @fit_dscale=="nop"
 #        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS center=!STATS.RA_CMD_DEG,!STATS.DEC_CMD_DEG,!TSCL.INSROTPA_PF" TIMELIM=$TIMELIM ;
 #    *ELIF @fit_dscale=="yes" OR @fit_dscale=="no" 

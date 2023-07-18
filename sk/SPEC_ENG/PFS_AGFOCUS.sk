@@ -8,7 +8,8 @@
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
     SCRIPT_UPDATE=2022.06.14
-    SCRIOT_UPDATE=2022.10.26
+    SCRIPT_UPDATE=2022.10.26
+    SCRIPT_UPDATE=2023.07.12
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
@@ -24,6 +25,10 @@
 #  COMBINED=1
 #  CENTROID=1
 #  OBJECT="object"
+  EXPDLY=NOP
+  *EXPDLY=NOP,0.1
+  TECOFF=NOP
+  *TECOFF=NOP,yes,no
 </Default_Parameter>
 
 <Command>
@@ -33,6 +38,8 @@
 # (no need in the current version) Calc time limit for sequence of exposure
 # *SET TIMELIM = (30 + ($EXPTIME + 5))
 
+from "pfsmisc" import lower
+
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ,
@@ -40,7 +47,24 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Focusing (AG actor)" obsinfo2
 EXEC TSC TelFocus MOTOR=ON COORD=TSC Z=$Z ;
 
 *SET EXPT_AG = INT($EXPTIME * 1000)
-EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG " ;
+
+IF $EXPDLY != NOP
+    asn exposure_delay = int($EXPDLY * 1000)
+    asn cmdopt1 = " exposure_delay=@exposure_delay"
+ELSE
+    asn cmdopt1 = ""
+ENDIF
+
+IF $TECOFF == yes or $TECOFF == no
+    asn tec_off = @lower($TECOFF)
+    asn cmdopt2 = " tec_off=@tec_off"
+ELSE
+    asn cmdopt2 = ""
+ENDIF
+
+asn cmdopt = "@cmdopt1@cmdopt2"
+
+EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG@cmdopt" ;
 
 ### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. ---
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;
