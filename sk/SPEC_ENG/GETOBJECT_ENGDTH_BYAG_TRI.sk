@@ -48,7 +48,7 @@ from "math" import fabs
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: HX Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 
 # Wiping SPS
-Exec PFS PFSCMD ACTOR="iic" cmd="sps erase arm=b,r" ;
+Exec PFS PFSCMD ACTOR="iic" cmd='sps erase arm=$ARM' ;
 
 # assign GroupID
 *SET GROUP_ID=!PFS.GROUPID.ID
