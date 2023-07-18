@@ -85,7 +85,7 @@ launchers:
             - { name: VAL04, type: LIST, values: ["yes", "no"], label: "InR fit" }
 
     -
-        label: "Telescope Autoguide Ready"
+        label: "Tel. AG Ready"
         cmd  : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
         params:
             - {name: VAL01, type: LIST, values: ["OFF", "ON"], label: "MOTOR" }
