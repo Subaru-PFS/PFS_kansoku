@@ -27,8 +27,12 @@
   EXPTYPE=OBJECT
 ## Which camera to be used
 ### case sensitive
-  CAMERA="b1,r1"
-  ARM="b,r"
+  CAMERA=NOP
+  *CAMERA="b1,r1,n1,b3,r3,n3"
+  ARM=NOP
+  *ARM="b,r,n"
+  SPECNUM=NOP
+  *SPECNUM="1,2,3"
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
@@ -48,6 +52,9 @@
 
 :Command
 :start
+
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 # Calc timelimit for sequence of exposure
 ## Readout 60sec
@@ -73,6 +80,22 @@
   *SET TIMELIM = ($EXPTIME + 60 + 23) * $NFRAME
 *endif
 
+# Camera selection option
+
+if $CAMERA != NOP and @sps_chk_sel("cam", @lower($CAMERA)) ==1 
+  asn val = @lower($CAMERA)
+  asn cmdopt = "cam=@val"
+ELIF $ARM != NOP and @sps_chk_sel("arm", @lower($ARM)) ==1
+  asn val = @lower($ARM)
+  asn cmdopt = "arm=@val"
+ELIF $SPECNUM !=NOP and @sps_chk_sel("specNum", @lower($SPECNUM)) ==1
+  asn val = @lower($SPECNUM)
+  asn cmdopt = "specNum=@val"
+ELSE
+  asn cmdopt = ""
+ENDIF
+
+
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure: $NFRAME X $EXPTIME sec" obsinfo3="See Monitor tab" obsinfo4='Type: $EXPTYPE' obsinfo5=clear ;
@@ -88,32 +111,44 @@ if $EXPTYPE == "bias"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME comments="test exposure"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+
 elif $EXPTYPE == "dark"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+
 elif $EXPTYPE == "arc"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+
 elif $EXPTYPE == "trace"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+
 elif $EXPTYPE == "object"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+
 elif $EXPTYPE == "flat"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-   EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME @cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No option for $EXPTYPE" obsinfo5=clear ;
 endif
