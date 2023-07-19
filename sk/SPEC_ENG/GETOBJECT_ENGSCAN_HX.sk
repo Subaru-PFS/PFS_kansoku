@@ -24,7 +24,14 @@
     STOP=18
     WMODE=YES
     *WMODE=YES,NO
-    ARM="b,r"
+    # Camera selection
+    CAMERA=NOP
+    *CAMERA="b1,r1,n1,b3,r3,n3"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+
 </Default_Parameter>
 
 
@@ -33,6 +40,8 @@
 :START
 
 from "math" import fabs
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 ### SETUP ###
 
@@ -45,9 +54,25 @@ from "math" import fabs
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: HX Scan" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ;
 
+# Camera selection options
+IF $CAMERA != NOP and @sps_chk_sel("cam", @lower($CAMERA)) ==1
+  asn val = @lower($CAMERA)
+  asn cmdopt = "cam=@val"
+ELIF $ARM != NOP and @sps_chk_sel("arm", @lower($ARM)) ==1
+  asn val = @lower($ARM)
+  asn cmdopt = "arm=@val"
+ELIF $SPECNUM !=NOP and @sps_chk_sel("specNum", @lower($SPECNUM)) ==1
+  asn val = @lower($SPECNUM)
+  asn cmdopt = "specNum=@val"
+ELSE
+  asn cmdopt = ""
+ENDIF
+
 # Wiping SPS
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Wiping..." ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
-Exec PFS PFSCMD ACTOR="iic" cmd='sps erase arm=$ARM' ;
+#Exec PFS PFSCMD ACTOR="iic" cmd='sps erase arm=$ARM' ;
+Exec PFS PFSCMD ACTOR="iic" cmd='sps erase @cmdopt' ;
+
 
 # assign GroupID
 *SET GROUP_ID=!PFS.GROUPID.ID
@@ -78,10 +103,14 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $OPENSHUTTERTIME sec";
     *IF "$WMODE" == "YES"
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME window=500,1000 groupId=$GROUP_ID @cmdopt name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+
     *ELSE
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME groupId=$GROUP_ID arm=$ARM name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME groupId=$GROUP_ID arm=$ARM name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME groupId=$GROUP_ID @cmdopt name="HX_SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+
     *ENDIF
 },           
 
