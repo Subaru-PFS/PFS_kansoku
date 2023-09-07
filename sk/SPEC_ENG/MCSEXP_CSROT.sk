@@ -10,6 +10,7 @@
     STARTANG=-270
     DROT=30
     EXPTIME=60
+    STEP=12
 
 :Command
 
@@ -28,10 +29,7 @@ Exec TSC InsRot Motor=ON TELESCOPE=FREE Coord=ABS POSITION=$STARTANG;
 # Preparation for MCS exposure
 {
 *SET TIMLIM = ( $EXPTIME + 60 )
-*SET STEP = ( 540 / $DROT )
-#*IF $DROT <= 0
-#    $STEP = $STEP * -1
-#*ENDIF
+#*SET STEP = ( 540 / $DROT )
 };
 
 *FOR $STEP COUNT IN
@@ -43,6 +41,12 @@ Exec TSC InsRot Motor=ON TELESCOPE=FREE Coord=ABS POSITION=$STARTANG;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Rotating Cs Rotator to $STARTANG+$DROT*$COUNT deg" ,
     Exec TSC InsRot Motor=ON TELESCOPE=FREE Coord=ABS POSITION=($STARTANG+$DROT*$COUNT);
 *ENDFOR
+
+# Take one more set at the last rotator angle
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="MCS exposure: $EXPTIME sec" ,
+EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
+EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
+EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME doCentroid' TIMELIM=$TIMLIM ;
 
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ;
 

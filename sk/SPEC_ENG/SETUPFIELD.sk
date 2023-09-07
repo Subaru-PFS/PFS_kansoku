@@ -232,7 +232,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     ENDIF
 
     IF $AGEXPDLY != NOP
-        asn exposure_delay = int($AGEXPDLY * 1000)
+        #asn exposure_delay = int($AGEXPDLY * 1000)
         asn cmdopt5 = " exposure_delay=@exposure_delay"
     ELSE
         asn cmdopt5 = ""
@@ -247,7 +247,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6" 
 
-    EXEC pfs pfscmd actor="iic" cmd='acquireField@cmdopt' TIMELIM=180;
+    EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
     IF "$AG" == "ON"
@@ -260,7 +260,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         ELIF "$DRY_RUN" == "NO"
 
             ## Start Telescope AG: nop implemented yet. Options are different from agActor.
-            #EXEC pfs pfscmd actor="iic" cmd='autoguideStart@cmdopt';
+            #EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt";
             #Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
             #EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
         ENDIF

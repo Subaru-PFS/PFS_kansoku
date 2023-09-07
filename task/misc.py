@@ -55,7 +55,7 @@ def sps_chk_sel(select, val) :
         else :
             ret = 0
     elif select == "arm" :
-        if re.fullmatch(r'[brn]{1}(,[brn]{1})*', val) :
+        if re.fullmatch(r'[brmn]{1}(,[brn]{1})*', val) :
             ret = 1
         else :
             ret = 0
@@ -64,7 +64,7 @@ def sps_chk_sel(select, val) :
 
         ret = 0
 
-    return re
+    return ret
 
 """
 def fullmatch(regex, string, flags=0):

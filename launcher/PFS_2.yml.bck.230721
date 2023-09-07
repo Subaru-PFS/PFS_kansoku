@@ -69,20 +69,22 @@ launchers:
 
     -
         label: "Acquire Field (pfsDesign)"
-        cmd  : EXEC pfs pfscmd actor="iic" cmd='acquireField exptime=$VAL01 fit_dScale=$VAL02 fit_dInR=$VAL03'
+        cmd  : EXEC pfs pfscmd actor="iic" cmd='acquireField exptime=$VAL01 fit_dScale=$VAL02 fit_dInR=$VAL03 magnitude=$VAL04'
         params:
             - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
             - { name: VAL02, type: LIST, values: ["no", "yes"], label: "Scale fit" }
             - { name: VAL03, type: LIST, values: ["yes", "no"], label: "InR fit" }
+            - { name: VAL04, type: INPUT, width:8, value: "20.0", label: "Mag. lim." }
 
     -
         label: "Start AG (pfsDesign)"
-        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04 magnitude=$VAL05'
         params:
             - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
             - { name: VAL02, type: INPUT, width:8, value: "5000", lable: "Cadence(ms)" }
             - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Scale fit" }
             - { name: VAL04, type: LIST, values: ["yes", "no"], label: "InR fit" }
+            - { name: VAL05, type: INPUT, width:8, value: "20.0", label: "Mag. lim." }
 
     -
         label: "Tel. AG Ready"

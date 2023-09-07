@@ -57,11 +57,11 @@ from "pfsmisc" import random_song
     EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
 
     ### Pop-up window for checking the fiber illuminator status
-    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-    Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+    #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    #Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
 
     ### Sound during cobraconvergence
-    *SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 ,
+    #*SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 ,
 
     ## Cobra configuration
     EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION tolerance=$TOLERANCE" timelim=600;

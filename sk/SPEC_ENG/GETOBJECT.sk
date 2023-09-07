@@ -155,6 +155,9 @@ elif $EXPTYPE == "trace"
   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 
 elif $EXPTYPE == "object"
+
+  asn visit = !PFS.DESIGN.VISIT
+  ### No option for visit ID control with scienceObject command ###
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;

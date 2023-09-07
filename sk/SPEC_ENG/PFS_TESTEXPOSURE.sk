@@ -20,7 +20,7 @@
   NFRAME=2
   EXPTIME=1
   MODE=BIAS
-  *MODE=BIAS, DARK
+  *MODE=BIAS, DARK, OBJECT
 
   SELECT=NOP
   *SELECT="cam", "specNum", "arm"
@@ -84,8 +84,13 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
-    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
+
+    *IF $MODE == "OBJECT"
+        EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
+    *ELIF $MODE == "DARK"
+        EXEC PFS PFSCMD ACTOR="agcc" CMD="expose dark exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;    
+    *ENDIF
+    #EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
   *ENDFOR
 
@@ -98,7 +103,7 @@ from "pfsmisc" import sps_chk_sel
   *SET SPSCOMMENT = "\"test_command\""
   *SET SPSNAME = "\"fromGen\""
   
-  IF $SELECT == "NOP" OR $SELVAL="NOP"
+  IF $SELECT == "NOP" OR $SELVAL=="NOP"
     asn invalid_input = 0
     asn comopt = ""
   ELIF @sps_chk_sel($SELECT, $SELVAL) == 1

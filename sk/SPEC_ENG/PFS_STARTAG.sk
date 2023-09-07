@@ -170,7 +170,7 @@ ELSE
 
     asn cmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6"
 
-    EXEC pfs pfscmd actor="ag" cmd='autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG dry_run=$DRY_RUN@cmdopt' TIMELIM=60;
+    EXEC pfs pfscmd actor="ag" cmd="autoguide start otf exposure_time=$EXPT_AG cadence=$INT_AG dry_run=$DRY_RUN@cmdopt" TIMELIM=60;
 
 ENDIF
 

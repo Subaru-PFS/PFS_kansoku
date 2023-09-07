@@ -27,23 +27,22 @@ launchers:
         label: "MCS Test Exp."
         cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=$VAL01 MODE=$VAL02
         params:
-            - [ VAL01, INPUT, 8, 4.8, "ExpTime (sec)" ]
+            - [ VAL01, INPUT, 8, 0.8, "ExpTime (sec)" ]
             - [ VAL02, LIST, [ "OBJECT", "BIAS", "DARK" ], "Mode" ]
 
     -
         label: "AG Test Exp."
-        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE="dark"
         params:
             - [ VAL01, INPUT, 8, 1, "NFrame" ]
             - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
-            - [ VAL03, LIST, [ "OBJECT", "DARK" ], "Mode" ]
 
     -
         label: "SpS Test Exp."
         cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03 SELECT=$VAL04 SELVAL=$VAL05
         params:
             - [ VAL01, INPUT, 8, 1, "NFrame" ]
-            - [ VAL02, INPUT, 8, 10.0, "ExpTime (sec)" ]
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
             - [ VAL03, LIST, [ "BIAS", "DARK" ], "Mode" ]
             - break
             - [ VAL04, LIST, [ "NOP", "cam", "specNum", "arm" ], "Cam. Select mthd." ]
@@ -142,13 +141,12 @@ launchers:
         label : "Tel. AG Ready"
         cmd   : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
         params: 
-            - [ VAL01, LIST, [ "ON", "OFF" ], "Motor" ]
-
+            - [ VAL01, LIST, [ "ON", "OFF" ], "Motor" ] 
 
     -
         label : "Reconf. AG Param."
 #        cmd   : AGRECONF OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07 
-        cmd   : AGRECONF2 OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07 MAX_ELLIP=$VAL08 MAX_SIZE=$VAL09 MIN_SIZE=$VAL10 MAX_RES=$VAL11 
+        cmd   : AGRECONF2 OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07 MAX_ELLIP-$VAL08 MAX_SIZE=$VAL09 MIN_SIZE=$VAL10 MAX_RES=$VAL11
         params:
             - [ VAL01, INPUT, 9, "NOP", "ExpTime(s)" ]
             - [ VAL02, INPUT, 9, "NOP", "Interval(s)" ]
@@ -156,15 +154,12 @@ launchers:
             - break
             - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]
             - [ VAL05, LIST, ["NOP", "yes", "no"], "InR fit" ]
-            - break
             - [ VAL06, INPUT, 9, "NOP", "Exp. Delay(s)" ]
             - [ VAL07, LIST, [ "NOP", "yes", "no" ], "AG coolers off" ]
             - [ VAL08, INPUT, 9, "NOP", "Max. ellip. (0.6)" ]
-            - break
             - [ VAL09, INPUT, 9, "NOP", "Max. size (20.0 pix)" ]
             - [ VAL10, INPUT, 9, "NOP", "Min. size (0.92 pix)" ]
             - [ VAL11, INPUT, 9, "NOP", "Max. residual (0.2 mm)" ]
-
 
     - sep
 
