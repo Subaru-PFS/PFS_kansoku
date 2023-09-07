@@ -1,0 +1,235 @@
+#**********************************************************************
+#
+# AG camera exposure
+#   Make exposures with AG cameras
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Koshida
+    SCRIPT_UPDATE=2023.04.18
+    SCRIPT_UPDATE=2023.07.12
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+#for PFS
+  EXPTIME=2
+  NFRAME=1
+  EXPDLY=NOP
+  *EXPDLY=0.1
+  TECOFF=NOP
+  *TECOFF=yes,no
+  INR_INI=!TSCL.INSROTPA_PF
+  DINR=30.0
+  INRDIR=POS
+  *INRDIR=POS,NEG
+  NPOS=NOP
+  # Object type for AGCC actor
+  # object type for AGCC: dark|test|object
+  # OBJECT="object"
+  # VISIT_ID=0 
+  #Comment out "COMBINED" parameter since not used.
+  #COMBINED=1
+  #CENTROID=0
+  #Comment out "CMETHOD" since only sep is used.  
+  #CMETHOD="sep"
+  FIT_DSCALE=NOP
+  *FIT_DSCALE=yes,no
+  FIT_DINR=NOP
+  *FIT_DINR=yes,no
+</Default_Parameter>
+
+<Command>
+:start
+
+from "pfsmisc" import lower
+
+# AGCC USES SECONDS!!! (NOT milliseconds)
+*SET EXPTIME_MS=INT($EXPTIME * 1000) 
+
+# Timelimit for each exposure exposure passed to AGCC actor
+*SET TIMELIM=($EXPTIME + 30)
+
+# Min and max rotator angle
+asn mininr=-170.0
+asn maxinr=170.0
+
+# fit options
+asn fit_dscale=@lower("$FIT_DSCALE")
+IF @fit_dscale=="nop"
+    asn cmdopt1=""
+ELSE
+    asn cmdopt1=" fit_dscale=@fit_dscale"
+ENDIF
+
+asn fit_dinr=@lower("$FIT_DINR")
+IF @fit_dinr=="nop"
+    asn cmdopt2=""
+ELSE
+    asn cmdopt2=" fit_dinr=@fit_dinr"
+ENDIF
+
+asn exposure_delay=@lower("$EXPDLY")
+IF @exposure_delay=="nop"
+    asn cmdopt3=""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn cmdopt3=" exposure_delay=@expdly_ms"
+ENDIF
+
+asn tec_off=@lower("$TECOFF")
+IF @tec_off=="nop"
+    asn cmdopt4=""
+ELSE
+    asn cmdopt4=" tec_off=@tec_off"
+ENDIF
+
+asn agexpcmdopt="@cmdopt1@cmdopt2@cmdopt3@cmdopt4"
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="Rotcenter measurement with AG camera" obsinfo2=clear obsinfo3="Moving rotator to the initial position." obsinfo4=clear obsinfo5=clear ;
+
+# Move to the first InsRot position
+
+asn tmpcnt = int(1)
+Exec TSC InsRot_PF Motor=ON TELESCOPE=LINK Coord=ABS POSITION=$INR_INI ;
+Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+
+# calc number of positions
+
+asn curpos=!TSCL.INSROTPOS_PF
+
+asn cnt_pos=0
+asn position=@curpos+$DINR
+while (@position <= @maxinr) {
+    asn cnt_pos = @cnt_pos+1
+    asn position = @position+$DINR
+}
+
+asn cnt_neg=0
+asn position=@curpos-$DINR
+while (@position >= @mininr) {
+    asn cnt_pos = @cnt_neg+1
+    asn position = @position-$DINR
+}
+
+asn posnum=@cnt_pos+@cnt_neg+1
+
+# NPOS
+
+IF $NPOS == NOP
+    asn postot = @posnum
+ELSE
+    asn postot = int($NPOS)
+ENDIF
+
+*Set INFO02 = "Position: 1 / @postot, PA: $INR_INI"
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO02 obsinfo3=clear ;
+
+# Take the first position data
+
+*Set INFO03 = "Taking AG camera images: Texp=$EXPTIME"
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO03 ;
+
+
+*FOR $NFRAME COUNT IN
+    *SET INFO4="$COUNT / $NFRAME frame" 
+    EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
+    EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+*ENDFOR
+
+asn tmpcnt = @tmpcnt+1
+
+# Rotator direction
+IF $INRDIR == "POS"
+    asn pol = 1.0
+    asn limcnt1 = @cnt_pos
+    asn limcnt2 = @cnt_neg
+ELSE
+    asn pol = -1.0
+    asn limcnt1 = @cnt_neg
+    asn limcnt2 = @cnt_pos
+ENDIF
+
+# Make exposure at positions after the second 
+
+while ( (@tmpcnt <= @limcnt1+1) and (@tmpcnt <= @postot)) {
+
+    # Move rotator
+
+    asn tmppos = $INR_INI + @pol*$DINR*(@tmpcnt-1)
+
+    *Set INFO02 = "Position @tmpcnt / @postot, PA: @tmppos"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO02 obsinfo3="Moving rotator to next position." obsinfo4=clear;
+
+    Exec TSC InsRot_PF Motor=ON TELESCOPE=LINK Coord=ABS POSITION=@tmppos ;
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+
+    # Exposure
+    *Set INFO03 = "Taking AG camera images: Texp=$EXPTIME"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO03 ;
+
+    *FOR $NFRAME COUNT IN
+        *SET INFO4="$COUNT / $NFRAME frame"
+        EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
+        EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
+        EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+    *ENDFOR
+
+    # counter management
+    asn tmpcnt = @tmpcnt + 1
+
+}
+
+# Opposite side from the initial position
+
+IF @tmpcnt <= @postot
+
+    while ( (@tmpcnt <= @limcnt1+1+@limcnt2) and (@tmpcnt <= @postot) ) {
+
+        # move rotator
+        
+        asn tmppos = $INR_INI - @pol*$DINR*(@tmpcnt-1-@limcnt1)
+
+        *Set INFO02 = "Position @tmpcnt / @postot, PA: @tmppos"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO02 obsinfo3="Moving rotator to next position." obsinfo4=clear;
+
+        Exec TSC InsRot_PF Motor=ON TELESCOPE=LINK Coord=ABS POSITION=@tmppos ;
+        Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+
+        # Exposure
+        *Set INFO03 = "Taking AG camera images: Texp=$EXPTIME"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO03 ;
+
+        *FOR $NFRAME COUNT IN
+            *SET INFO4="$COUNT / $NFRAME frame"
+            EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO4 ;
+            EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
+            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            Exec PFS PFSCMD ACTOR="ag" CMD="acquire_field otf exposure_time=$EXPTIME_MS guide=no@cmdopt1@cmdopt2@cmdopt3@cmdopt4" TIMELIM=$TIMELIM ;
+            EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
+        *ENDFOR
+
+        # counter management
+        asn tmpcnt = @tmpcnt + 1
+    }
+
+ENDIF
+
+## Sound : file is in /gen2/conf/Sounds/
+    # ref:   EXEC OBS SOUND SELECT=PFS_CRITICALALERT Volume=64 ,
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
+
+</Command>

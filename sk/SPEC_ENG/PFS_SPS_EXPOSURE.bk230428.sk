@@ -10,8 +10,6 @@
     # add domeflat option (Arai)
     SCRIPT_UPDATE=2022.09.25
     SCRIPT_UPDATE=2023.04.11
-    SCRIPT_UPDATE=2023.04.25 # adjust TIMELIM for exptype="arc & "trace", add option if HGCD>0 (arai)
-    SCRIPT_UPDATE=2023.04.29 # change TIMELIM for dark/object
     OBE_ID=PFS
 ## Overwrite Gen2 FITS.PFS.OBS-MOD status
     OBE_MODE=SPEC_ENG
@@ -27,12 +25,8 @@
   EXPTYPE=OBJECT
 ## Which camera to be used
 ### case sensitive
-  CAMERA=NOP
-  *CAMERA="b1,r1,n1,b3,r3,n3"
-  ARM=NOP
-  *ARM="b,r,n"
-  SPECNUM=NOP
-  *SPECNUM="1,2,3"
+  CAMERA="b1,r1"
+  ARM="b,r"
 ## Default value of on-time [sec] for each cal-lamp source
   HGCD=0.0
   AR=0.0
@@ -53,9 +47,6 @@
 :Command
 :start
 
-from "pfsmisc" import lower
-from "pfsmisc" import sps_chk_sel
-
 # Calc timelimit for sequence of exposure
 ## Readout 60sec
 ## HgCd takes 100 sec to warm up 
@@ -69,50 +60,16 @@ from "pfsmisc" import sps_chk_sel
 *if $EXPTYPE == "bias"
 # bias: no overhead, zero exposure time
   *SET TIMELIM = 30 + 60 * $NFRAME
-*elif $EXPTYPE == "arc" and ($HGCD) > (0.0)
-# arc or trace: cal-lamps needs 100sec to warm up
-  *SET TIMELIM = 260 + ($EXPTIME + 60 + 20) * $NFRAME
 *elif $EXPTYPE == "arc" or $EXPTYPE == "trace"
 # arc or trace: cal-lamps needs 100sec to warm up
-  *SET TIMELIM = ($EXPTIME + 60 + 25) * $NFRAME
+  *SET TIMELIM = 5 + ($EXPTIME + 60) * $NFRAME
+*elif $EXPTYPE == "arc" and ($HGCD) > (0.0)
+# arc or trace: cal-lamps needs 100sec to warm up
+  *SET TIMELIM = 260 + ($EXPTIME + 60) * $NFRAME
 *else
 # others mode (i.e. dark or object): no additional overhead
-  *SET TIMELIM = ($EXPTIME + 60 + 43) * $NFRAME
+  *SET TIMELIM = 60 + ($EXPTIME + 60) * $NFRAME
 *endif
-
-# Camera selection option
-
-*IF $CAMERA != "NOP"
-  #asn chkval = @sps_chk_sel("cam", @lower($CAMERA))
-  #IF @chkval == 1
-    #asn val = @lower($CAMERA)
-    *Set cmdopt = "cam=$CAMERA"
-  #ELSE
-  #  asn cmdopt = ""
-  #ENDIF
-
-*ELIF $ARM != "NOP"
-  #asn chkval = @sps_chk_sel("arm", @lower($ARM))
-  #IF @chkval == 1
-    #asn val = @lower($ARM)
-    *Set cmdopt = "arm=$ARM"
-  #ELSE
-  #  asn cmdopt = ""
-  #ENDIF
-
-*ELIF $SPECNUM != "NOP" 
-  #asn chkval = @sps_chk_sel("specNum", @lower($SPECNUM))
-  #IF @chkval == 1
-    #asn val = @lower($SPECNUM)
-    *Set cmdopt = "specNum=$SPECNUM"
-  #ELSE
-  #  asn cmdopt = ""
-  #ENDIF
-
-*ELSE
-  *Set cmdopt = ""
-*ENDIF
-
 
 :main_start
 
@@ -129,44 +86,32 @@ if $EXPTYPE == "bias"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME cams=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME comments="test exposure"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-
 elif $EXPTYPE == "dark"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-
+  EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "arc"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-
+  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "trace"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-
+   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$HAL duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "object"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-
+  # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
+   EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 elif $EXPTYPE == "flat"
   #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  #EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
-
+   EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No option for $EXPTYPE" obsinfo5=clear ;
 endif

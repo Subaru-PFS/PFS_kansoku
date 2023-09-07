@@ -19,13 +19,22 @@
     EQUINOX=!STATS.EQUINOX
     DITHWIDTH=5
     EXPTIME=60
-    ARM="b,r"
+    # Camera selection
+    CAMERA=NOP
+    *CAMERA="b1,r1,n1,b3,r3,n3"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
 </Default_Parameter>
 
 
 <Command>
 
 :START
+
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 #Preparation for SPS exposure
 
@@ -35,6 +44,25 @@
 
 *SET RA=!STATS.RA
 *SET DEC=!STATS.DEC
+
+# Camera selection options
+*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", (@lower($CAMERA))) ) ==1 
+  #asn val = @lower($CAMERA)
+  #asn cmdopt = "cam=@val"
+  *Set cmdopt = "cam=$CAMERA"
+*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
+  #asn val = @lower($ARM)
+  #asn cmdopt = "arm=@val"
+  *Set cmdopt = "arm=$ARM"
+*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
+  #asn val = @lower($SPECNUM)
+  #asn cmdopt = "specNum=@val"
+  *Set cmdopt = "specNum=$SPECNUM"
+*ELSE
+  #asn cmdopt = ""
+  *Set cmdopt = ""
+*ENDIF
+
 
 :MAIN_START
 
@@ -52,7 +80,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
 {
     #Exposure
     EXEC PFS PFSCMD ACTOR="iic" cmd='sps erase' TIMELIM=$EXPTIMLIM ;
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME arm=$ARM name="5X5SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME arm=$ARM name="5X5SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$OPENSHUTTERTIME $cmdopt name="5X5SCAN_$DITHWIDTH"' TIMELIM=$EXPTIMLIM ;
+
 } ,
 
 

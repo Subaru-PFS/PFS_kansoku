@@ -8,28 +8,29 @@
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
     SCRIPT_UPDATE=2022.09.20
     SCRIPT_UPDATE=2022.10.26
+    SCRIPT_UPDATE=2023.07.12
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 </Header>
 
 <Default_Parameter>
 #for PFS
-  EXPTIME=2
-  INTERVAL=10
-  DESIGN_ID=NOP
+  #EXPTIME=2
+  #INTERVAL=10
+  #DESIGN_ID=NOP
   #DESIGN_PATH default: "/data/pfsDesign"
-  DESIGN_PATH="/data/pfsDesign"
-  VISIT_ID=0
-  FROM_SKY="no"
-  DRY_RUN="yes"
+  #DESIGN_PATH="/data/pfsDesign"
+  #VISIT_ID=0
+  #FROM_SKY="no"
+  #DRY_RUN="yes"
 </Default_Parameter>
 
 <Command>
 :start
 
 #Calculate exptime in milliseconds
-*SET EXPT_AG=INT($EXPTIME*1000)
-*SET INT_AG=INT($INTERVAL*1000)
+#*SET EXPT_AG=INT($EXPTIME*1000)
+#*SET INT_AG=INT($INTERVAL*1000)
 :main_start
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGResume" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
@@ -39,19 +40,22 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGResume" obsinfo2=clear obsi
 #Set AG_TRACKING OFF for June 2022 run
 #EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
 
-*IF "$DESIGN_ID" != "NOP"
-    #EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH design_id=$DESIGN_ID cadence=3000 from_sky=$FROM_SKY dry_run=$DRY_RUN' ;
-    EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG" TIMELIM=600 ;
+#*IF "$DESIGN_ID" != "NOP"
+    ##EXEC pfs pfscmd actor="ag" cmd='autoguide start exposure_time=$EXPT_AG design_path=$DESIGN_PATH design_id=$DESIGN_ID cadence=3000 from_sky=$FROM_SKY dry_run=$DRY_RUN' ;
+    #EXEC pfs pfscmd actor="iic" cmd="autoguideStart exptime=$EXPT_AG cadence=$INT_AG" TIMELIM=600 ;
 
-*ELSE
-    EXEC pfs pfscmd actor="ag" cmd="autoguide restart" TIMELIM=600;
-*ENDIF
+#*ELSE
+
+EXEC pfs pfscmd actor="ag" cmd="autoguide restart" TIMELIM=60;
+
+#*ENDIF
+
 EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
 
-IF "$DRY_RUN" == "no"
-    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "NO"] ;
-ENDIF
+#IF "$DRY_RUN" == "no"
+#    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+#    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "NO"] ;
+#ENDIF
 
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,

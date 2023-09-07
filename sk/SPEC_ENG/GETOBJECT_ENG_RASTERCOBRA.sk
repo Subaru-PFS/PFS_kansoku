@@ -33,13 +33,22 @@
 #    *AGEXP=YES,NO
 #    CORRECT=YES
 
-    ARM="b,r"
+    CAMERA=NOP
+    *CAMERA="b1,r1,n1,b3,r3,n3"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+
 </Default_Parameter>
 
 
 <Command>
 
 :START
+
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 ### SETUP ###
 
@@ -64,6 +73,23 @@ asn INFO3="GroupID: $GROUP_ID GroupName : $GROUP_NAME (Variant x $N_TOTAL, exp=$
 #Wiping SPS
 Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
+# Camera selection options
+*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", @lower($CAMERA))) ) ==1 
+  #asn val = @lower($CAMERA)
+  #asn cmdopt = "cam=@val"
+  *Set cmdopt = "cam=$CAMERA"
+*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
+  #asn val = @lower($ARM)
+  #asn cmdopt = "arm=@val"
+  *Set cmdopt = "arm=$ARM"
+*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
+  #asn val = @lower($SPECNUM)
+  #asn cmdopt = "specNum=@val"
+  *Set cmdopt = "specNum=$SPECNUM"
+*ELSE
+  #asn cmdopt = ""
+  *Set cmdopt = ""
+*ENDIF
 
 
 :MAIN_START
@@ -77,11 +103,15 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
     *ELSE
         EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
     *ENDIF
 } ;
 
@@ -140,11 +170,15 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
             *IF "$WMODE" == "YES"
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
             *ELSE
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
             *ENDIF
         } ;
 *ENDFOR
@@ -199,11 +233,15 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
+
         *ENDIF
     } ;
 

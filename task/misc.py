@@ -1,4 +1,5 @@
 import math
+import re
 
 ## symbolic link from $OBSHOME/COMMON/task/pfsmisc.py to this file
 def adc_pos(el,cnf):
@@ -39,3 +40,34 @@ def random_song(music1,music2,music3):
     import random
     song = [music1,music2,music3]    
     return random.choice(song)
+
+def sps_chk_sel(select, val) :
+
+    if select == "cam" :
+        if re.fullmatch(r'[brn]{1}[1-4]{1}(,[brn]{1}[1-4]{1})*', val) != None :
+            ret = 1
+        else :
+            ret = 0
+
+    elif select == "specNum" :
+        if re.fullmatch(r'[1-4]{1}(,[1-4]{1})*', val) :
+            ret = 1
+        else :
+            ret = 0
+    elif select == "arm" :
+        if re.fullmatch(r'[brmn]{1}(,[brn]{1})*', val) :
+            ret = 1
+        else :
+            ret = 0
+
+    else :
+
+        ret = 0
+
+    return ret
+
+"""
+def fullmatch(regex, string, flags=0):
+    ###Emulate python-3.4 re.fullmatch().###
+    return re.match("(?:" + regex + r")\Z", string, flags=flags)
+"""

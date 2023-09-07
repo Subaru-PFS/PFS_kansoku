@@ -6,25 +6,27 @@
 # using randome_song in /gen2/share/Git/kansoku/PFS/task/mics.py
 #********************************************************************
 
-:Header
+<Header>
     SCRIPT_AUTHOR=Arai
     SCRIPT_UPDATE=2023.05.01
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
+</Header>
 
-:Default_Parameter
+<Default_Parameter>
     VOLUME=64
+</Default_Parameter>
 
-:Command
+<Command>
 :start
 
 from "pfsmisc" import random_song
 
 :main_start
 
-asn BGM = @random_song('Colonel_Bogey_March_LONG','Korobushka_LONG','Turkish_March_LONG') 
-Exec OBS Sound Select="@BGM" Volume=$VOLUME ,
+*Set BGM = random_song('Colonel_Bogey_March_LONG','Korobushka_LONG','Turkish_March_LONG') 
+Exec OBS Sound Select="$BGM" Volume=$VOLUME ;
 
 :main_end
 :end
-
+</Command>

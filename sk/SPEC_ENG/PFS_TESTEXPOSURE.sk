@@ -8,6 +8,7 @@
     SCRIPT_UPDATE=2022.09.24
     SCRIPT_UPDATE=2022.10.26
     SCRIPT_UPDATE=2023.04.11
+    SCRIPT_UPDATE=2023.07.05
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -19,7 +20,18 @@
   NFRAME=2
   EXPTIME=1
   MODE=BIAS
-  *MODE=BIAS, DARK
+  *MODE=BIAS, DARK, OBJECT
+
+  SELECT=NOP
+  *SELECT="cam", "specNum", "arm"
+  SELVAL=NOP
+  # cam
+  *SELVAL="b1,r1,n1"
+  # specNum
+  *SELVAL="1"
+  # arm
+  *SELVAL="b,r,n"
+
   ARM="b,r"
 
 :Command
@@ -28,16 +40,38 @@
 # Calc timelimit for sequence of exposure
 #*SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
 
+from "pfsmisc" import sps_chk_sel
+
 :main_start
 
 *IF $CAM == "MCS"
   *SET TIMELIM = (30 + ($EXPTIME + 15) * $NFRAME)
 
-  EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS exposure: $NFRAME X $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+  *IF $MODE == "BIAS"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Bias exposure:" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
-  EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-  Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" ;
-  EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose bias" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+  *ELIF $MODE == "DARK" 
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Dark exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose dark expTime=$EXPTIME" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+  *ELIF $MODE == "OBJECT"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Object exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+  *ENDIF
+
+
 *ENDIF
 
 *IF $CAM == "AG"
@@ -50,8 +84,13 @@
     EXEC OBS Set_message Instrument_name=PFS obsinfo3=$INFO3 ;
     EXEC OBS TIMER DURATION=($EXPTIME + 5) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
-    EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
+
+    *IF $MODE == "OBJECT"
+        EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;
+    *ELIF $MODE == "DARK"
+        EXEC PFS PFSCMD ACTOR="agcc" CMD="expose dark exptime=$EXPTIME centroid=0" TIMELIM=$TIMELIM ;    
+    *ENDIF
+    #EXEC OBS SLEEP SLEEP_TIME=($EXPTIME + 3) ; 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ;
   *ENDFOR
 
@@ -64,30 +103,47 @@
   *SET SPSCOMMENT = "\"test_command\""
   *SET SPSNAME = "\"fromGen\""
   
-  *IF $MODE == "BIAS"
+  IF $SELECT == "NOP" OR $SELVAL=="NOP"
+    asn invalid_input = 0
+    asn comopt = ""
+  ELIF @sps_chk_sel($SELECT, $SELVAL) == 1
+    asn invalid_input = 0 
+    asn comopt = "$SELECT=$SELVAL"
+  ELSE
+    asn invalid_input = 1
+    asn comopt = "$SELECT=$SELVAL"
+  ENDIF
+
+  IF @invalid_input == 1
+    EXEC OBS SOUND SELECT=E_CANCEL Volume=64 ,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure ($MODE): $NFRAME" obsinfo3="Invalid input: @comopt" obsinfo4=clear obsinfo5=clear ;
+
+  ELIF $MODE == "BIAS"
     *SET TIMELIM = 30 + 60 * $NFRAME
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Bias): $NFRAME" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Bias): $NFRAME @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
     
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,
     # EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME doTest @comopt' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
-  *ELIF $MODE == "DARK"
+  ELIF $MODE == "DARK"
     *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='dark expTime=$EXPTIME duplicate=$NFRAME cam=b1,r1 name="$SPSNAME" comments="$SPSCOMMENT" doTest' TIMELIM=$TIMELIM ;
     # EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest' TIMELIM=$TIMELIM ;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME arm=$ARM doTest' TIMELIM=$TIMELIM ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME doTest @comopt' TIMELIM=$TIMELIM ;
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
     
-  *ENDIF
+  ENDIF
 
 *ENDIF
 

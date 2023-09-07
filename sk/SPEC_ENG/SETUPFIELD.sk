@@ -17,6 +17,7 @@
         ### Remove RA, Dec option, etc. 
         ### add cobra option (YES or NO) by Arai
 	Script_Update=2022.09.25
+        Script_Update=2023.07.12
 #       Dispatcher_Version=1.0
 #             ESTIMATE=180
 
@@ -40,6 +41,10 @@
         *FIT_DSCALE=NOP,YES,NO
         FIT_DINR=NOP
 	*FIT_DINR=NOP,YES,NO
+        AGEXPDLY=NOP
+        *AGEXPDLY=0.1
+        AGTECOFF=NOP
+        *AGTECOFF=NOP,yes,no
         # Common parameters
         ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
         OFFSET_RA=0
@@ -226,9 +231,23 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         asn cmdopt4 = ""
     ENDIF
 
-    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4" 
+    IF $AGEXPDLY != NOP
+        #asn exposure_delay = int($AGEXPDLY * 1000)
+        asn cmdopt5 = " exposure_delay=@exposure_delay"
+    ELSE
+        asn cmdopt5 = ""
+    ENDIF
 
-    EXEC pfs pfscmd actor="iic" cmd='acquireField@cmdopt' TIMELIM=180;
+    IF $AGTECOFF == yes or $AGTECOFF == no
+        asn tec_off = @lower($AGTECOFF)
+        asn cmdopt6 = " tec_off=@tec_off"
+    ELSE
+        asn cmdopt6 = "" 
+    ENDIF
+
+    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6" 
+
+    EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
     IF "$AG" == "ON"
@@ -240,10 +259,10 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
         ELIF "$DRY_RUN" == "NO"
 
-            # Start Telescope AG
-            EXEC pfs pfscmd actor="iic" cmd='autoguideStart@cmdopt';
-            Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
-            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+            ## Start Telescope AG: nop implemented yet. Options are different from agActor.
+            #EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt";
+            #Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
+            #EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
         ENDIF
 
     ELSE

@@ -24,7 +24,12 @@
     STOP=19
     WMODE=YES
     *WMODE=YES,NO
-    ARM="b,r"
+    CAMERA=NOP
+    *CAMERA="b1,r1,n1,b3,r3,n3"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
 
     #OFFSET=REL
     #*OFFSET=ABS,REL
@@ -47,6 +52,8 @@
 :START
 
 from "math" import fabs
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 ### SETUP ###
 
@@ -70,6 +77,24 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase arm=b,r" ;
 
 # assign GroupID
 *SET GROUP_ID=!PFS.GROUPID.ID
+
+# camera selection option
+*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", (@lower($CAMERA))) ) ==1 
+  #asn val = @lower($CAMERA)
+  #asn cmdopt = "cam=@val"
+  *Set cmdopt = "cam=$CAMERA"
+*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
+  #asn val = @lower($ARM)
+  #asn cmdopt = "arm=@val"
+  *Set cmdopt = "arm=$ARM"
+*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
+  #asn val = @lower($SPECNUM)
+  #asn cmdopt = "specNum=@val"
+  *Set cmdopt = "specNum=$SPECNUM"
+*ELSE
+  #asn cmdopt = ""
+  *Set cmdopt = ""
+*ENDIF
 
 :MAIN_START
 
@@ -245,7 +270,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
 
             #*IF $OFFSET == ABS
             #    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
@@ -256,7 +283,9 @@ Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" 
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
 
             #*IF $OFFSET == ABS
             #    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
@@ -415,11 +444,15 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsI
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+
 *ENDIF
 } ;
 

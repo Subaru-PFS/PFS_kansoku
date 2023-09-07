@@ -41,13 +41,7 @@
 #    *AGEXP=YES,NO
 #    CORRECT=YES
 
-    # Camera selection
-    CAMERA=NOP
-    *CAMERA="b1,r1,n1,b3,r3,n3"
-    ARM=NOP
-    *ARM="b,r,n"
-    SPECNUM=NOP
-    *SPECNUM="1,2,3"
+    ARM="b,r"
 
 </Default_Parameter>
 
@@ -55,9 +49,6 @@
 <Command>
 
 :START
-
-from "pfsmisc" import lower
-from "pfsmisc" import sps_chk_sel
 
 ### SETUP ###
 
@@ -82,23 +73,7 @@ asn INFO3="$GROUP_NAME"
 #Wiping SPS
 Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
-# Camera selection options
-*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", (@lower($CAMERA))) ) ==1 
-  #asn val = @lower($CAMERA)
-  #asn cmdopt = "cam=@val"
-  *Set cmdopt = "cam=$CAMERA"
-*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
-  #asn val = @lower($ARM)
-  #asn cmdopt = "arm=@val"
-  *Set cmdopt = "arm=$ARM"
-*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
-  #asn val = @lower($SPECNUM)
-  #asn cmdopt = "specNum=@val"
-  *Set cmdopt = "specNum=$SPECNUM"
-*ELSE
-  #asn cmdopt = ""
-  *Set cmdopt = ""
-*ENDIF
+
 
 :MAIN_START
 # Proc 4. Take an SpS exposure (will be replace to a subroutine command) at the field center.
@@ -112,15 +87,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ELSE
         EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
     *ENDIF
 } ;
 
@@ -160,9 +131,78 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         } ;
 
         # 7. field acquisition 
-            Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
-            Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear,
-            Exec OBS SLEEP SLEEP_TIME=5;             
+#            Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_AG) ;
+#            Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Field Acquisition" ObsInfo5=Clear,
+#            Exec OBS SLEEP SLEEP_TIME=5;             
+#
+
+### AG correction by GEN2 or MLP 
+            *IF $AG == "GEN2" 
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via Gen2..." ObsInfo4="Move Z to AG focus position...",
+                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$Z_AG ;
+
+                #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+                #Exec OBS Confirmation Instrument_Name=PFS Title="Is Field Acquisition Completed? (use Settle LOOP)" Dialog=[OK];
+
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="AGSETTLELOOP running...",
+                *SUB AGSETTLELOOP OBE_ID=PFS OBE_MODE=SPEC_ENG DRA=$DRA DDEC=$DDEC DINR=$DINR SUBMODE=$SUBMODE ;     
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$Z_PFI ;
+
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Done.", 
+                Exec OBS Sleep Sleep_Time=1 ;
+
+            *ELIF $AG == "MLP"
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire field via MLP..." ObsInfo4="Move Z to AG focus position...",
+                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$Z_AG ;
+
+                # Stop running AG if any
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Stop running AG if any...",
+                EXEC TSC AG_TRACKING MOTOR=OFF ;
+                # Check the guideready flag is off
+                EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ; 
+
+                #Restart AG with the declared pfsDesign while SETUPFIELD
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Running AG correction...",
+                EXEC pfs pfscmd actor="ag" cmd="autoguide restart" ;
+                EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady 0.995 +1.005] ; 
+                EXEC TSC AG_TRACKING MOTOR=ON ;
+
+                Exec OBS Sleep Sleep_Time=5 ;
+
+                #Continue AG loop until guide errors are small enough
+
+                while (!TSCV.PFS.AG.AutoGuideReady == 1) {
+
+                    #Check errors
+                    IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+        
+                        #Check errors again
+                        # wait for a new exposure, then error items are updated
+                        exec obs check_status mode=OR timeout=0060 c1=[PFS.AG.ERR.EXPID NE !PFS.AG.ERR.EXPID] ;
+
+                        IF @fabs(!PFS.AG.ERR.RA_ERR) < $DRA AND @fabs(!PFS.AG.ERR.DEC_ERR) < $DDEC AND @fabs(!PFS.AG.ERR.INR_ERR) < $DINR
+                            EXEC TSC AG_TRACKING MOTOR=OFF ;
+                            EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
+                            EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ; 
+                        ENDIF
+
+                    ELSE
+                        # correct rotation
+                        *SUB CORRECT_PFS obe_id=COMMON obe_mode=CMDTEST mode=ROTATION ;
+                    ENDIF
+                }
+
+                Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Move Z to Cobra focus position...", 
+                *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$Z_PFI ;
+
+            *ELSE 
+                Exec OBS SLEEP SLEEP_TIME=3;
+                # Exec OBS Confirmation Instrument_Name=!FITS.SBR.MAINOBCP Title="Check Position." Dialog=[OK] ;
+            *ENDIF
+
+        #*ENDIF
+
 
         # 7. Check the Finishing Field Acquisition
         {
@@ -183,15 +223,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
             *IF "$WMODE" == "YES"
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ELSE
                 EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-                #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+                EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             *ENDIF
         } ;
 *ENDFOR
@@ -249,15 +285,11 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=$GROUP_ID name="$GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         *ENDIF
     } ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Raster Scan by Cobra: Done";

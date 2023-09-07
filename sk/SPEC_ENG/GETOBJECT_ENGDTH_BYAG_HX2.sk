@@ -24,7 +24,13 @@
     STOP=18
     WMODE=YES
     *WMODE=YES,NO
-    ARM="b,r"
+    CAMERA=NOP
+    *CAMERA="b1,r1,n1,b3,r3,n3"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+
 </Default_Parameter>
 
 
@@ -33,6 +39,8 @@
 :START
 
 from "math" import fabs
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
 
 ### SETUP ###
 
@@ -48,12 +56,37 @@ from "math" import fabs
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: HX Dither" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
 
 # Wiping SPS
-Exec PFS PFSCMD ACTOR="iic" cmd="sps erase arm=b,r" ;
+#Exec PFS PFSCMD ACTOR="iic" cmd='sps erase arm=$ARM' ;
+Exec PFS PFSCMD ACTOR="iic" cmd='sps erase' ;
 
 # assign GroupID
 *SET GROUP_ID=!PFS.GROUPID.ID
 
+# Camera selection options
+*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", (@lower($CAMERA))) ) ==1 
+  #asn val = @lower($CAMERA)
+  #asn cmdopt = "cam=@val"
+  *Set cmdopt = "cam=$CAMERA"
+*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
+  #asn val = @lower($ARM)
+  #asn cmdopt = "arm=@val"
+  *Set cmdopt = "arm=$ARM"
+*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
+  #asn val = @lower($SPECNUM)
+  #asn cmdopt = "specNum=@val"
+  *Set cmdopt = "specNum=$SPECNUM"
+*ELSE
+  #asn cmdopt = ""
+  *Set cmdopt = ""
+*ENDIF
 
+# Readout waiting time setting
+
+*IF $WMODE == "YES"
+  *Set ROWAITTIME=20
+*ELSE
+  *Set ROWAITTIME=70
+*ENDIF
 
 :MAIN_START
 
@@ -76,19 +109,21 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 *FOR 18 DNUM DRA_WIDTH DDEC_WIDTH IN $DITH_PAT
 
     *IF ($DNUM) >= ($START) AND ($DNUM) <= ($STOP)
-    
+
         {
         #Exposure
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
         *IF "$WMODE" == "YES"
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
         
         *ELSE
             EXEC OBS TIMER DURATION=($EXPTIME) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+            EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
             
         *ENDIF
         },
@@ -112,7 +147,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 
         # Check errors
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
-	    EXEC OBS Sleep Sleep_Time=20 ;
+	    #EXEC OBS Sleep Sleep_Time=20 ;
+            EXEC OBS Sleep Sleep_Time=$ROWAITTIME ;
         EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0180 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
         #Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
@@ -131,12 +167,16 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsI
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
     
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+
         
 *ENDIF
 },
@@ -160,7 +200,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 
 # Check errors
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
-EXEC OBS Sleep Sleep_Time=20 ;
+#EXEC OBS Sleep Sleep_Time=20 ;
+EXEC OBS Sleep Sleep_Time=$ROWAITTIME ;
 EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0180 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
 #Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
@@ -173,11 +214,15 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsI
 *IF "$WMODE" == "YES"
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+
 *ELSE
     EXEC OBS TIMER DURATION=($EXPTIME) ;
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:0 asec_DEC:0 asec"' TIMELIM=$EXPTIMLIM ;
+
 *ENDIF
 } ;
 
