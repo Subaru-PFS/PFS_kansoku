@@ -1,0 +1,86 @@
+#**********************************************************************
+# GETSPSDARK
+#  Take DARK with SPS
+#  Basically created from PFS_SPS_EXPOSURE.sk
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
+    SCRIPT_UPDATE=2023.10.10
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=GETSPSDARK
+
+
+:Parameter
+
+    EXPTYPE=DARK
+    EXPTIME=1
+    NFRAME=1
+    ## Which camera to be used
+    CAMERA="b1,r1,n1,b2,r2,n2,b3,r3,n3,b4,r4,n4"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+    SEQ_NAME="SPSDARK"
+
+:Command
+
+
+:start
+    # Set time limits for commands
+    *SET TIMELIM_SEQ = ($EXPTIME + 60 + 43) * $NFRAME
+    *SET TIMELIM     = ($EXPTIME + 30) 
+
+    # Camera selection option
+    *IF $CAMERA != "NOP"
+        *Set cmdopt = "cam=$CAMERA"
+    *ELIF $ARM != "NOP"
+        *Set cmdopt = "arm=$ARM"
+    *ELIF $SPECNUM != "NOP" 
+        *Set cmdopt = "specNum=$SPECNUM"
+    *ELSE
+        *Set cmdopt = ""
+    *ENDIF
+
+
+:main_start
+
+    # Check shutter status
+    IF !PFS.SHUTTERS.STATE == "Open"
+      raise "error: Shutter status: Open"
+    ELIF !PFS.SHUTTERS.STATE == "Unknown"
+      raise "error: Shutter status: Unknown"
+    ELIF !PFS.SHUTTERS.STATE == "None"
+      raise "error: Shutter status: None"
+    ENDIF
+    
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" ;
+
+    # Start exposure sequence
+    {
+    EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"' TIMELIM=$TIMELIM_SEQ;
+	},
+
+    # Manage Gen2 outputs
+    {
+    *FOR $NFRAME STEP IN
+
+        #sleep needed?
+
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=120 C1=[!PFS.SHUTTERS.STATE EQ "Open"];
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[!PFS.SHUTTERS.STATE EQ "Close"];
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
+    *ENDFOR
+	};
+
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
