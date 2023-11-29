@@ -232,7 +232,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     ENDIF
 
     IF $AGEXPDLY != NOP
-        #asn exposure_delay = int($AGEXPDLY * 1000)
+        asn exposure_delay = $AGEXPDLY
         asn cmdopt5 = " exposure_delay=@exposure_delay"
     ELSE
         asn cmdopt5 = ""
