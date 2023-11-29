@@ -105,7 +105,8 @@ launchers:
             - [ VAL04, LIST, ["NOP", "yes", "no"], "InR fit" ]
     - 
         label : "Acquire Field (pfsDesign)"
-        cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
+        #cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
+        cmd   : AGACQUIREFIELD OBE_ID=PFS OBS_MODE=SPEC FIT_DSCALE=$VAL01 FIT_DINR=$VAL2
         params:
             - [ VAL01, LIST, [ "no", "yes" ], "Scale fit" ]
             - [ VAL02, LIST, [ "yes", "no" ], "InR fit" ]
@@ -118,8 +119,9 @@ launchers:
             - [ VAL02, INPUT, 9, 5000, "Cadence(ms)"]
     
     -
-        label: "Start AG (pfsDesign)"
-        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        label: "Start AG Calc (pfsDesign)"
+        #cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        cmd   : AGSTARTCALC OBE_ID=PFS OBS_MODE=SPEC EXPT=$VAL01 CADENCE=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04
         params:
             - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
             - { name: VAL02, type: INPUT, width:8, value: "5000", lable: "Cadence(ms)" }
