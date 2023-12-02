@@ -1,0 +1,109 @@
+#**********************************************************************
+# FOCUSAGPFS
+#  Run focusing sequence
+#  Copied and modified from COMMON/sk/CMDTEST/PFS_FOCUSAG_AGEXP.sk
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
+    SCRIPT_UPDATE=2023.10.10
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=GETOBJECT
+
+
+:Header
+
+    Script_Author=Jeschke
+    Last_Update=2023-11-20
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=FOCUSAGPFS
+
+:Parameter
+    F_SELECT=!STATL.TSC_F_SELECT
+    Z=!TSCL.Z
+    DELTAZ=0.07
+    INSTRUMENT_DELTAZ=0.0
+    NSTEP=7
+    NFRAME=3
+    MODE=AGEXP
+
+    EXPTIME=2
+    GUIDE=no
+
+
+:Command
+:start
+
+*Set EXPT_AG = INT($EXPTIME * 1000)
+
+
+:main_start
+
+*set INFO2="Center Z = $Z   :   Step =  $NSTEP   :   Resolution = $DELTAZ"
+exec OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo1="Focusing by Guider" obsinfo2=$INFO2 ,
+
+# memory variable should be PFS below?
+exec OBS memory instrument_name=COMMON n1=($Z-$INSTRUMENT_DELTAZ) n2=($Z - $INSTRUMENT_DELTAZ - ($NSTEP + 1) * $DELTAZ / 2.0) ;
+
+# reset Z
+exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=!STATOBS.CMN.N1 ;
+
+exec OBS sleep sleep_time=2 ;
+exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
+
+*FOR $NSTEP STEP IN
+*SET INFO3="Collecting Data ....   $STEP / $NSTEP steps passed ..."
+    exec OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo3=$INFO3 ,
+    exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=(!STATOBS.CMN.N2+($STEP*$DELTAZ)) ;
+    exec OBS sleep sleep_time=2 ;
+    exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
+
+    *IF $MODE == AGEXP
+
+        *FOR $NFRAME FRAME IN
+
+#            exec obs check_status mode=OR timeout=0090 \
+#                c1=[VGW.PFS.AG.COUNT NE !VGW.PFS.AG.COUNT] ,
+
+            asn ag_count = !VGW.PFS.AG.COUNT
+
+            *IF $NSTEP == 1 and $FRAME == 1
+
+                #EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=0 exposure_time=$EXPT_AG",
+                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf exposure_time=$EXPT_AG";
+
+            *ELSE
+
+                *Set VISIT = !PFS.DESIGN.VISIT
+                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+
+            *ENDIF
+
+            exec obs check_status mode=OR timeout=0090 \
+                c1=[VGW.PFS.AG.COUNT NE @ag_count] ;
+            exec OBS sleep sleep_time=1.0 ;
+        *ENDFOR
+
+    *ELIF $MODE == MANUAL    
+        exec OBS confirmation instrument_name=!FITS.SBR.MAINOBCP \
+            title="Z=!TSCL.Z -- Measure images with guideview; press OK to advance to next Z position" \
+            dialog="OK" ;
+
+    *ELSE
+        *FOR $NFRAME FRAME IN
+            # wait for a new exposure, then error items are updated
+            exec obs check_status mode=OR timeout=0060 \
+                c1=[VGW.PFS.AG.COUNT NE !VGW.PFS.AG.COUNT] ;
+        *ENDFOR
+    *ENDIF
+*ENDFOR
+
+Exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=$Z ,
+Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+Exec OBS Confirmation Instrument_Name=PFS Title="Set the best focus value via launcher." Dialog=[OK] ;
+
+:main_end
+
+:end

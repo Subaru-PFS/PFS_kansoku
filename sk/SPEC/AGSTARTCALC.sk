@@ -1,0 +1,94 @@
+#**********************************************************************
+#
+# AGSTARTCALC.sk 
+#  
+#**********************************************************************
+:Header
+        OBE_ID=PFS
+        OBS_mode=SPEC
+        COMMAND=AGSTARTCALC
+        Script_Version=0.1
+        Script_Author=Koshida
+        Script_Update=2023.11.28
+
+:Parameter
+
+  EXPTIME = NOP
+  *EXPTIME = 2
+  CADENCE = NOP
+  *CADENCE = 5
+
+  # Optional
+
+  FIT_DSCALE = NOP
+  FIT_DINR   = NOP
+  AGEXPDLY   = NOP
+  AGTECOFF   = NOP
+  DRY_RUN    = "no"
+
+:Command
+:Start
+
+  from "pfsmisc" import lower
+  from "pfsmisc" import random_song
+
+  asn fit_dscale=@lower("$FIT_DSCALE")
+  asn fit_dinr=@lower("$FIT_DINR")
+
+
+  IF "$EXPTIME" != "NOP"
+    asn expt_ag = INT($EXPTIME * 1000)
+    asn cmdopt1 = " exptime=@expt_ag"
+  ELSE
+    asn cmdopt1 = ""
+  ENDIF
+
+  IF "$CADENCE" != "NOP"
+    asn cadence_ag = INT($CADENCE * 1000)
+    asn cmdopt2 = " cadence=@cadence_ag"
+  ELSE
+    asn cmdopt2 = ""
+  ENDIF
+
+  IF @fit_dscale == "no" OR @fit_dscale == "yes"
+    asn cmdopt3 = " fit_dScale=\"@fit_dscale\""
+  ELSE
+    asn cmdopt3 = ""
+  ENDIF
+
+  IF @fit_dinr == "no" OR @fit_dinr == "yes"
+    asn cmdopt4 = " fit_dInR=\"@fit_dinr\""
+  ELSE
+    asn cmdopt4 = ""
+  ENDIF
+
+  IF $AGEXPDLY != NOP
+
+    #asn exposure_delay = int($AGEXPDLY * 1000)
+    asn cmdopt5 = " exposure_delay=@exposure_delay"
+  ELSE
+    asn cmdopt5 = ""
+  ENDIF
+
+  IF $AGTECOFF == "yes" or $AGTECOFF == "no"
+    asn tec_off = @lower($AGTECOFF)
+    asn cmdopt6 = " tec_off=\"@tec_off\""
+  ELSE
+    asn cmdopt6 = "" 
+  ENDIF
+
+  IF "$DRY_RUN" == "yes"
+    asn cmdopt7 = " dryRun"
+  ELSE
+    asn cmdopt7 = ""
+  ENDIF
+
+  asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+
+:Main_Start
+
+    # Acquire Field
+
+    EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt" TIMELIM=180 ;
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide Calc. Start." , 
