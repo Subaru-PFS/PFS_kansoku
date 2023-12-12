@@ -106,7 +106,7 @@ launchers:
     - 
         label : "Acquire Field (pfsDesign)"
         #cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
-        cmd   : AGACQUIREFIELD OBE_ID=PFS OBS_MODE=SPEC EXPTIME=$VAL01 FIT_DSCALE=$VAL02 FIT_DINR=$VAL03
+        cmd   : AGACQUIREFIELD OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$VAL01 FIT_DSCALE=$VAL02 FIT_DINR=$VAL03
         params:
             - [ VAL01, INPUT, 8, 2, "ExpTime(s)" ]
             - [ VAL02, LIST, [ "no", "yes" ], "Scale fit" ]
@@ -122,7 +122,7 @@ launchers:
     -
         label: "Start AG Calc (pfsDesign)"
         #cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
-        cmd   : AGSTARTCALC OBE_ID=PFS OBS_MODE=SPEC EXPTIME=$VAL01 CADENCE=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04 DRY_RUN=$VAL05
+        cmd   : AGSTARTCALC OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$VAL01 CADENCE=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04 DRY_RUN=$VAL05
         params:
             - { name: VAL01, type: INPUT, width:8, value: 2, lable: "ExpTime(s)" }
             - { name: VAL02, type: INPUT, width:8, value: 5, lable: "Cadence(s)" }
@@ -145,7 +145,7 @@ launchers:
     -
         label : "Tel. AG Ready"
         #cmd   : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
-        cmd   : AGSTARTCORRECTION OBE_ID=PFS OBS_MODE=SPEC MOTOR=$VAL01
+        cmd   : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=$VAL01
         params: 
             - [ VAL01, LIST, [ "ON", "OFF" ], "Motor" ]
 
