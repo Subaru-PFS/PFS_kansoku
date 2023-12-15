@@ -13,27 +13,64 @@
 # for PFS
   SSYS=MCS
 # Hexapod movement
-  IZ=-0.01
-  Z=(!TSCV.PF_OFF_Z+$IZ)
+  #IZ=-0.01
+  #Z=(!TSCV.PF_OFF_Z)
+  Z_CENT=(!TSCL.Z)
   DZ=0.01
   NMOVE_Z=1
 # Exposure
   EXPTIME=1
-  EXPTYPE=OBJECT
+  EXPTYPE=object
+  CENTROID=yes
 
 :Command
 :start
+
+from "pfsmisc" import lower 
+
+*Set TIMLIM = $EXPTIME + 30
+
+IF @lower(CENTROID) == "yes"
+  asn centroid="doCentroid"
+ELSE
+  asn centroid="noCentroid"
+ENDIF
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="MCS Thru-focus" obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
 # Move teescope to initial position and take exposure
-EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$Z TX=NOP TY=NOP;
-EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+#EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$Z TX=NOP TY=NOP;
+*Set IZ = ( -1 * ( ($NMOVE_Z-1)/2 ) * $DZ )
+*Set ZZ = ($Z_CENT+$IZ)
+*SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$ZZ ;
+
+*Set INFO02="z=$IZ, 1/$NMOVE_Z"
+EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO02 ;
+
+#EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME @centroid' TIMELIM=$TIMLIM ;
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Exposure done." ;
+
+
 :main_start
 # move HExapod in Z direction
 # Forth argment IN is mandatory
 # The third argumnt is needed even if not used. 
-*FOR $NMOVE_Z NZ IN
-  *Set ZZ=(!TSCV.PF_OFF_Z+$DZ)
-  EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$ZZ TX=NOP TY=NOP;
-  EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+*FOR int($NMOVE_Z-1) NZ IN
+  #*Set ZZ=(!TSCV.PF_OFF_Z+$DZ)
+  *Set ZZ = (!TSCL.Z+$DZ)
+  #EXEC TSC TUDRIVE MOTOR=ON X=NOP Y=NOP Z=$ZZ TX=NOP TY=NOP;
+  *SUB SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$ZZ ;
+
+  *Set INFO02="z=$ZZ, $NZ/$NMOVE_Z"
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO02 obsinfo3=clear;
+
+  #EXEC PFS MCSEXPOSE EXPTYPE=$EXPTYPE EXPTIME=$EXPTIME;
+  EXEC PFS PFSCMD ACTOR="mcs" CMD='expose object expTime=$EXPTIME @centroid' TIMELIM=$TIMLIM ;
+
+  EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Exposure done." ;
+
 *ENDFOR
 :main_end
 
