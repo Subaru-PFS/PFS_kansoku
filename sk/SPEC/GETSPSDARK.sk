@@ -47,36 +47,43 @@
 
 :main_start
 
-    # Check shutter status
-    IF !PFS.SHUTTERS.STATE == "Open"
-      raise "error: Shutter status: Open"
-    ELIF !PFS.SHUTTERS.STATE == "Unknown"
-      raise "error: Shutter status: Unknown"
-    ELIF !PFS.SHUTTERS.STATE == "None"
-      raise "error: Shutter status: None"
-    ENDIF
+#     # Check shutter status
+#     IF PFS.SHUTTERS.STATE == "Open"
+#       raise "error: Shutter status: Open"
+#     ELIF PFS.SHUTTERS.STATE == "Unknown"
+#       raise "error: Shutter status: Unknown"
+#     ELIF PFS.SHUTTERS.STATE == "None"
+#       raise "error: Shutter status: None"
+#     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="Taking $NFRAME dark frames...";
+
+    # EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" ;
 
     # Start exposure sequence
-    {
+    # {
     EXEC PFS PFSCMD ACTOR="iic" CMD='dark exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"' TIMELIM=$TIMELIM_SEQ;
-	},
+	# },
 
     # Manage Gen2 outputs
-    {
-    *FOR $NFRAME STEP IN
-
-        #sleep needed?
-
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=120 C1=[!PFS.SHUTTERS.STATE EQ "Open"];
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
-        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[!PFS.SHUTTERS.STATE EQ "Close"];
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
-    *ENDFOR
-	};
+    # {
+    # *FOR $NFRAME STEP IN
+    # 
+    #     #sleep needed?
+    #     
+    #     # TBD: Check array status in some way... not the shutter...
+    #     # EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=120 C1=[!PFS.SHUTTERS.STATE EQ "Open"];
+    #     
+    #     EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
+    #     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    #     EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
+    # 
+    #     # TBD: Check array status in some way... not the shutter...
+    #     # EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[!PFS.SHUTTERS.STATE EQ "Close"];
+    #     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
+    # 
+    # *ENDFOR
+	# };
 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
