@@ -24,6 +24,7 @@
     SPECNUM=NOP
     *SPECNUM="1,2,3"
     SEQ_NAME="SPSFLAT"
+    SEQ_COMMENT=NOP
 
 
 
@@ -45,6 +46,12 @@
         *Set cmdopt = ""
     *ENDIF
 
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
+
 
 :main_start
 
@@ -61,7 +68,7 @@
 
     # Start exposure sequence
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"' TIMELIM=$TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
 
     # Manage Gen2 outputs

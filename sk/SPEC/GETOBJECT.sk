@@ -25,6 +25,7 @@
     *SPECNUM="1,2,3"
     #Assuming that the SEQ_NAME will be defined by the actual ope command 
     SEQ_NAME=NOP
+    SEQ_COMMENT=NOP
 
 :Command
 
@@ -44,6 +45,17 @@
         *Set cmdopt = ""
     *ENDIF
 
+    IF $SEQ_NAME != "NOP"
+        asn seqname = " name=\"$SEQ_NAME\""
+    ELSE
+        asn seqname = ""
+    ENDIF
+
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
 
 :main_start
 
@@ -60,7 +72,7 @@
 
     # Start exposure sequence
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"' TIMELIM=$TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm' TIMELIM=$TIMELIM_SEQ;
 	},
 
     # Manage Gen2 outputs

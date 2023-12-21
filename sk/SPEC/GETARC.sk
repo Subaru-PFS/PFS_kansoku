@@ -24,6 +24,7 @@
     *SPECNUM="1,2,3"
     #SEQ_NAME will be defined afterward 
     SEQ_NAME=NOP
+    SEQ_COMMENT=NOP
     #EXPTIME for each lamps. When it is set to > 0, that lamp will turn on during the exposure.
     HGCD=0.0
     AR=0.0
@@ -70,6 +71,11 @@
 
     asn SEQ_NAME = "Arc: @inf_h@inf_a@inf_x@inf_n@inf_k"
 
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
 
     # Set time limits for commands
     *SET TIMELIM     = ($EXPTIME + 30) 
@@ -106,7 +112,7 @@
 
     # Start exposure sequence
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="@SEQ_NAME"' TIMELIM=$TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="@SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
 
     # Manage Gen2 outputs

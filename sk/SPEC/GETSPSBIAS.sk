@@ -23,6 +23,7 @@
     SPECNUM=NOP
     *SPECNUM="1,2,3"
     SEQ_NAME="SPSBIAS"
+    SEQ_COMMENT=NOP
 
 :Command
 
@@ -41,6 +42,12 @@
         *Set cmdopt = ""
     *ENDIF
 
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
+
 
 :main_start
 
@@ -55,7 +62,7 @@
     
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETBIAS" obsinfo2="Taking $NFRAME bias frames...";
     
-    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME $cmdopt name="$SEQ_NAME"' TIMELIM=$TIMELIM;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='bias duplicate=$NFRAME $cmdopt name="$SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM;
 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
