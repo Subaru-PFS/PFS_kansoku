@@ -38,58 +38,74 @@
 
 :main_start
 
-    # Selecting lamps for SEQ_NAME
-    IF ($HGCD) > (0.0)
-        asn inf_h = "HgCd "
-        asn EXPTIME = ($HGCD)
-    ELSE
-        asn inf_h = ""
-    ENDIF
+    # Selecting lamps for SEQ_NAME and set value for EXPTIME
+    # EXPTIME will be set to the longest value among HGCD, AR, XE, NE, and KR
 
-    IF ($AR) > (0.0)
-        asn inf_a = "Argon "
-        asn EXPTIME = ($AR)
-    ELSE
-        asn inf_a = ""
-    ENDIF
+    *SET EXPTIME = 0
 
-    IF ($XE) > (0.0)
-        asn inf_x = "Xenon "
-        asn EXPTIME = ($XE)
-    ELSE
-        asn inf_x = ""
-    ENDIF
+    *IF ($HGCD) > (0.0)
+        *SET inf_h = "HgCd "
+        *SET EXPTIME = ($HGCD)
+    *ELSE
+        *SET inf_h = ""
+    *ENDIF
 
-    IF ($NE) > (0.0)
-        asn inf_n = "Neon "
-        asn EXPTIME = ($NE)
-    ELSE
-        asn inf_n = ""
-    ENDIF
+    *IF ($AR) > (0.0)
+        *SET inf_a = "Argon "
+        *IF ($EXPTIME) < ($AR)
+            *SET EXPTIME = ($AR)
+        *ENDIF
+    *ELSE
+        *SET inf_a = ""
+    *ENDIF
 
-    IF ($KR) > (0.0)
-        asn inf_k = "Krypton "
-        asn EXPTIME = ($KR)
-    ELSE
-        asn inf_k = ""
-    ENDIF
+    *IF ($XE) > (0.0)
+        *SET inf_x = "Xenon "
+        *IF ($EXPTIME) < ($XE)
+            *SET EXPTIME = ($XE)
+        *ENDIF
+    *ELSE
+        *SET inf_x = ""
+    *ENDIF
 
-    asn SEQ_NAME = "Arc: @inf_h@inf_a@inf_x@inf_n@inf_k"
+    *IF ($NE) > (0.0)
+        *SET inf_n = "Neon "
+        *IF ($EXPTIME) < ($NE)
+            *SET EXPTIME = ($NE)
+        *ENDIF
+    *ELSE
+        *SET inf_n = ""
+    *ENDIF
 
-    IF $SEQ_COMMENT != "NOP"
-        asn seqcomm = " comments=\"$SEQ_COMMENT\""
-    ELSE
-        asn seqcomm = ""
-    ENDIF
+    *IF ($KR) > (0.0)
+        *SET inf_k = "Krypton "
+        *IF ($EXPTIME) < ($KR)
+            *SET EXPTIME = ($KR)
+        *ENDIF
+    *ELSE
+        *SET inf_k = ""
+    *ENDIF
+
+    *SET SEQ_NAME = "Arc: @inf_h@inf_a@inf_x@inf_n@inf_k"
+
+
+    # Set sequence comments
+    
+    *IF $SEQ_COMMENT != "NOP"
+        *SET seqcomm = " comments=\"$SEQ_COMMENT\""
+    *ELSE
+        *SET seqcomm = ""
+    *ENDIF
+
 
     # Set time limits for commands
-    asn TIMELIM     = (@EXPTIME + 30) 
+    *SET TIMELIM     = ($EXPTIME + 30) 
 
-    IF ($HGCD) > (0.0)
-        asn TIMELIM_SEQ = 260 + (@EXPTIME + 80) * $NFRAME
-    ELSE
-        asn TIMELIM_SEQ = (@EXPTIME + 85) * $NFRAME
-    ENDIF
+    *IF ($HGCD) > (0.0)
+        *SET TIMELIM_SEQ = 260 + ($EXPTIME + 80) * $NFRAME
+    *ELSE
+        *SET TIMELIM_SEQ = ($EXPTIME + 85) * $NFRAME
+    *ENDIF
 
 
     # Camera selection option
@@ -117,7 +133,7 @@
 
     # Start exposure sequence
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="@SEQ_NAME"@seqcomm' TIMELIM=@TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="@SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
 
     # Manage Gen2 outputs
@@ -129,7 +145,7 @@
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=@TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
     *ENDFOR
     };
