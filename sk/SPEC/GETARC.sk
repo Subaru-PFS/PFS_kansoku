@@ -133,7 +133,7 @@
 
     # Start exposure sequence
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="@SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="$SEQ_NAME"$seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
 
     # Manage Gen2 outputs
