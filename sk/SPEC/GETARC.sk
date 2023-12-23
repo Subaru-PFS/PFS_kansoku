@@ -86,7 +86,7 @@
         *SET inf_k = ""
     *ENDIF
 
-    *SET SEQ_NAME = "Arc: @inf_h@inf_a@inf_x@inf_n@inf_k"
+    *SET SEQ_NAME = "Arc: $inf_h$inf_a$inf_x$inf_n$inf_k"
 
 
     # Set sequence comments
