@@ -141,7 +141,7 @@
     *FOR $NFRAME STEP IN
         #sleep needed?
 
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=180 C1=[!PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=180 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
