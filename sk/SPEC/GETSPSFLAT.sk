@@ -64,7 +64,7 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSFLAT" obsinfo2=clear obsinfo3="preparing/wiping...";
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSFLAT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
     # Start exposure sequence
     {

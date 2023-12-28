@@ -26,10 +26,12 @@
     #Assuming that the SEQ_NAME will be defined by the actual ope command 
     SEQ_NAME=NOP
     SEQ_COMMENT=NOP
+    OBJECT=NOP
 
 :Command
 
 :start
+
     # Set time limits for commands
     *SET TIMELIM_SEQ = ($EXPTIME + 105) * $NFRAME
     *SET TIMELIM     = ($EXPTIME + 30) 
@@ -68,7 +70,7 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
 
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="preparing/wiping...";
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
     # Start exposure sequence
     {

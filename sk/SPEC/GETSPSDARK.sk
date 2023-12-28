@@ -63,7 +63,7 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="Taking $NFRAME dark frames...";
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="Taking $NFRAME dark frames..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
 
     # EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" ;
 
