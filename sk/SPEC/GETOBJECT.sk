@@ -68,9 +68,10 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
 
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo3="preparing/wiping...";
 
     # Start exposure sequence
+    {
     {
     EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm' TIMELIM=$TIMELIM_SEQ;
 	},
@@ -89,7 +90,8 @@
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
     *ENDFOR
 	};
-    
+    };
+
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 

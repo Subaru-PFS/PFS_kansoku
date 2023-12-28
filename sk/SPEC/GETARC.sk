@@ -129,9 +129,10 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" obsinfo3="preparing/wiping...";
 
     # Start exposure sequence
+    {
     {
     EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="$SEQ_NAME"$seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
@@ -148,6 +149,7 @@
         EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
     *ENDFOR
+    };
     };
 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
