@@ -80,10 +80,11 @@
         #sleep needed?
 
         EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=180 C1=[PFS.SHUTTERS.STATE EQ open];
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing..." ,
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-        EXEC OBS TIMER DURATION=$EXPTIME TITLE="Remaining exposure time:";
+        EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
         EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
+        EXEC OBS SOUND SELECT=TIMER_END Volume=64 ,
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
     *ENDFOR
     };
