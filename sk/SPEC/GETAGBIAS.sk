@@ -52,12 +52,12 @@ ENDIF
 
     EXEC PFS PFSCMD ACTOR="agcc" CMD="expose dark exptime=0 visit=@visit_tmp centroid=0@cmdopt" TIMELIM=$TIMELIM ;
 
-    EXEC OBS SLEEP SLEEP_TIME=1 ; 
+    EXEC OBS SLEEP SLEEP_TIME=3 ; 
 
 *ENDFOR
 
 
-EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+#EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done." ;
 
 :main_end
