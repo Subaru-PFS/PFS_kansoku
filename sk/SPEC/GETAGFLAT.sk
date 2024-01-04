@@ -8,7 +8,7 @@
 #**********************************************************************
 <Header>
     SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
-    SCRIPT_UPDATE=2023.12.11
+    SCRIPT_UPDATE=2024.01.03
     OBE_ID=PFS
     OBE_MODE=SPEC
 </Header>
@@ -21,7 +21,8 @@
   EXPDLY=NOP
   TECOFF=NOP
   *TECOFF=yes,no
-  PFIHAL=yes
+  # Default PFSHAL set to "no", since pfi halogen seems to be too bright. Use DomeFlatLamps with 25V.
+  PFIHAL=no
   *PFIHAL=yes,no
 </Default_Parameter>
 
@@ -29,9 +30,6 @@
 :start
 
 from "pfsmisc" import lower
-
-#asn exptime_ms=INT($EXPTIME * 1000) 
-
 asn pfihal=@lower($PFIHAL)
 
 
@@ -83,14 +81,12 @@ ENDIF
 
     EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME visit=@visit_tmp centroid=0@cmdopt" TIMELIM=$TIMELIM ;
 
-
     EXEC OBS SLEEP SLEEP_TIME=2 ; 
 
 *ENDFOR
 
 
 ## Sound : file is in /gen2/conf/Sounds/
-EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Done." ;
 
 :main_end
