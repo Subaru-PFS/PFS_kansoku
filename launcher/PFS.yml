@@ -105,26 +105,30 @@ launchers:
             - [ VAL04, LIST, ["NOP", "yes", "no"], "InR fit" ]
     - 
         label : "Acquire Field (pfsDesign)"
-        cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
+        #cmd   : EXEC PFS PFSCMD actor="iic" cmd='acquireField guideoff fit_dScale=$VAL01 fit_dInR=$VAL02'
+        cmd   : AGACQUIREFIELD OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$VAL01 FIT_DSCALE=$VAL02 FIT_DINR=$VAL03
         params:
-            - [ VAL01, LIST, [ "no", "yes" ], "Scale fit" ]
-            - [ VAL02, LIST, [ "yes", "no" ], "InR fit" ]
+            - [ VAL01, INPUT, 8, 2, "ExpTime(s)" ]
+            - [ VAL02, LIST, [ "no", "yes" ], "Scale fit" ]
+            - [ VAL03, LIST, [ "yes", "no" ], "InR fit" ]
 
-    -
-        label : "Start AG Loop (Dry)"
-        cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 dryRun'
-        params:
-            - [ VAL01, INPUT, 9, 2000, "ExpTime(ms)" ]
-            - [ VAL02, INPUT, 9, 5000, "Cadence(ms)"]
+#    -
+#        label : "Start AG Loop (Dry)"
+#        cmd   : Exec pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 dryRun'
+#        params:
+#            - [ VAL01, INPUT, 8, 2000, "ExpTime(ms)" ]
+#            - [ VAL02, INPUT, 8, 5000, "Cadence(ms)"]
     
     -
-        label: "Start AG (pfsDesign)"
-        cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        label: "Start AG Calc (pfsDesign)"
+        #cmd  : EXEC pfs pfscmd actor="iic" cmd='autoguideStart exptime=$VAL01 cadence=$VAL02 fit_dScale=$VAL03 fit_dInR=$VAL04'
+        cmd   : AGSTARTCALC OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$VAL01 CADENCE=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04 DRY_RUN=$VAL05
         params:
-            - { name: VAL01, type: INPUT, width:8, value: "3000", lable: "Exp. Time(ms)" }
-            - { name: VAL02, type: INPUT, width:8, value: "5000", lable: "Cadence(ms)" }
-            - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Scale fit" }
-            - { name: VAL04, type: LIST, values: ["yes", "no"], label: "InR fit" }
+            - { name: VAL01, type: INPUT, width:8, value: 2, lable: "ExpTime(s)" }
+            - { name: VAL02, type: INPUT, width:8, value: 5, lable: "Cadence(s)" }
+            - { name: VAL03, type: LIST, values: ["NOP", "yes", "no"], label: "Scale fit" }
+            - { name: VAL04, type: LIST, values: ["NOP", "yes", "no"], label: "InR fit" }
+            - { name: VAL05, type: LIST, values: ["no", "yes"], label: "Dry run"}
 
     -
         label : "Stop AG Loop"
@@ -140,7 +144,8 @@ launchers:
 
     -
         label : "Tel. AG Ready"
-        cmd   : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
+        #cmd   : EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=$VAL01
+        cmd   : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=$VAL01
         params: 
             - [ VAL01, LIST, [ "ON", "OFF" ], "Motor" ]
 

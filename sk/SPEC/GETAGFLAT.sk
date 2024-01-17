@@ -1,0 +1,96 @@
+#**********************************************************************
+#
+# Get flat image with AG cameras and flat sources
+#   sending a command to AGCC Actor
+#   note: AG Actor takes an exposure time in milliseconds
+#   note2: Modified to use ag acquire_field on 9/24/22
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
+    SCRIPT_UPDATE=2024.01.03
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+</Header>
+
+<Default_Parameter>
+#for PFS
+  EXPTIME=2
+  NFRAME=1
+  VISIT=NOP
+  EXPDLY=NOP
+  TECOFF=NOP
+  *TECOFF=yes,no
+  # Default PFSHAL set to "no", since pfi halogen seems to be too bright. Use DomeFlatLamps with 25V.
+  PFIHAL=no
+  *PFIHAL=yes,no
+</Default_Parameter>
+
+<Command>
+:start
+
+from "pfsmisc" import lower
+asn pfihal=@lower($PFIHAL)
+
+
+# Timelimit for each exposure exposure passed to AGCC actor
+*SET TIMELIM=($EXPTIME + 30)
+
+:main_start
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Flat" obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+asn exposure_delay=@lower("$EXPDLY")
+IF @exposure_delay=="nop"
+    asn cmdopt1=""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn cmdopt1=" threadDelay=@expdly_ms"
+ENDIF
+
+asn tec_off=@lower("$TECOFF")
+IF @tec_off=="nop" or @tec_off=="no"
+    asn cmdopt2=""
+ELSE
+    asn cmdopt2=" tecOFF"
+ENDIF
+
+asn cmdopt = "@cmdopt1@cmdopt2"
+
+IF VISIT == NOP
+    asn visit_tmp = int(!PFS.DESIGN.VISIT) + 1 
+ELSE
+    asn visit_tmp = int($VISIT)
+ENDIF
+
+*FOR $NFRAME COUNT IN
+    *SET INFO2="$COUNT / $NFRAME frame"
+    *SET INFO3="ExpTime: $EXPTIME"
+    EXEC OBS Set_message Instrument_name=PFS obsinfo2=$INFO2 obsinfo3=$INFO3;
+
+    IF @pfihal=="yes"
+
+        asn haltimeon = $EXPTIME + 3
+        *SET INFO04="Halogen On: $EXPTIME + 3 sec" 
+        EXEC OBS Set_message Instrument_name=PFS obsinfo4=$INFO04 ;
+
+        EXEC PFS PFSCMD ACTOR="pfilamps" CMD="prepare halogen=@haltimeon" ;
+        EXEC PFS PFSCMD ACTOR="pfilamps" CMD="go" ;
+        EXEC OBS SLEEP SLEEP_TIME=1 ;
+
+    ENDIF
+
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose object exptime=$EXPTIME visit=@visit_tmp centroid=0@cmdopt" TIMELIM=$TIMELIM ;
+
+    EXEC OBS SLEEP SLEEP_TIME=2 ; 
+
+*ENDFOR
+
+
+## Sound : file is in /gen2/conf/Sounds/
+EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Done." ;
+
+:main_end
+
+:end
+
+</Command>

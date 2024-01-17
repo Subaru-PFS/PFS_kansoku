@@ -33,8 +33,10 @@
 ## command before/after exposure
   SEQ_HEAD=noseq
   SEQ_TAIL=noseq
-  SEQ_NAME="fromGen2"
-  SEQ_COMMENT="command executed from Gen2"
+  #SEQ_NAME="fromGen2"
+  SEQ_NAME=NOP
+  #SEQ_COMMENT="command executed from Gen2"
+  SEQ_COMMENT=NOP
 # Telescope
 # Object (passed to Gen2 FITS.PFS.OBJECT status.)
   OBJECT=nop
@@ -47,6 +49,17 @@
 ## Readout 60sec
 *SET TIMELIM = (30 + ($EXPTIME + 60) * $NFRAME)
 
+IF $SEQ_NAME != "NOP"
+  asn seqname = " name=\"$SEQ_NAME\""
+ELSE
+  asn seqname = ""
+ENDIF
+
+IF $SEQ_COMMENT != "NOP"
+  asn seqcomm = " comments=\"$SEQ_COMMENT\""
+ELSE
+  asn seqcomm = ""
+ENDIF
 
 :main_start
 
@@ -61,11 +74,11 @@ EXEC OBS TIMER DURATION=$TIMELIM TITLE="Time to completion (including overheads)
 if $EXPTYPE == "arc"
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeArc exptime=$EXPTIME duplicate=$NFRAME arm=$ARM @seqname@seqcomm' TIMELIM=$TIMELIM ;
 elif $EXPTYPE == "trace"
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME cam=$CAMERA name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
   # EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
-  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM name="$SEQ_NAME" comments="$SEQ_COMMENT"' TIMELIM=$TIMELIM ;
+  EXEC PFS PFSCMD ACTOR="iic" CMD='domeFlat exptime=$EXPTIME duplicate=$NFRAME arm=$ARM @seqname@seqcomm' TIMELIM=$TIMELIM ;
 else
   EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No option for $EXPTYPE" obsinfo5=clear ;
 endif

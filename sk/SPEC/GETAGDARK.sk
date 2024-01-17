@@ -1,0 +1,73 @@
+#**********************************************************************
+#
+# Get dark image with AG cameras
+#   sending a command to AGCC Actor
+#   note: AG Actor takes an exposure time in milliseconds
+#   note2: Modified to use ag acquire_field on 9/24/22
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai, Takagi
+    SCRIPT_UPDATE=2023.12.08
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+</Header>
+
+<Default_Parameter>
+  EXPTIME=10
+  NFRAME=1
+  VISIT=NOP
+  TECOFF=NOP
+  *TECOFF=yes,no
+</Default_Parameter>
+
+<Command>
+:start
+
+from "pfsmisc" import lower
+
+#asn exptime_ms=INT($EXPTIME * 1000) 
+
+# Timelimit for each exposure exposure passed to AGCC actor
+*SET TIMELIM=($EXPTIME + 30)
+
+:main_start
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Dark" obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+asn tec_off=@lower("$TECOFF")
+IF @tec_off=="nop" OR @tec_off=="no"
+    asn cmdopt1=""
+ELSE
+    asn cmdopt1=" tecOFF"
+ENDIF
+
+asn cmdopt = "@cmdopt1"
+
+IF VISIT == NOP
+    asn visit_tmp = int(!PFS.DESIGN.VISIT) + 1 
+ELSE
+    asn visit_tmp = int($VISIT)
+ENDIF
+
+*FOR $NFRAME COUNT IN
+    *SET INFO02="$COUNT / $NFRAME frame" 
+    *SET INFO03="ExpTime: $EXPTIME"
+    EXEC OBS Set_message Instrument_name=PFS obsinfo2=$INFO02 obsinfo3=$INFO03 ;
+
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="expose dark exptime=$EXPTIME visit=@visit_tmp centroid=0@cmdopt" TIMELIM=$TIMELIM ;
+    #EXEC PFS PFSCMD ACTOR="agcc" CMD="expose dark exptime=@exptime_ms visit=@visit_tmp centroid=0@cmdopt" TIMELIM=$TIMELIM ;
+
+    EXEC OBS SLEEP SLEEP_TIME=1 ; 
+
+*ENDFOR
+
+
+## Sound : file is in /gen2/conf/Sounds/
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done." ;
+
+:main_end
+
+:end
+
+</Command>

@@ -1,0 +1,97 @@
+#**********************************************************************
+#
+# AGACQUIREFIELD.sk 
+#  
+#**********************************************************************
+:Header
+        OBE_ID=PFS
+        OBE_mode=SPEC
+        COMMAND=AGACQUIREFIELD
+        Script_Version=0.1
+        Script_Author=Koshida
+        Script_Update=2023.11.27
+
+:Parameter
+
+  EXPTIME = NOP
+  *EXPTIME = 2
+
+  # Optional
+
+  AG         = OFF
+ *AG         = OFF,ON
+  FIT_DSCALE = NOP
+  FIT_DINR   = NOP
+  DRY_RUN    = NOP
+  AGEXPDLY   = NOP
+  *AGEXPDLY  = 0.1
+  AGTECOFF   = NOP
+  *AGTECOFF  = NOP,yes,no
+
+
+:Command
+:Start
+
+  from "pfsmisc" import lower
+  from "pfsmisc" import random_song
+
+  asn fit_dscale=@lower("$FIT_DSCALE")
+  asn fit_dinr=@lower("$FIT_DINR")
+  asn tec_off=@lower("$AGTECOFF") 
+
+  asn expt_ag = INT($EXPTIME * 1000)
+
+  IF "$EXPTIME" != "NOP"
+    asn cmdopt1 = " exptime=@expt_ag"
+  ELSE
+    asn cmdopt1 = ""
+  ENDIF
+
+  IF "$DRY_RUN" == "YES"
+    asn cmdopt2 = " dryRun"
+  ELSE
+    asn cmdopt2 = ""
+  ENDIF
+
+  IF "$AG" == "ON"
+    asn cmdopt3 = ""
+  ELSE
+    asn cmdopt3 = " guideOff"
+  ENDIF
+
+  IF @fit_dscale == "no" OR @fit_dscale == "yes"
+    asn cmdopt4 = " fit_dScale=\"@fit_dscale\""
+  ELSE
+    asn cmdopt4 = ""
+  ENDIF
+
+  IF @fit_dinr == "no" OR @fit_dinr == "yes"
+    asn cmdopt5 = " fit_dInR=\"@fit_dinr\""
+  ELSE
+    asn cmdopt5 = ""
+  ENDIF
+
+  IF $AGEXPDLY != NOP
+    asn exposure_delay = $AGEXPDLY
+    asn cmdopt6 = " exposure_delay=@exposure_delay"
+  ELSE
+    asn cmdopt6 = ""
+  ENDIF
+
+  IF @tec_off == "yes" or @tec_off == "no"
+    asn cmdopt7 = " tec_off=\"@tec_off\""
+  ELSE
+    asn cmdopt7 = "" 
+  ENDIF
+
+  asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+
+:Main_Start
+
+    # Acquire Field
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
+
+    EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
