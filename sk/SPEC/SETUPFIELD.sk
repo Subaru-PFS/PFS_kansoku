@@ -2,7 +2,8 @@
 #
 # SETUPFIELD
 #  Setup Field of Telescope including cobra convergence process for OpenUse
-#  
+#  Usage: SetupField $DEF_PFSENG DESIGN_ID="designId" OBJECT="objectname" AG=[OFF] OFFSET_RA=[0] OFFSET_DEC=[0] TOLERANCE=[0.005] CC_NITERATION=[8] COBRA=[YES]/NO 
+#  "[]"s mean default values for each option. If not given, the script will use default value.
 #***************************************************************************
 :Header
         OBE_ID=PFS
@@ -78,7 +79,7 @@
 
     # Common parameters
     ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
-   # OFFSET_RA=0
+    # OFFSET_RA=0
     #OFFSET_DEC=0
     #Z=!TSCL.Z
     # non-sidereal tracking file
@@ -168,8 +169,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
             EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=@ROTA ;
 
 	    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
-	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ObsInfo4="@DSGN_FNAME" ;
- 
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ObsInfo4="@DSGN_FNAME" ;
+
     # Non-sidereal tracking
     *ELSE
 	    EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
