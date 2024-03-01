@@ -1,0 +1,85 @@
+#**********************************************************************
+# GETTRACE
+#  Take trace reference data with (with PFI Lamps)
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
+    SCRIPT_UPDATE=2024.02.28
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=GETTRACE
+
+
+:Parameter
+
+    EXPTIME=1
+    NFRAME=1
+    # Which camera to be used
+    CAMERA="b1,r1,n1,b2,r2,n2,b3,r3,n3,b4,r4"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+    SEQ_NAME="TRACE"
+    SEQ_COMMENT=NOP
+
+
+:Command
+
+:start
+    # Set time limits for commands
+    *SET TIMELIM_SEQ = ($EXPTIME + 85) * $NFRAME
+    *SET TIMELIM     = ($EXPTIME + 30) 
+
+    # Camera selection option
+    *IF $CAMERA != "NOP"
+        *Set cmdopt = "cam=$CAMERA"
+    *ELIF $ARM != "NOP"
+        *Set cmdopt = "arm=$ARM"
+    *ELIF $SPECNUM != "NOP" 
+        *Set cmdopt = "specNum=$SPECNUM"
+    *ELSE
+        *Set cmdopt = ""
+    *ENDIF
+
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
+
+
+:main_start
+
+  
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETTRACE" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
+
+    # Start exposure sequence
+    {
+
+    {
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
+    },
+
+    # Manage Gen2 outputs
+    {
+    *FOR $NFRAME STEP IN
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=100 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
+        EXEC OBS SOUND SELECT=TIMER_END Volume=64 ,
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
+    *ENDFOR
+    };
+
+    };
+
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
