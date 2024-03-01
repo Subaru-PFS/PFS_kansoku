@@ -2,7 +2,7 @@
 # SETUPRES
 #  Changing resoulution mode, Low and Medium, for Red cameras.
 #
-#  Usage: SETUPRES MODE=[LOW]/MED (INFO1 INFO2 INFO3A INFO3B)
+#  Usage: SETUPRES RESOLUTION=[LOW]/MED (INFO1 INFO2 INFO3A INFO3B)
 #  You can give arguments INFO02, INFO3A, INFO3B when you call this skelton as a subroutine.
 #**********************************************************************
 
@@ -14,7 +14,8 @@
     COMMAND=SETUPRES
 
 :Parameter
-    MODE=LOW
+    RESOLUTION="LOW"
+    *RESOLUTION="LOW,MED"
     INFO1=""
     INFO2="Setup resolution mode"
     INFO3A="moving: Low to Medium..."
@@ -30,7 +31,7 @@
 :main_start
 
     # chainging from low to medium resolution
-    *IF MODE == "MED"
+    *IF RESOLUTION == "MED"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3A obsinfo4=clear obsinfo5=clear;
         exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180
 
@@ -41,7 +42,7 @@
 
 
     # chaning from medium to low resolution
-    *IF MODE == "LOW"
+    *IF RESOLUTION == "LOW"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3B obsinfo4=clear obsinfo5=clear;
         exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180
 
