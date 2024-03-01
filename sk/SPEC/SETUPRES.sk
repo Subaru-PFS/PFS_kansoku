@@ -1,0 +1,53 @@
+#**********************************************************************
+# SETUPRES
+#  Changing resoulution mode, Low and Medium, for Red cameras.
+#
+#  Usage: SETUPRES MODE=[LOW]/MED (INFO1 INFO2 INFO3A INFO3B)
+#  You can give arguments INFO02, INFO3A, INFO3B when you call this skelton as a subroutine.
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2024.02.29
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=SETUPRES
+
+:Parameter
+    MODE=LOW
+    INFO1=""
+    INFO2="Setup resolution mode"
+    INFO3A="moving: Low to Medium..."
+    INFO3B="moving: Medium to Low..."
+    
+
+:Command
+
+:start
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=$INFO1 obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+
+:main_start
+
+    # chainging from low to medium resolution
+    *IF MODE == "MED"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3A obsinfo4=clear obsinfo5=clear;
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180
+
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to medium resolution?" Dialog=[YES] ;
+
+    *ENDIF
+
+
+    # chaning from medium to low resolution
+    *IF MODE == "LOW"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3B obsinfo4=clear obsinfo5=clear;
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180
+
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to low resolution?" Dialog=[YES] ;
+
+    *ENDIF
+
+
