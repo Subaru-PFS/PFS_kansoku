@@ -14,7 +14,6 @@
 
 :Parameter
 
-    EXPTYPE=OBJECT
     EXPTIME=1
 	NFRAME=1
     ## Which camera to be used
@@ -26,7 +25,6 @@
     #Assuming that the SEQ_NAME will be defined by the actual ope command 
     SEQ_NAME=NOP
     SEQ_COMMENT=NOP
-    OBJECT=NOP
 
 :Command
 
