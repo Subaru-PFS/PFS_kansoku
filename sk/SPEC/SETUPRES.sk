@@ -3,6 +3,7 @@
 #  Changing resoulution mode, Low and Medium, for Red cameras.
 #
 #  Usage: SETUPRES RESOLUTION=[LOW]/MED (INFO1 INFO2 INFO3A INFO3B)
+#
 #  You can give arguments INFO02, INFO3A, INFO3B when you call this skelton as a subroutine.
 #**********************************************************************
 
