@@ -9,7 +9,7 @@
         COMMAND=AGACQUIREFIELD
         Script_Version=0.1
         Script_Author=Koshida
-        Script_Update=2023.11.27
+        Script_Update=2024.03.01
 
 :Parameter
 
@@ -27,7 +27,8 @@
   *AGEXPDLY  = 0.1
   AGTECOFF   = NOP
   *AGTECOFF  = NOP,yes,no
-
+  OTF        = NOP
+  *OTF       = yes,no
 
 :Command
 :Start
@@ -38,6 +39,7 @@
   asn fit_dscale=@lower("$FIT_DSCALE")
   asn fit_dinr=@lower("$FIT_DINR")
   asn tec_off=@lower("$AGTECOFF") 
+  asn otf=@lower("$OTF")
 
   asn expt_ag = INT($EXPTIME * 1000)
 
@@ -84,7 +86,14 @@
     asn cmdopt7 = "" 
   ENDIF
 
-  asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+  IF @otf == "yes"
+    asn cmdopt8 = " otf"
+  ELSE
+    asn cmdopt8 = ""
+  ENDIF
+
+
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
 
 :Main_Start
 
