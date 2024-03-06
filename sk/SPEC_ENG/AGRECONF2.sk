@@ -1,0 +1,197 @@
+#**********************************************************************
+#
+# Reconfigure parameters of running AG sequence
+#   sending a command to AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.10
+    SCRIPT_UPDATE=2022.06.14
+    SCRIPT_UPDATE=2023.02.16
+    SCRIPT_UPDATE=2023.07.12
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+:Parameter
+
+    EXPTIME = NOP
+    INTERVAL = NOP
+    EXPDLY = NOP
+    TECOFF = NOP
+    DRY_RUN = NOP
+    FIT_DSCALE = NOP
+    FIT_DINR = NOP
+    MAX_ELLIP = NOP
+    *max_ellip = 0.6
+    MAX_SIZE = NOP
+    *max_size = 20.0
+    MIN_SIZE = NOP
+    *min_size = 0.92
+    MAX_RES = NOP
+    *max_residual = 0.2
+    #AG_MAG = NOP
+
+:Command
+
+:start
+
+from "pfsmisc" import lower
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+IF "$EXPTIME" != "NOP"
+    asn EXPT_AG = INT($EXPTIME * 1000) 
+    asn INFO_EXPT = " ExpTime: $EXPTIME, " 
+    asn COM_EXPT = " exposure_time=@EXPT_AG" 
+ELSE
+    asn INFO_EXPT = "" 
+    asn COM_EXPT = ""
+ENDIF
+
+
+IF "$INTERVAL" != "NOP" 
+    asn INT_AG = INT($INTERVAL * 1000)
+    asn INFO_INT = " Int.: $INTERVAL, " 
+    asn COM_INT = " cadence=@INT_AG"
+ELSE
+    asn INFO_INT = ""
+    asn COM_INT = "" 
+ENDIF
+
+
+asn dry_run = @lower("$DRY_RUN")
+IF @dry_run == "yes" OR @dry_run == "no"
+    asn INFO_DRY_RUN = " DRY_RUN: @dry_run"
+    asn COM_DRY_RUN = " dry_run=@dry_run"
+    
+    IF @dry_run == "yes"
+        Exec TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+    ENDIF
+    
+ELSE
+    asn INFO_DRY_RUN = ""
+    asn COM_DRY_RUN = ""
+ENDIF
+
+
+asn fit_dscale=@lower("$FIT_DSCALE")
+IF @fit_dscale == "yes" OR @fit_dscale == "no"
+    asn INFO_FIT_DSCALE = " Scale fit: @fit_dscale"
+    asn COM_FIT_DSCALE = " fit_dscale=@fit_dscale"
+ELSE
+    asn INFO_FIT_DSCALE = ""
+    asn COM_FIT_DSCALE = ""
+ENDIF
+
+
+asn fit_dinr=@lower("$FIT_DINR")
+IF @fit_dinr == "yes" OR @fit_dinr == "no"
+    asn INFO_FIT_DINR = " InR fit: @fit_dinr"
+    asn COM_FIT_DINR = " fit_dinr=@fit_dinr"
+ELSE
+    asn INFO_FIT_DINR = ""
+    asn COM_FIT_DINR = ""
+ENDIF
+
+
+#asn exposure_delay=@lower("$EXPDLY")
+IF $EXPDLY == "NOP"
+    asn INFO_EXPDLY = ""
+    asn COM_EXPDLY = ""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn INFO_EXPDLY = " Exp. Delay: $EXPDLY"
+    asn COM_EXPDLY = " exposure_delay=@expdly_ms"
+ENDIF
+
+
+asn tec_off=@lower("$TECOFF")
+IF $TECOFF == "NOP"
+    asn INFO_TECOFF = ""
+    asn COM_TECOFF = ""
+ELSE
+    asn INFO_TECOFF = " TEC off: @tec_off"
+    asn COM_TECOFF=" tec_off=@tec_off"
+ENDIF
+
+
+#max_ellipticity=0.6
+IF $MAX_ELLIP == "NOP"
+    asn INFO_MAX_ELLIP = ""
+    asn COM_MAX_ELLIP = ""
+ELSE
+    asn INFO_MAX_ELLIP = " Max. Ellip.: $MAX_ELLIP"
+    asn COM_MAX_ELLIP = " max_ellipticity=$MAX_ELLIP"
+ENDIF
+
+
+#max_size=20.0
+IF $MAX_SIZE == "NOP"
+    asn INFO_MAX_SIZE = ""
+    asn COM_MAX_SIZE = ""
+ELSE
+    asn INFO_MAX_SIZE = " Max. Size: $MAX_SIZE"
+    asn COM_MAX_SIZE = " max_size=$MAX_SIZE"
+ENDIF
+
+
+#min_size=0.92
+IF $MIN_SIZE == "NOP"
+    asn INFO_MIN_SIZE = ""
+    asn COM_MIN_SIZE = ""
+ELSE
+    asn INFO_MIN_SIZE = " Min. Size: $MIN_SIZE"
+    asn COM_MIN_SIZE = " min_size=$MIN_SIZE"
+ENDIF
+
+
+#max_residual=0.2
+IF $MAX_RES == "NOP"
+    asn INFO_MAX_RES = ""
+    asn COM_MAX_RES = ""
+ELSE
+    asn INFO_MAX_RES = " Max Residual: $MAX_res"
+    asn COM_MAX_RES = " max_residual=$MAX_res"
+ENDIF
+
+
+#IF $AG_MAG == "NOP"
+#    asn INFO_AG_MAG = ""
+#    asn COM_AG_MAG  = ""
+#ELSE
+#    asn	INFO_AG_MAG = "AG mag: $AG_MAG"
+#    asn	COM_AG_MAG  = "	magnitude=$AG_MAG"
+#ENDIF
+
+
+
+asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES"
+asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES"
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
+
+#*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
+IF @cmdopt != ""
+
+    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
+
+    IF @dry_run == "no"
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+    ENDIF
+
+ELSE
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No parameter reconfigured. " ;
+
+ENDIF
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end
