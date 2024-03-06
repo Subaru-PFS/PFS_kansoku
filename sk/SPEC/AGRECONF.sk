@@ -1,0 +1,149 @@
+#**********************************************************************
+#
+# Reconfigure parameters of running AG sequence
+#   sending a command to AG actor
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_UPDATE=2021.11.10
+    SCRIPT_UPDATE=2022.06.14
+    SCRIPT_UPDATE=2023.02.16
+    SCRIPT_UPDATE=2023.07.12
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+
+:Parameter
+
+    EXPTIME=NOP
+    INTERVAL=NOP
+    EXPDLY=NOP
+    TECOFF=NOP
+    DRY_RUN=NOP
+    FIT_DSCALE=NOP
+    FIT_DINR=NOP
+
+:Command
+
+:start
+
+from "pfsmisc" import lower
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+*IF "$EXPTIME" != "NOP"
+
+    asn EXPT_AG = INT($EXPTIME * 1000) 
+    asn INFO_EXPT = " ExpTime: $EXPTIME, " 
+    asn COM_EXPT = " exposure_time=@EXPT_AG" 
+
+*ELSE
+
+    asn INFO_EXPT = "" 
+    asn COM_EXPT = ""
+
+*ENDIF
+
+*IF "$INTERVAL" != "NOP" 
+
+    asn INT_AG = INT($INTERVAL * 1000)
+    asn INFO_INT = " Int.: $INTERVAL, " 
+    asn COM_INT = " cadence=@INT_AG"
+
+*ELSE
+
+    asn INFO_INT = ""
+    asn COM_INT = "" 
+
+*ENDIF
+
+*IF "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
+
+    asn INFO_DRY_RUN = " DRY_RUN: $DRY_RUN"
+    asn COM_DRY_RUN = " dry_run=$DRY_RUN"
+
+    IF "$DRY_RUN" == "yes"
+
+        Exec TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+
+    ENDIF
+
+*ELSE
+
+    asn INFO_DRY_RUN = ""
+    asn COM_DRY_RUN = ""
+
+*ENDIF
+
+*IF "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no"
+
+    asn INFO_FIT_DSCALE = " Scale fit: $FIT_DSCALE"
+    asn COM_FIT_DSCALE = " fit_dscale=$FIT_DSCALE"
+
+*ELSE
+
+    asn INFO_FIT_DSCALE = ""
+    asn COM_FIT_DSCALE = ""
+
+*ENDIF
+
+*IF "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
+
+    asn INFO_FIT_DINR = " InR fit: $FIT_DINR"
+    asn COM_FIT_DINR = " fit_dinr=$FIT_DINR"
+
+*ELSE
+
+    asn INFO_FIT_DINR = ""
+    asn COM_FIT_DINR = ""
+
+*ENDIF
+
+#asn exposure_delay=@lower("$EXPDLY")
+IF $EXPDLY == "NOP"
+    asn INFO_EXPDLY = ""
+    asn COM_EXPDLY = ""
+ELSE
+    asn expdly_ms = INT($EXPDLY * 1000)
+    asn INFO_EXPDLY = " Exp. Delay: $EXPDLY"
+    asn COM_EXPDLY = " exposure_delay=@expdly_ms"
+ENDIF
+
+#asn tec_off=@lower("$TECOFF")
+IF $TECOFF == "NOP"
+    asn INFO_TECOFF = ""
+    asn COM_TECOFF = ""
+ELSE
+    asn INFO_TECOFF = "TEC off: $TECOFF"
+    asn COM_TECOFF=" tec_off=@tec_off"
+ENDIF
+
+asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF"
+asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF"
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
+
+#*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
+*IF @cmdopt != ""
+
+    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
+
+    IF "$DRY_RUN" == "no"
+        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
+        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+    ENDIF
+
+*ELSE
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No parameter reconfigured. " ;
+
+*ENDIF
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end
