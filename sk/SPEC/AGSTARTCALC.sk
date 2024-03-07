@@ -100,3 +100,7 @@
     EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt" TIMELIM=180 ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide Calc. Start." , 
+
+:Main_End
+
+:End

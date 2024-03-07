@@ -104,3 +104,6 @@
     EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+:Main_end
+
+:end

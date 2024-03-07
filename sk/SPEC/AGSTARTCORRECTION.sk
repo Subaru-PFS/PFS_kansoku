@@ -28,3 +28,6 @@
   EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
   EXEC OBS Set_Message Instrument_name=PFS obsinfo3="AG correction started. " ;
 
+:Main_End
+
+:End
