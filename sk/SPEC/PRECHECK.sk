@@ -49,7 +49,7 @@
 
     *IF CHK_ADC == "YES"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="ADC setup" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-        Exec TSC adc_pf_filter motor=on f_select=p_opt2 filter_id=106
+        Exec TSC adc_pf_filter motor=on f_select=p_opt2 filter_id=106 ;
     *ENDIF
 
 
@@ -67,7 +67,7 @@
     *IF CHK_SPS == "YES"
         # Declare pfsDesign for Cobra home
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Declare pfsDesign..." obsinfo4=clear obsinfo5=clear,
-        *SUB PFS_SETPFSDESIGN $DEF_PFSENG DESIGN_ID="0x6b24c40ee4154f34"
+        *SUB PFS_SETPFSDESIGN OBE_ID=PFS OBE_MODE=SPEC_ENG DESIGN_ID="0x6b24c40ee4154f34"
         
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Taking test data..." obsinfo4=clear obsinfo5=clear,
         *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK" SELECT="cam" SELVAL=$SPS_CAMERA
@@ -85,7 +85,7 @@
         EXEC OBS Confirmation Instrument_Name=PFS Title="Are AG cameras ON?" Dialog=[YES] ;
 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Taking data..." obsinfo4=clear obsinfo5=clear,
-        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG"  NFRAME=1 EXPTIME=1 MODE="OBJECT"
+        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=1 EXPTIME=1 MODE="OBJECT"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
     *ENDIF
 

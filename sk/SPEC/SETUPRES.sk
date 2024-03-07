@@ -34,7 +34,7 @@
     # chainging from low to medium resolution
     *IF RESOLUTION == "MED"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3A obsinfo4=clear obsinfo5=clear;
-        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180 ;
 
         EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
         EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to medium resolution?" Dialog=[YES] ;
@@ -45,11 +45,13 @@
     # chaning from medium to low resolution
     *IF RESOLUTION == "LOW"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3=$INFO3B obsinfo4=clear obsinfo5=clear;
-        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
 
         EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
         EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to low resolution?" Dialog=[YES] ;
 
     *ENDIF
 
+:main_end
 
+:end

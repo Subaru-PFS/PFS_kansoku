@@ -35,13 +35,13 @@
 
     *IF CHK_GRA == "YES"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Grating Test" obsinfo3="Moving from low res. to med res..." obsinfo4=clear obsinfo5=clear;
-        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180 ;
 
         EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
         EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to medium resolution?" Dialog=[YES] ;
 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Grating Test" obsinfo3="Moving from med res. to low res..." obsinfo4=clear obsinfo5=clear;
-        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
 
         EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
         EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to low resolution?" Dialog=[YES] ;
@@ -63,7 +63,7 @@
         EXEC OBS Confirmation Instrument_Name=PFS Title="Are illuminators ON?" Dialog=[YES] ;
 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Moving cobra to Safe position..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2' TIMELIM=400
+        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2' TIMELIM=400 ;
         EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
 
     *ENDIF
