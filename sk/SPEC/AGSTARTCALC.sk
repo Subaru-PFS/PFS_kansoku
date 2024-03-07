@@ -26,6 +26,8 @@
   AGTECOFF   = NOP
   DRY_RUN    = "no"
 
+  OTF        = NOP
+
 :Command
 :Start
 
@@ -34,7 +36,7 @@
 
   asn fit_dscale=@lower("$FIT_DSCALE")
   asn fit_dinr=@lower("$FIT_DINR")
-
+  asn otf=@lower("$OTF")
 
   IF "$EXPTIME" != "NOP"
     asn expt_ag = INT($EXPTIME * 1000)
@@ -83,7 +85,13 @@
     asn cmdopt7 = ""
   ENDIF
 
-  asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+  IF @otf == "yes"
+    asn cmdopt8 = " otf"
+  ELSE
+    asn cmdopt8 = ""
+  ENDIF
+
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
 
 :Main_Start
 
