@@ -28,7 +28,7 @@
 ## Which camera to be used
 ### case sensitive
   CAMERA=NOP
-  *CAMERA="b1,r1,n1,b3,r3,n3"
+  *CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
   ARM=NOP
   *ARM="b,r,n"
   SPECNUM=NOP
