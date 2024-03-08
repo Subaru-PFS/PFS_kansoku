@@ -20,12 +20,12 @@
 
   AG         = OFF
  *AG         = OFF,ON
-  FIT_DSCALE = NOP
-  FIT_DINR   = NOP
-  DRY_RUN    = NOP
-  AGEXPDLY   = NOP
-  *AGEXPDLY  = 0.1
-  AGTECOFF   = NOP
+  FIT_DSCALE = yes
+  FIT_DINR   = yes
+  DRY_RUN    = NO
+  AGEXPDLY   = 0.1
+  *AGEXPDLY  = 0.1,NOP
+  AGTECOFF   = yes
   *AGTECOFF  = NOP,yes,no
   OTF        = NOP
   *OTF       = yes,no

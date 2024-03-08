@@ -20,10 +20,10 @@
 
   # Optional
 
-  FIT_DSCALE = NOP
-  FIT_DINR   = NOP
-  AGEXPDLY   = NOP
-  AGTECOFF   = NOP
+  FIT_DSCALE = yes
+  FIT_DINR   = yes
+  AGEXPDLY   = 0.1
+  AGTECOFF   = yes
   DRY_RUN    = "no"
 
   OTF        = NOP
