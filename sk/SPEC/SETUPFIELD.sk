@@ -45,15 +45,15 @@
     # cobra convergence flag (default:YES or NO)
     COBRA=YES
     *COBRA=YES,NO
-    DRY_RUN=YES
+    DRY_RUN=no
     *DRY_RUN=YES,NO
-    FIT_DSCALE=NOP
+    FIT_DSCALE=yes
     *FIT_DSCALE=NOP,YES,NO
-    FIT_DINR=NOP
+    FIT_DINR=yes
     *FIT_DINR=NOP,YES,NO
-    AGEXPDLY=NOP
+    AGEXPDLY=0.1
     *AGEXPDLY=0.1
-    AGTECOFF=NOP
+    AGTECOFF=yes
     *AGTECOFF=NOP,yes,no
     AGMAG=NOP
 

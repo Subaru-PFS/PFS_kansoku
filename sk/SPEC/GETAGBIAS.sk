@@ -16,7 +16,7 @@
 <Default_Parameter>
   NFRAME=1
   VISIT=NOP
-  TECOFF=NOP
+  TECOFF=yes
   *TECOFF=yes,no
 </Default_Parameter>
 
