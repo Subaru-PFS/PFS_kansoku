@@ -1,0 +1,106 @@
+#**********************************************************************
+# PRECHECK
+#  Daily precheck for PFS observations
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2024.02.26
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=PRECHECK
+
+
+:Parameter
+
+    CHK_HEX="YES"
+    *CHK_HEX="YES,NO"
+    CHK_ADC="YES"
+    *CHK_ADC="YES,NO"
+    CHK_MCS="YES"
+    *CHK_MCS="YES,NO"
+    CHK_SPS="YES"
+    *CHK_SPS="YES,NO"
+    CHK_AG="YES"
+    *CHK_AG="YES,NO"
+
+    ## Which camera to be used for SpS
+    SPS_CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+
+:Command
+
+
+:start
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck" obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+
+
+:main_start
+
+    # Hexapod Setup
+
+    *IF $CHK_HEX == "YES"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Hexapod setup" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+        *SUB M2_SETUP OBE_ID=COMMON OBE_MODE=LAUNCHER FOCI="POPT2(PFS)"
+    *ENDIF
+
+
+    # ADC Setup
+
+    *IF $CHK_ADC == "YES"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="ADC setup" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+        Exec TSC adc_pf_filter motor=on f_select=p_opt2 filter_id=106 ;
+    *ENDIF
+
+
+    # MCS Test Exposure
+
+    *IF $CHK_MCS == "YES"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Taking test data..." obsinfo4=clear obsinfo5=clear,
+        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.8 MODE="OBJECT"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
+    *ENDIF
+
+
+    # SpS Test Exposure
+
+    *IF $CHK_SPS == "YES"
+        ## Declare pfsDesign for Cobra home
+        # This is not necessary for taking DARK with SpS
+        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Declare pfsDesign..." obsinfo4=clear obsinfo5=clear,
+        #*SUB PFS_SETPFSDESIGN OBE_ID=PFS OBE_MODE=SPEC_ENG DESIGN_ID="0x6b24c40ee4154f34"
+        
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Taking test data..." obsinfo4=clear obsinfo5=clear,
+        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK" SELECT="cam" SELVAL=$SPS_CAMERA
+        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
+    *ENDIF
+
+
+    # AG Test Exposure
+
+    *IF $CHK_AG == "YES"
+
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3=clear obsinfo4=clear obsinfo5=clear,
+
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Are AG cameras ON?" Dialog=[YES] ;
+
+        # Open AG Shutters permenantly
+	EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Opening shutters..." obsinfo4=clear obsinfo5=clear,
+        *SUB AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=OPEN
+	EXEC OBS Sleep Sleep_Time=10 ;
+
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Taking data..." obsinfo4=clear obsinfo5=clear,
+        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=1 EXPTIME=1 MODE="OBJECT"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
+    *ENDIF
+
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck" obsinfo2="Precheck completed." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+
+    
+
+:main_end
+
+:end

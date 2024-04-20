@@ -1,37 +1,35 @@
 #**********************************************************************
-# GETOBJECT
-#  Take science data with SPS
-#  Basically created from PFS_SPS_EXPOSURE.sk
+# GETTRACE
+#  Take trace reference data with (with PFI Lamps)
 #**********************************************************************
 
 :Header
     SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2023.10.10
+    SCRIPT_UPDATE=2024.02.28
     OBE_ID=PFS
     OBE_MODE=SPEC
-    COMMAND=GETOBJECT
+    COMMAND=GETTRACE
 
 
 :Parameter
 
     EXPTIME=1
-	NFRAME=1
-    ## Which camera to be used
+    NFRAME=1
+    # Which camera to be used
     CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
     *SPECNUM="1,2,3"
-    #Assuming that the SEQ_NAME will be defined by the actual ope command 
-    SEQ_NAME=NOP
+    SEQ_NAME="TRACE"
     SEQ_COMMENT=NOP
+
 
 :Command
 
 :start
-
     # Set time limits for commands
-    *SET TIMELIM_SEQ = ($EXPTIME + 105) * $NFRAME
+    *SET TIMELIM_SEQ = ($EXPTIME + 100) * $NFRAME
     *SET TIMELIM     = ($EXPTIME + 30) 
 
     # Camera selection option
@@ -45,43 +43,28 @@
         *Set cmdopt = ""
     *ENDIF
 
-    IF $SEQ_NAME != "NOP"
-        asn seqname = " name=\"$SEQ_NAME\""
-    ELSE
-        asn seqname = ""
-    ENDIF
-
     IF $SEQ_COMMENT != "NOP"
         asn seqcomm = " comments=\"$SEQ_COMMENT\""
     ELSE
         asn seqcomm = ""
     ENDIF
 
+
 :main_start
 
-#     # Check shutter status
-#     IF PFS.SHUTTERS.STATE == "Open"
-#       raise "error: Shutter status: Open"
-#     ELIF PFS.SHUTTERS.STATE == "Unknown"
-#       raise "error: Shutter status: Unknown"
-#     ELIF PFS.SHUTTERS.STATE == "None"
-#       raise "error: Shutter status: None"
-#     ENDIF
-
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
+  
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETTRACE" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
     # Start exposure sequence
     {
+
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm' TIMELIM=$TIMELIM_SEQ;
-	},
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceTrace halogen=$EXPTIME duplicate=$NFRAME $cmdopt name="$SEQ_NAME"@seqcomm' TIMELIM=$TIMELIM_SEQ;
+    },
 
     # Manage Gen2 outputs
     {
     *FOR $NFRAME STEP IN
-
-        #sleep needed?
-
         EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=150 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
@@ -90,7 +73,8 @@
         EXEC OBS SOUND SELECT=TIMER_END Volume=64 ,
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
     *ENDFOR
-	};
+    };
+
     };
 
     EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,

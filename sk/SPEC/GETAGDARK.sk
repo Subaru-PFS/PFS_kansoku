@@ -17,7 +17,7 @@
   EXPTIME=10
   NFRAME=1
   VISIT=NOP
-  TECOFF=NOP
+  TECOFF=yes
   *TECOFF=yes,no
 </Default_Parameter>
 
@@ -43,7 +43,7 @@ ENDIF
 
 asn cmdopt = "@cmdopt1"
 
-IF VISIT == NOP
+IF "$VISIT" == NOP
     asn visit_tmp = int(!PFS.DESIGN.VISIT) + 1 
 ELSE
     asn visit_tmp = int($VISIT)

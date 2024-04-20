@@ -5,14 +5,6 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2023.10.10
-    OBE_ID=PFS
-    OBE_MODE=SPEC
-    COMMAND=GETOBJECT
-
-
-:Header
 
     Script_Author=Jeschke
     Last_Update=2023-11-20
@@ -32,6 +24,7 @@
     EXPTIME=2
     GUIDE=no
 
+    VISIT=NOP
 
 :Command
 :start
@@ -54,7 +47,7 @@ exec OBS sleep sleep_time=2 ;
 exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
 
 *FOR $NSTEP STEP IN
-*SET INFO3="Collecting Data ....   $STEP / $NSTEP steps passed ..."
+    *SET INFO3="Collecting Data ....   $STEP / $NSTEP steps passed ..."
     exec OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo3=$INFO3 ,
     exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=(!STATOBS.CMN.N2+($STEP*$DELTAZ)) ;
     exec OBS sleep sleep_time=2 ;
@@ -69,15 +62,22 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
 
             asn ag_count = !VGW.PFS.AG.COUNT
 
-            *IF $NSTEP == 1 and $FRAME == 1
+            *IF $STEP == 1 and $FRAME == 1
 
-                #EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=0 exposure_time=$EXPT_AG",
-                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf exposure_time=$EXPT_AG";
+                *IF $VISIT != NOP
+                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+                *ELSE
+                    *Set VISIT = INT(!PFS.DESIGN.VISIT) 
+                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+                *ENDIF
 
             *ELSE
 
-                *Set VISIT = !PFS.DESIGN.VISIT
-                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+                *IF $VISIT != NOP
+                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+                *ELSE
+                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+                *ENDIF
 
             *ENDIF
 

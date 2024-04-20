@@ -51,7 +51,7 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Bias exposure:" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="mcs" cmd="expose bias" ;
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose bias" TIMELIM=$TIMELIM ;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
   *ELIF $MODE == "DARK" 
@@ -59,14 +59,14 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Dark exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="mcs" cmd="expose dark expTime=$EXPTIME" ;
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose dark expTime=$EXPTIME" TIMELIM=$TIMELIM ;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
   *ELIF $MODE == "OBJECT"
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Object exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" ;
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
   *ENDIF
@@ -75,7 +75,7 @@ from "pfsmisc" import sps_chk_sel
 *ENDIF
 
 *IF $CAM == "AG"
-  *SET TIMELIM=($EXPTIME + 30)
+  *SET TIMELIM = ($EXPTIME + 30)
   
   EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="AG exposure: $NFRAME x $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
   
@@ -102,8 +102,10 @@ from "pfsmisc" import sps_chk_sel
 *IF $CAM == "SPS"
   *SET SPSCOMMENT = "\"test_command\""
   *SET SPSNAME = "\"fromGen\""
+  *SET TIMELIM = (60 + ($EXPTIME + 30) * $NFRAME )
+
   
-  IF $SELECT == "NOP" OR $SELVAL=="NOP"
+  IF "$SELECT" == "NOP" OR "$SELVAL"=="NOP"
     asn invalid_input = 0
     asn comopt = ""
   ELIF @sps_chk_sel($SELECT, $SELVAL) == 1
@@ -118,7 +120,7 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS SOUND SELECT=E_CANCEL Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure ($MODE): $NFRAME" obsinfo3="Invalid input: @comopt" obsinfo4=clear obsinfo5=clear ;
 
-  ELIF $MODE == "BIAS"
+  ELIF "$MODE" == "BIAS"
     *SET TIMELIM = 30 + 60 * $NFRAME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Bias): $NFRAME @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
     
@@ -130,7 +132,7 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
-  ELIF $MODE == "DARK"
+  ELIF "$MODE" == "DARK"
     *SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 

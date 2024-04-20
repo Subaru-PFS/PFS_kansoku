@@ -50,7 +50,7 @@ from "pfsmisc" import sps_chk_sel
 *SET EXPTIMLIM = ( $EXPTIME + 120 )
 
 #Set sleep time used to wait the integration
-*SET WAITTIME =  ( $EXPTIME + 8 )
+*SET WAITTIME =  ( $EXPTIME + 60 )
 
 *SET RA=!STATS.RA_CMD
 *SET DEC=!STATS.DEC_CMD
@@ -118,8 +118,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
             #Exposure
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
             #*IF "$WMODE" == "YES"
-                EXEC OBS TIMER DURATION=($EXPTIME) ;
-                EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+                #EXEC OBS TIMER DURATION=($EXPTIME) ;
+                #EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
                 #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
                 EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
         
@@ -133,7 +133,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
             },
 
             {
-            Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
+            #Exec OBS SLEEP SLEEP_TIME=10;
+            EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+            EXEC OBS TIMER DURATION=($EXPTIME) ,
+	    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
+            #Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
 
             #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
             #Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to send offsets?" Dialog=[OK] ;
@@ -146,12 +151,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
 
             #Send offset to the AG
-    	      Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
+    	    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
             Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=($DDEC_WIDTH*$DITHWIDTH) ;
 
             # Check errors
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
-	          EXEC OBS Sleep Sleep_Time=20 ;
+	    EXEC OBS Sleep Sleep_Time=20 ;
             EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0180 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
             #Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
@@ -162,13 +167,18 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
             {
             #Exposure
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
-            EXEC OBS TIMER DURATION=($EXPTIME) ;
-            EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            #EXEC OBS TIMER DURATION=($EXPTIME) ;
+            #EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
             #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
             EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
-            };
+            },
 
             {
+	    EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+            #Exec OBS SLEEP SLEEP_TIME=10;
+	    EXEC OBS TIMER DURATION=($EXPTIME),
+	    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+            EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
 
             #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
             #Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to send offsets?" Dialog=[OK] ;
@@ -181,12 +191,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo5=$INFO5 ;
 
             #Send offset to the AG
-    	      Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
+    	    Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=($DRA_WIDTH*$DITHWIDTH),
             Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=($DDEC_WIDTH*$DITHWIDTH) ;
 
             # Check errors
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting AG to settle down." ;
-	          EXEC OBS Sleep Sleep_Time=20 ;
+	    EXEC OBS Sleep Sleep_Time=20 ;
             EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0180 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
             #Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
@@ -204,14 +214,19 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 
 *IF "$WMODE" == "YES"
     {
-    EXEC OBS TIMER DURATION=($EXPTIME) ;
-    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    #EXEC OBS TIMER DURATION=($EXPTIME) ;
+    #EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
     EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
     },
 
     {
-    Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
+    #Exec OBS SLEEP SLEEP_TIME=10;
+    EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+    EXEC OBS TIMER DURATION=($EXPTIME) ,
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
+    #Exec OBS SLEEP SLEEP_TIME=$WAITTIME;
 
     #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
     #Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to send offsets?" Dialog=[OK] ;
@@ -237,11 +252,21 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
 
 
 *ELIF "$WMODE" == "NO"
-    EXEC OBS TIMER DURATION=($EXPTIME) ;
-    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+    #EXEC OBS TIMER DURATION=($EXPTIME) ;
+    #EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID arm=$ARM name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
-    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
 
+    {
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="HXDTH_RA:$DRA asec_DEC:$DDEC asec"' TIMELIM=$EXPTIMLIM ;
+    },
+
+    {
+    #Exec OBS SLEEP SLEEP_TIME=10;
+    EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+    EXEC OBS TIMER DURATION=($EXPTIME),
+    EXEC OBS SOUND SELECT=E_EXPSTART Volume=64,
+    EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
+ 
     #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
     #Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to send offsets?" Dialog=[OK] ;
 
@@ -261,6 +286,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_DEC_OFFSET_ASEC=0 ;
     EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=0180 N1=[PFS.AG.ERR.RA_ERR -0.25 +0.25] N2=[PFS.AG.ERR.DEC_ERR -0.25 +0.25];
     #Exec OBS Confirmation Instrument_Name=PFS Title="Is position OK?" Dialog=[OK] ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
+    };
 
 *ENDIF
 

@@ -18,8 +18,8 @@
   EXPTIME=2
   NFRAME=1
   VISIT=NOP
-  EXPDLY=NOP
-  TECOFF=NOP
+  EXPDLY=0.1
+  TECOFF=yes
   *TECOFF=yes,no
   # Default PFSHAL set to "no", since pfi halogen seems to be too bright. Use DomeFlatLamps with 25V.
   PFIHAL=no
@@ -56,7 +56,7 @@ ENDIF
 
 asn cmdopt = "@cmdopt1@cmdopt2"
 
-IF VISIT == NOP
+IF "$VISIT" == NOP
     asn visit_tmp = int(!PFS.DESIGN.VISIT) + 1 
 ELSE
     asn visit_tmp = int($VISIT)

@@ -1,68 +1,104 @@
-#**********************************************************************
+#***************************************************************************
 #
-# Setup Field of Telescope 
-#  
-#**********************************************************************
+# SETUPFIELD
+#  Setup Field of Telescope including cobra convergence process for OpenUse
+#  Usage: SetupField $DEF_PFSENG DESIGN_ID="designId" OBJECT="objectname" AG=[OFF] OFFSET_RA=[0] OFFSET_DEC=[0] TOLERANCE=[0.005] CC_NITERATION=[8] COBRA=[YES]/NO 
+#  "[]"s mean default values for each option. If not given, the script will use default value.
+#***************************************************************************
 :Header
         OBE_ID=PFS
         OBE_mode=SPEC_ENG
         COMMAND=SETUPFIELD
         Script_Version=0.1
         Script_Author=cloomis
-	Transcribed=ejeschke, koshida
+    	Transcribed=ejeschke, koshida
         Script_Update=2021.09.30
-	Script_Update=2022.05.11
+	    Script_Update=2022.05.11
         ### Add pfsDesign option
-	Script_Update=2022.09.20
+	    Script_Update=2022.09.20
         ### Remove RA, Dec option, etc. 
         ### add cobra option (YES or NO) by Arai
-	Script_Update=2022.09.25
+	    Script_Update=2022.09.25
         Script_Update=2023.07.12
 #       Dispatcher_Version=1.0
 #             ESTIMATE=180
+	    Script_Update=2023.07.17
+        # added tolerance option of cobra convergence 
+        # added iteration parameter (default: 8)
+        # and commented ou the pop-up quiestion after the covra convergence.
+	    Script_Update=2024.02.29
+        # named as SPEC/SETUPFILED.sk for openuse observations based on SPEC_ENG/SETUPFILED_TOLERANCE.sk.
+        # Refactoring and cleaning the code needed.
 
 
 :Parameter
-	# we default to the last position sent by PFS if the command is repeated
-	TARGET = NOP
-        DATASET_ID=DS000
+    # we default to the last position sent by PFS if the command is repeated
+    TARGET = NOP
+    DATASET_ID=DS000
 
-        DESIGN_PATH="/data/pfsDesign"
-	DESIGN_ID=NOP
-        #VISIT_ID=0
-	# Start AG after a field acquisition or not
-	AG=OFF
-        # cobra convergence flag (default:YES or NO)
-        COBRA=YES
-        *COBRA=YES,NO
-        DRY_RUN=YES
-        *DRY_RUN=YES,NO
-        FIT_DSCALE=NOP
-        *FIT_DSCALE=NOP,YES,NO
-        FIT_DINR=NOP
-	*FIT_DINR=NOP,YES,NO
-        AGEXPDLY=NOP
-        *AGEXPDLY=0.1
-        AGTECOFF=NOP
-        *AGTECOFF=NOP,yes,no
-        # Common parameters
-        ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
-        OFFSET_RA=0
-        OFFSET_DEC=0
-        Z=!TSCL.Z
-        # non-sidereal tracking file
-        FILE=NOP
+    DESIGN_PATH="/data/pfsDesign"
+    DESIGN_ID=NOP
+    #VISIT_ID=0
+    # Start AG after a field acquisition or not
+    AG=OFF
+    
+    # cobra convergence flag (default:YES or NO)
+    COBRA=YES
+    *COBRA=YES,NO
+    DRY_RUN=no
+    *DRY_RUN=YES,NO
+    FIT_DSCALE=yes
+    *FIT_DSCALE=NOP,YES,NO
+    FIT_DINR=yes
+    *FIT_DINR=NOP,YES,NO
+    AGEXPDLY=NOP
+    *AGEXPDLY=0.1
+    AGTECOFF=no
+    *AGTECOFF=NOP,yes,no
+    AGMAG=NOP
 
-        # For FITS header
-        OBJECT=NOP
-        #RA=!STATS.RA
-        #DEC=!STATS.DEC
-        EQUINOX=!STATS.EQUINOX
 
-        # Parameters which can stay default
+    # Common parameters
+    ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
+    OFFSET_RA=0
+    OFFSET_DEC=0
+    Z=!TSCL.Z
+    # non-sidereal tracking file
+    FILE=NOP
+
+    # For FITS header
+    OBJECT=NOP
+    #RA=!STATS.RA
+    #DEC=!STATS.DEC
+    EQUINOX=!STATS.EQUINOX
+
+    # Parameters which can stay default
         
-        AGEXPT=2
-        AGINT=10
+    AGEXPT=2
+    AGINT=10
+
+    # Common parameters
+    ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
+    # OFFSET_RA=0
+    #OFFSET_DEC=0
+    #Z=!TSCL.Z
+    # non-sidereal tracking file
+    #FILE=NOP
+
+    # For FITS header
+    #OBJECT=NOP
+    #RA=!STATS.RA
+    #DEC=!STATS.DEC
+    #EQUINOX=!STATS.EQUINOX
+
+    # Parameters which can stay default    
+    #AGEXPT=2
+    #AGINT=10
+
+    # Cobra configuration options default
+    CC_NITERATION=8
+    #Tolerance
+    TOLERANCE=0.005
 
 :Command
 :Start
@@ -71,6 +107,9 @@ from "pfsmisc" import lower
 from "pfsmisc" import random_song
 
 :Main_Start
+
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=clear ObsInfo3=Clear ObsInfo4=clear ObsInfo5=Clear ;
 
 # Reset summed AG offset
 *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ZERO  ;
@@ -93,7 +132,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     #}
     ##EXEC PFS PFSCMD ACTOR="AG" CMD="autoguide stop" TIMELIM=$TIMELIM ;
     EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
-    EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
+    #EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
 
     # SpS grating setting: No operation in 2022.05 run
     #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Set SpS grating: Start" , 
@@ -113,7 +152,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     asn INFO2="ID : @PFSDESIGN_ID"
     asn INFO4="Target : @DSGN_FNAME"
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField  " ObsInfo2=@INFO2 ObsInfo3=Clear ObsInfo4=@INFO4 ObsInfo5=Clear , 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2=@INFO2 ObsInfo4=@INFO4 , 
 
     # Sidereal tracking
     *IF "$FILE" == "NOP"
@@ -130,8 +169,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
             EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=@ROTA ;
 
 	    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ; 
-	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ObsInfo4="@DSGN_FNAME" ;
- 
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope" ObsInfo4="@DSGN_FNAME" ;
+
     # Non-sidereal tracking
     *ELSE
 	    EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
@@ -171,20 +210,21 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
 
         ### Pop-up window for checking the fiber illuminator status
-        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-        Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        #Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
 
         ### Sound during cobraconvergence
-        #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 ,
-        *SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 , 
+        #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 , 
+        #Exec OBS Sound Select="Korobushka_LONG" Volume=64 ,
+        #*SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 ,
 
         ## Cobra configuration
-        EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8" timelim=600;
+        EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE" timelim=600;
 
-        ### Pause and wait with a pop-up window
+        ### Pause and wait with a pop-up window --> commented out from 2023 July run.
 
-        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-        Exec OBS Confirmation Instrument_Name=PFS Title="Are Cobras already converged?" Dialog=[OK] ;
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        #Exec OBS Confirmation Instrument_Name=PFS Title="Are Cobras already converged?" Dialog=[OK] ;
 
         # restart rotator move 
 
@@ -196,9 +236,12 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
 
     *ELSE
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra convergence skipped" ,         
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra convergence skipped" ,
 
     *ENDIF
+
+    # waiting for the telescope settle
+    Exec OBS SLEEP SLEEP_TIME=2 ;
 
     # Acquire Field and AG
 
@@ -216,7 +259,8 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     IF "$AG" == "ON"
         asn cmdopt2 = ""
     ELSE
-        asn cmdopt2 = " guideoff"
+        #asn cmdopt2 = " guideoff"
+	asn cmdopt2 = ""
     ENDIF
 
     IF @fit_dscale == "no" OR @fit_dscale == "yes"
@@ -231,23 +275,31 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         asn cmdopt4 = ""
     ENDIF
 
-    IF $AGEXPDLY != NOP
-        #asn exposure_delay = int($AGEXPDLY * 1000)
+    IF "$AGEXPDLY" != NOP
+        asn exposure_delay = int($AGEXPDLY * 1000)
+        #asn exposure_delay = $AGEXPDLY
         asn cmdopt5 = " exposure_delay=@exposure_delay"
     ELSE
         asn cmdopt5 = ""
     ENDIF
 
-    IF $AGTECOFF == yes or $AGTECOFF == no
+    IF "$AGTECOFF" == "YES" or "$AGTECOFF" == "NO"
         asn tec_off = @lower($AGTECOFF)
         asn cmdopt6 = " tec_off=@tec_off"
     ELSE
         asn cmdopt6 = "" 
     ENDIF
 
-    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6" 
+    IF $AGMAG != NOP
+        asn cmdopt7 = " magnitude=$AGMAG"
+    ELSE
+        asn cmdopt7 = ""
+    ENDIF
+
+    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7"
 
     EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
+    #EXEC pfs pfscmd actor="iic" cmd="acquireField exptime=3000 fit_dScale=no fit_dInR=yes" TIMELIM=180;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
     IF "$AG" == "ON"
@@ -259,10 +311,10 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
         ELIF "$DRY_RUN" == "NO"
 
-            ## Start Telescope AG: nop implemented yet. Options are different from agActor.
-            #EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt";
-            #Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
-            #EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+            # Start Telescope AG
+            EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt";
+            Exec OBS Confirmation Instrument_Name=PFS Title="Please check if AG is stable. Is it OK to start AG with Telescope?" Dialog=[OK] ;
+            EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
         ENDIF
 
     ELSE

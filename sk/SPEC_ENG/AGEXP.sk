@@ -19,8 +19,8 @@
 #for PFS
   EXPTIME=2
   NFRAME=1
-  EXPDLY=NOP
-  TECOFF=NOP
+  EXPDLY=0.1
+  TECOFF=yes
   *TECOFF=yes,no
   # Object type for AGCC actor
   # object type for AGCC: dark|test|object
@@ -31,9 +31,9 @@
   #CENTROID=0
   #Comment out "CMETHOD" since only sep is used.  
   #CMETHOD="sep"
-  FIT_DSCALE=NOP
+  FIT_DSCALE=yes
   *FIT_DSCALE=yes,no
-  FIT_DINR=NOP
+  FIT_DINR=yes
   *FIT_DINR=yes,no
 </Default_Parameter>
 

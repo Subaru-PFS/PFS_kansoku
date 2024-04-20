@@ -1,0 +1,54 @@
+#**********************************************************************
+#
+# Open/close the shutterof the AG cameras
+#   sending a command to AGCC actor
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Koshida
+    SCRIPT_UPDATE=2024.03.07
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+    MODE = NOP
+    *MODE = OPEN,CLOSE,NOP
+    CAMERAS = NOP
+    *CAMERAS = 1,2,3,4,5,6,NOP
+</Default_Parameter>
+
+<Command>
+
+:start
+
+IF "$CAMERAS" != NOP 
+    asn cmdopt = " cameras=$CAMERAS"
+ELSE
+    asn cmdopt = ""
+ENDIF
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGShutter" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+IF "$MODE" == "OPEN"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Shutter Open" ;
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="shutter open@cmdopt" ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
+ELIF "$MODE" == "CLOSE"
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Shutter Close" ;
+    EXEC PFS PFSCMD ACTOR="agcc" CMD="shutter close@cmdopt" ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
+ELSE
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="NOP" ;
+ENDIF
+
+#EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end
+
+</Command>

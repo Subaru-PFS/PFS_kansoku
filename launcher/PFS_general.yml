@@ -1,0 +1,115 @@
+# 
+# PFS Launcher File
+# As of 2018.10.26
+# Created: 2024.02.27 (Takagi)
+
+
+tabname: "PFS (General)"
+launchers:
+
+
+
+# Prechecks
+
+    -
+        label: "Precheck (daily)"
+        cmd  : PRECHECK OBE_ID=PFS OBE_MODE=SPEC CHK_HEX=$VAL01 CHK_ADC=$VAL02 CHK_MCS=$VAL03 CHK_SPS=$VAL04 CHK_AG=$VAL05
+        params:
+            - [ VAL01, LIST, [ "NO", "YES" ], "Hexapod" ]
+            - [ VAL02, LIST, [ "YES", "NO" ], "ADC" ]
+            - [ VAL03, LIST, [ "YES", "NO" ], "MCS" ]
+            - [ VAL04, LIST, [ "YES", "NO" ], "SpS" ]
+            - [ VAL05, LIST, [ "YES", "NO" ], "AG" ]
+
+    -
+        label: "Precheck (per run)"
+        cmd  : PRECHECK2 OBE_ID=PFS OBE_MODE=SPEC CHK_GRA=$VAL01 CHK_COBRA=$VAL02
+        params:
+            - [ VAL01, LIST, [ "YES", "NO" ], "Grating" ]
+            - [ VAL02, LIST, [ "YES", "NO" ], "Cobra" ]
+
+    - sep
+
+
+# Test exposures
+
+    -
+        label: "MCS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=$VAL01 MODE=$VAL02
+        params:
+            - [ VAL01, INPUT, 8, 4.8, "ExpTime (sec)" ]
+            - [ VAL02, LIST, [ "OBJECT", "BIAS", "DARK" ], "Mode" ]
+
+    -
+        label: "AG Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03
+        params:
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL03, LIST, [ "OBJECT", "DARK" ], "Mode" ]
+
+    -
+        label: "SpS Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03 SELECT=$VAL04 SELVAL=$VAL05
+        params:
+            - [ VAL02, INPUT, 8, 10.0, "ExpTime (sec)" ]
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL03, LIST, [ "BIAS", "DARK" ], "Mode" ]
+            - break
+            - [ VAL04, LIST, [ "NOP", "cam", "specNum", "arm" ], "Cam. Select mthd." ]
+            - [ VAL05, INPUT, 18, "NOP", "Cam. selected" ]
+
+    - sep
+
+
+
+# SpS Exposure Stop
+
+    -
+        label: "Stop SpS Exp."
+        cmd  : PFS_SPS_ABORT OBE_ID=PFS OBE_MODE=SPEC_ENG SAVE=$VAL01
+        params:
+            - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
+                label: save }
+
+#
+# SpS Change Resolution
+#
+    -
+        label: "SpS Red resolution"
+        cmd  : Exec pfs pfscmd actor="iic" cmd='sps rdaMove $VAL01' TIMELIM=180
+        params:
+            - {name: VAL01, type: LIST, values: ["low", "med"],
+                label: resolution}
+
+    - sep
+
+#
+# Fiber illuminator power control 
+#
+
+    -
+        label: "Fiber illum. ON"
+        cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=$VAL01 SF=ON SF_POWER=$VAL02
+        params:
+            - [ VAL01, INPUT, 8, 1, "FF Power" ]
+            - [ VAL02, INPUT, 8, 40, "SF Power"]
+
+
+    -
+        label: "Fiber illum. OFF"
+        cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF
+
+
+
+    - sep
+
+#
+# Home cobra
+#
+
+    -
+        label: "Home Cobra"
+        cmd: HOMECOBRA OBE_ID=PFS OBE_MODE=SPEC
+
+# End

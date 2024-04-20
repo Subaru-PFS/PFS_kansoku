@@ -9,7 +9,7 @@
         COMMAND=AGACQUIREFIELD
         Script_Version=0.1
         Script_Author=Koshida
-        Script_Update=2023.11.27
+        Script_Update=2024.03.01
 
 :Parameter
 
@@ -20,14 +20,15 @@
 
   AG         = OFF
  *AG         = OFF,ON
-  FIT_DSCALE = NOP
-  FIT_DINR   = NOP
-  DRY_RUN    = NOP
+  FIT_DSCALE = yes
+  FIT_DINR   = yes
+  DRY_RUN    = NO
   AGEXPDLY   = NOP
-  *AGEXPDLY  = 0.1
-  AGTECOFF   = NOP
+  *AGEXPDLY  = 0.1,NOP
+  AGTECOFF   = no
   *AGTECOFF  = NOP,yes,no
-
+  OTF        = NOP
+  *OTF       = yes,no
 
 :Command
 :Start
@@ -38,6 +39,7 @@
   asn fit_dscale=@lower("$FIT_DSCALE")
   asn fit_dinr=@lower("$FIT_DINR")
   asn tec_off=@lower("$AGTECOFF") 
+  asn otf=@lower("$OTF")
 
   asn expt_ag = INT($EXPTIME * 1000)
 
@@ -71,8 +73,8 @@
     asn cmdopt5 = ""
   ENDIF
 
-  IF $AGEXPDLY != NOP
-    asn exposure_delay = $AGEXPDLY
+  IF "$AGEXPDLY" != NOP
+    asn exposure_delay = int($AGEXPDLY * 1000)
     asn cmdopt6 = " exposure_delay=@exposure_delay"
   ELSE
     asn cmdopt6 = ""
@@ -84,14 +86,26 @@
     asn cmdopt7 = "" 
   ENDIF
 
-  asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+  IF @otf == "yes"
+    asn cmdopt8 = " otf"
+  ELSE
+    asn cmdopt8 = ""
+  ENDIF
+
+
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
 
 :Main_Start
 
     # Acquire Field
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." ObsInfo4=clear ObsInfo5=clear , 
 
     EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="@cmdopt" ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+
+:Main_end
+
+:end

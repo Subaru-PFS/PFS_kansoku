@@ -1,0 +1,46 @@
+#**********************************************************************
+#
+# Stop running AG sequence through AG actor
+#   sending a command to AG actor
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Moritani, Koshida, Arai
+    SCRIPT_UPDATE=2022.09.20
+    OBE_ID=PFS
+    OBE_MODE=SPEC_ENG
+</Header>
+
+<Default_Parameter>
+    DRY_RUN=NO
+    *DRY_RUN=Yes,No
+</Default_Parameter>
+
+<Command>
+
+:start
+
+:main_start
+
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGstop" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+
+# turn off TSC AG_Tracking mode
+
+IF $DRY_RUN == NO
+    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+    Exec OBS SLEEP SLEEP_TIME=3 ;
+ENDIF
+
+# Stop auto-guiding
+# reference command:  exec pfs pfscmd actor="ag" cmd="autoguide start"
+#EXEC PFS pfscmd actor="ag" cmd="autoguide stop" ;
+EXEC pfs pfscmd actor="iic" cmd="autoguideStop" TIMELIM=60 ;
+
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+
+:main_end
+
+:end
+
+</Command>

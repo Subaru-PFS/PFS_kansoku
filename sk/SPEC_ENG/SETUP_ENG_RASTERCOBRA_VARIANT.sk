@@ -21,8 +21,9 @@
 
     GROUP_NAME=NOP
     # this will be given as "RasterScanByCobra_FILEDNAME+/-DEG_SET[00]"
-    N_VARIANT=9
+    N_VARIANT=1
     SIGMA=1.0
+    RANDUM_FRACTION=1.0
     ADD=NO
     *ADD=YES,NO
     CONTINUE=NO
@@ -51,7 +52,7 @@
 
     *IF "$ADD" == "NO"
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making variance files x $N_VARIANT" ,  
-        EXEC pfs pfscmd actor="iic" cmd="createVariants nVariants=$N_VARIANT sigma=$SIGMA";
+        EXEC pfs pfscmd actor="iic" cmd="createVariants nVariants=$N_VARIANT sigma=$SIGMA randumFraction=$RANDUM_FRACTION";
         Exec OBS SLEEP SLEEP_TIME=10 ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
         Exec pfs pfscmd actor="iic" cmd='getGroupId groupName="$GROUP_NAME"'; 
@@ -60,7 +61,7 @@
     *ELSE
     # if ADD=yes or others
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(2/3) Making additional variance files x $N_VARIANT" ,  
-        EXEC pfs pfscmd actor="iic" cmd="createVariants addVariants=$N_VARIANT sigma=$SIGMA" ;
+        EXEC pfs pfscmd actor="iic" cmd="createVariants addVariants=$N_VARIANT sigma=$SIGMA randumFraction=$RANDUM_FRACTION" ;
         Exec OBS SLEEP SLEEP_TIME=10 ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="(3/3) Executing iic getGroupID" ObsInfo5=Clear , 
         *IF "$CONTINUE" == "YES"

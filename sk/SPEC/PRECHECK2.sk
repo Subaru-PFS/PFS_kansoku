@@ -1,0 +1,77 @@
+#**********************************************************************
+# PRECHECK2
+#  Precheck for PFS observations before each run
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2024.02.26
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=PRECHECK2
+
+
+:Parameter
+
+    CHK_GRA="YES"
+    *CHK_GRA="YES,NO"
+    CHK_COBRA="YES"
+    *CHK_COBRA="YES,NO"
+
+    ## Which camera to be used for SpS
+    #SPS_CAMERA="b1,r1,n1,b2,r2,n2,b3,r3,n3,b4,r4,n4"
+
+:Command
+
+
+:start
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck 2" obsinfo2=clear obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+
+
+:main_start
+
+    # Grating test
+
+    *IF $CHK_GRA == "YES"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Grating Test" obsinfo3="Moving from low res. to med res..." obsinfo4=clear obsinfo5=clear;
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180 ;
+
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to medium resolution?" Dialog=[YES] ;
+
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Grating Test" obsinfo3="Moving from med res. to low res..." obsinfo4=clear obsinfo5=clear;
+        exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
+
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Gratings set to low resolution?" Dialog=[YES] ;
+
+    *ENDIF
+
+
+    # Cobra movement test
+
+    *IF $CHK_COBRA == "YES"
+
+        #Fiber illuminator test
+        #Turn on illuminators
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Turning on illuminators..." obsinfo4=clear obsinfo5=clear;
+        *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=1 SF=ON SF_POWER=40
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Taking MCS data..." obsinfo4=clear obsinfo5=clear;
+        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.2 MODE="OBJECT"
+        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Are illuminators ON?" Dialog=[YES] ;
+
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Moving cobra to Safe position..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2 noTweak nIteration=8' TIMELIM=400 ;
+        EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
+
+    *ENDIF
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck 2" obsinfo2="Precheck completed." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+
+    
+
+:main_end
+
+:end
