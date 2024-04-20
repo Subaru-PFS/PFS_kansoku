@@ -22,7 +22,7 @@
   #DESIGN_PATH="/data/pfsDesign"
   #VISIT_ID=0
   #FROM_SKY="no"
-  #DRY_RUN="yes"
+  DRY_RUN=NO
 </Default_Parameter>
 
 <Command>
@@ -52,10 +52,10 @@ EXEC pfs pfscmd actor="ag" cmd="autoguide restart" TIMELIM=60;
 
 EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady +0.995 +1.005] ;
 
-#IF "$DRY_RUN" == "no"
-#    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-#    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "NO"] ;
-#ENDIF
+IF "$DRY_RUN" == no
+    EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "NO"] ;
+ENDIF
 
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,

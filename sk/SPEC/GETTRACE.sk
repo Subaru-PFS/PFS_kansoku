@@ -16,7 +16,7 @@
     EXPTIME=1
     NFRAME=1
     # Which camera to be used
-    CAMERA="b1,r1,n1,b2,r2,n2,b3,r3,n3,b4,r4"
+    CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
@@ -29,7 +29,7 @@
 
 :start
     # Set time limits for commands
-    *SET TIMELIM_SEQ = ($EXPTIME + 85) * $NFRAME
+    *SET TIMELIM_SEQ = ($EXPTIME + 100) * $NFRAME
     *SET TIMELIM     = ($EXPTIME + 30) 
 
     # Camera selection option
@@ -65,7 +65,7 @@
     # Manage Gen2 outputs
     {
     *FOR $NFRAME STEP IN
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=100 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=150 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";

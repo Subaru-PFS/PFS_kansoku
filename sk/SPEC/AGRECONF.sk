@@ -59,7 +59,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *ENDIF
 
-*IF "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no"
+*IF "$DRY_RUN" == yes OR "$DRY_RUN" == no
 
     asn INFO_DRY_RUN = " DRY_RUN: $DRY_RUN"
     asn COM_DRY_RUN = " dry_run=$DRY_RUN"
@@ -77,7 +77,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *ENDIF
 
-*IF "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no"
+*IF "$FIT_DSCALE" == yes OR "$FIT_DSCALE" == no
 
     asn INFO_FIT_DSCALE = " Scale fit: $FIT_DSCALE"
     asn COM_FIT_DSCALE = " fit_dscale=$FIT_DSCALE"
@@ -89,7 +89,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
 *ENDIF
 
-*IF "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
+*IF "$FIT_DINR" == yes OR "$FIT_DINR" == no
 
     asn INFO_FIT_DINR = " InR fit: $FIT_DINR"
     asn COM_FIT_DINR = " fit_dinr=$FIT_DINR"
@@ -102,7 +102,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 *ENDIF
 
 #asn exposure_delay=@lower("$EXPDLY")
-IF $EXPDLY == "NOP"
+IF "$EXPDLY" == "NOP"
     asn INFO_EXPDLY = ""
     asn COM_EXPDLY = ""
 ELSE
@@ -112,12 +112,12 @@ ELSE
 ENDIF
 
 #asn tec_off=@lower("$TECOFF")
-IF $TECOFF == "NOP"
+IF "$TECOFF" == "NOP"
     asn INFO_TECOFF = ""
     asn COM_TECOFF = ""
 ELSE
     asn INFO_TECOFF = "TEC off: $TECOFF"
-    asn COM_TECOFF=" tec_off=@tec_off"
+    asn COM_TECOFF=" tec_off=$TECOFF"
 ENDIF
 
 asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF"
@@ -126,20 +126,23 @@ asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPD
 EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 
 #*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
-*IF @cmdopt != ""
+IF @cmdopt != ""
 
     exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
 
-    IF "$DRY_RUN" == "no"
+    #EXEC OBS Set_Message Instrument_name=PFS obsinfo4="@cmdopt" obsinfo5="@cmdinfo" ;
+
+
+    IF "$DRY_RUN" == no
         Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
         EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
     ENDIF
 
-*ELSE
+ELSE
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No parameter reconfigured. " ;
 
-*ENDIF
+ENDIF
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;

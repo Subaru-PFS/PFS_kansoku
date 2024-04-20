@@ -13,7 +13,7 @@ launchers:
 
     -
         label: "Precheck (daily)"
-        cmd  : PRECHECK $DEF_PFS CHK_HEX=$VAL01 CHK_ADC=$VAL02 CHK_MCS=$VAL03 CHK_SPS=$VAL04 CHK_AG=$VAL05
+        cmd  : PRECHECK OBE_ID=PFS OBE_MODE=SPEC CHK_HEX=$VAL01 CHK_ADC=$VAL02 CHK_MCS=$VAL03 CHK_SPS=$VAL04 CHK_AG=$VAL05
         params:
             - [ VAL01, LIST, [ "NO", "YES" ], "Hexapod" ]
             - [ VAL02, LIST, [ "YES", "NO" ], "ADC" ]
@@ -23,7 +23,7 @@ launchers:
 
     -
         label: "Precheck (per run)"
-        cmd  : PRECHECK2 $DEF_PFS CHK_GRA=$VAL01 CHK_COBRA=$VAL02
+        cmd  : PRECHECK2 OBE_ID=PFS OBE_MODE=SPEC CHK_GRA=$VAL01 CHK_COBRA=$VAL02
         params:
             - [ VAL01, LIST, [ "YES", "NO" ], "Grating" ]
             - [ VAL02, LIST, [ "YES", "NO" ], "Cobra" ]
@@ -100,5 +100,16 @@ launchers:
         label: "Fiber illum. OFF"
         cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF
 
+
+
+    - sep
+
+#
+# Home cobra
+#
+
+    -
+        label: "Home Cobra"
+        cmd: HOMECOBRA OBE_ID=PFS OBE_MODE=SPEC
 
 # End

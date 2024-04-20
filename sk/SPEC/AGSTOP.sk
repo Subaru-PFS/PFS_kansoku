@@ -12,7 +12,7 @@
 </Header>
 
 <Default_Parameter>
-    DRY_RUN="Yes"
+    DRY_RUN=NO
     *DRY_RUN=Yes,No
 </Default_Parameter>
 
@@ -26,7 +26,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AGstop" obsinfo2=clear obsinf
 
 # turn off TSC AG_Tracking mode
 
-IF $DRY_RUN == "NO"
+IF $DRY_RUN == NO
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
     Exec OBS SLEEP SLEEP_TIME=3 ;
 ENDIF

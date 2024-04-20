@@ -23,9 +23,9 @@
   FIT_DSCALE = yes
   FIT_DINR   = yes
   DRY_RUN    = NO
-  AGEXPDLY   = 0.1
+  AGEXPDLY   = NOP
   *AGEXPDLY  = 0.1,NOP
-  AGTECOFF   = yes
+  AGTECOFF   = no
   *AGTECOFF  = NOP,yes,no
   OTF        = NOP
   *OTF       = yes,no
@@ -73,8 +73,8 @@
     asn cmdopt5 = ""
   ENDIF
 
-  IF $AGEXPDLY != NOP
-    asn exposure_delay = $AGEXPDLY
+  IF "$AGEXPDLY" != NOP
+    asn exposure_delay = int($AGEXPDLY * 1000)
     asn cmdopt6 = " exposure_delay=@exposure_delay"
   ELSE
     asn cmdopt6 = ""
@@ -99,11 +99,13 @@
 
     # Acquire Field
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." ObsInfo4=clear ObsInfo5=clear , 
 
     EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt" TIMELIM=180;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="@cmdopt" ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+
 :Main_end
 
 :end

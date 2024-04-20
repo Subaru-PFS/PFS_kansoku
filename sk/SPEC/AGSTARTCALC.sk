@@ -22,8 +22,8 @@
 
   FIT_DSCALE = yes
   FIT_DINR   = yes
-  AGEXPDLY   = 0.1
-  AGTECOFF   = yes
+  AGEXPDLY   = NOP
+  AGTECOFF   = no
   DRY_RUN    = "no"
 
   OTF        = NOP
@@ -37,6 +37,7 @@
   asn fit_dscale=@lower("$FIT_DSCALE")
   asn fit_dinr=@lower("$FIT_DINR")
   asn otf=@lower("$OTF")
+  asn tec_off=@lower("$AGTECOFF")
 
   IF "$EXPTIME" != "NOP"
     asn expt_ag = INT($EXPTIME * 1000)
@@ -64,16 +65,14 @@
     asn cmdopt4 = ""
   ENDIF
 
-  IF $AGEXPDLY != NOP
-
-    #asn exposure_delay = int($AGEXPDLY * 1000)
+  IF "$AGEXPDLY" != NOP
+    asn exposure_delay = int($AGEXPDLY * 1000)
     asn cmdopt5 = " exposure_delay=@exposure_delay"
   ELSE
     asn cmdopt5 = ""
   ENDIF
 
-  IF $AGTECOFF == "yes" or $AGTECOFF == "no"
-    asn tec_off = @lower($AGTECOFF)
+  IF @tec_off == "yes" or @tec_off == "no"
     asn cmdopt6 = " tec_off=\"@tec_off\""
   ELSE
     asn cmdopt6 = "" 
@@ -100,6 +99,8 @@
     EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt" TIMELIM=180 ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Autoguide Calc. Start." , 
+
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="@cmdopt" ;
 
 :Main_End
 

@@ -56,7 +56,7 @@ ENDIF
 
 asn cmdopt = "@cmdopt1@cmdopt2"
 
-IF VISIT == NOP
+IF "$VISIT" == NOP
     asn visit_tmp = int(!PFS.DESIGN.VISIT) + 1 
 ELSE
     asn visit_tmp = int($VISIT)

@@ -29,7 +29,7 @@
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear;
 #        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=$DESIGN_ID' TIMELIM=400 ;
         EXEC pfs pfscmd actor="iic" cmd="moveToHome all" TIMELIM=400 ;
-        EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
+        #EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
 
 :main_end
 :end

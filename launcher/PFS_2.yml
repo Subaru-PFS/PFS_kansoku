@@ -90,4 +90,12 @@ launchers:
         params:
             - {name: VAL01, type: LIST, values: ["OFF", "ON"], label: "MOTOR" }
 
+    -
+        label: "AG EXP with same VISITID"
+        cmd  : AGACQUIREFIELD OBE_ID=PFS OBE_MODE=SPEC AG=OFF EXPTIME=$VAL01 FIT_DSCALE=NO FIT_DINR=NO DRY_RUN=YES AGEXPDLY=NOP AGTECOFF=NOP
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "1", label: "Exp. (s)" }
+
+
+
 #END

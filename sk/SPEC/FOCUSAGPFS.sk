@@ -62,12 +62,13 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
 
             asn ag_count = !VGW.PFS.AG.COUNT
 
-            *IF $NSTEP == 1 and $FRAME == 1
+            *IF $STEP == 1 and $FRAME == 1
 
                 *IF $VISIT != NOP
                     EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
                 *ELSE
-                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf exposure_time=$EXPT_AG";
+                    *Set VISIT = INT(!PFS.DESIGN.VISIT) 
+                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
                 *ENDIF
 
             *ELSE
@@ -75,7 +76,6 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
                 *IF $VISIT != NOP
                     EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
                 *ELSE
-                    *Set VISIT = !PFS.DESIGN.VISIT
                     EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
                 *ENDIF
 

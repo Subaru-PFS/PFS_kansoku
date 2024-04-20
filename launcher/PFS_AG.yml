@@ -9,13 +9,20 @@ tabname: "PFS (AG)"
 launchers:
 
     -
-        label: "Acquire Field (pfsDesign)"
-        cmd  : AGACQUIREFIELD $DEF_PFS AG=$VAL01 EXPTIME=$VAL02 FIT_DSCALE=$VAL03 FIT_DINR=$VAL04 DRY_RUN=NOP AGEXPDLY=NOP AGTECOFF=NOP
+        label: "AG Shutters"
+        cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01
         params:
-            - { name: VAL01, type: LIST, values: ["ON", "OFF"], label: "AG" }
-            - { name: VAL02, type: INPUT, width:8, value: "3",  label: "Exp Time" }
-            - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Scale fit" }
-            - { name: VAL04, type: LIST, values: ["yes", "no"], label: "Rot. fit" }
+            - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
+
+    - sep
+
+    -
+        label: "Acquire Field (pfsDesign)"
+        cmd  : AGACQUIREFIELD OBE_ID=PFS OBE_MODE=SPEC AG=ON EXPTIME=$VAL01 FIT_DSCALE=$VAL02 FIT_DINR=$VAL03 DRY_RUN=NOP AGEXPDLY=NOP AGTECOFF=NOP
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "3",  label: "Exp Time" }
+            - { name: VAL02, type: LIST, values: ["yes", "no"], label: "Scale fit" }
+            - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Rot. fit" }
 
     -
     -
@@ -31,18 +38,20 @@ launchers:
 
     -
         label: "Start AG Calc. Loop"
-        cmd  : AGSTARTCALC $DEF_PFS EXPTIME=$VAL01 CADENCE=$VAL02 FIT_DSCALE=YES FIT_DNIR=YES
+        cmd  : AGSTARTCALC OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$VAL01 CADENCE=$VAL01+2 FIT_DSCALE=$VAL02 FIT_DINR=$VAL03
         params:
             - { name: VAL01, type: INPUT, width:8, value: "3", label: "Exp Time" }
-            - { name: VAL02, type: INPUT, width:8, value: "5", label: "Cadence" }
+            - { name: VAL02, type: LIST, values: ["yes", "no"], label: "Scale fit" }
+            - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Rot. fit" }
 
     -
         label: "Start AutoGuide"
-        cmd  : AGSTARTCORRECTION $DEF_PFS MOTOR=ON
+        cmd  : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=ON
 
     -
-        label : "Stop AutoGuide"
-        cmd   : AGSTARTCORRECTION $DEF_PFS MOTOR=OFF
+        label : "Stop AG (Tel & Calc)"
+#        cmd   : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=OFF
+        cmd   : AGSTOP OBE_ID=PFS OBE_MODE=SPEC
 
 
     - sep
