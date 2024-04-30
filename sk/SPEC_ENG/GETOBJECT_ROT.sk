@@ -1,0 +1,140 @@
+#**********************************************************************
+#
+# GETOBJECT with changing the rotator angle for twilight flat
+# Move the rotator right after the shutter is closed
+#
+#**********************************************************************
+
+:Header
+    OBE_ID=PFS
+    OBE_mode=SPEC_ENG
+    COMMAND=GETOBJECT_ROT
+    Script_Author=Takagi
+    Script_Update=2024.04.29
+
+:Parameter
+    EQUINOX=!STATS.EQUINOX
+    EXPTIME=60
+    WMODE=YES
+    *WMODE=YES,NO
+    CAMERA=NOP
+    *CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+    DROT=90
+    STEP=3
+
+:Command
+
+:start
+
+from "math" import fabs
+from "pfsmisc" import lower
+from "pfsmisc" import sps_chk_sel
+
+### SETUP ###
+
+#Preparation for SPS exposure
+*SET EXPTIMLIM = ( $EXPTIME + 120 )
+
+#Set sleep time used to wait the integration
+*SET WAITTIME =  ( $EXPTIME + 60 )
+
+#Check current rotator angle
+*SET STARTANG = !STATS.IROTPF_POS
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="GetObject: moving rotator" ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ,
+
+# Wiping SPS
+Exec PFS PFSCMD ACTOR="iic" cmd='sps erase' ;
+
+# assign GroupID
+*SET GROUP_ID=!PFS.GROUPID.ID
+
+# Camera selection options
+*IF $CAMERA != NOP #and ( @sps_chk_sel("cam", (@lower($CAMERA))) ) ==1 
+  *Set cmdopt = "cam=$CAMERA"
+*ELIF $ARM != NOP #and ( @sps_chk_sel("arm", (@lower($ARM))) ) ==1
+  *Set cmdopt = "arm=$ARM"
+*ELIF $SPECNUM !=NOP #and ( @sps_chk_sel("specNum", (@lower($SPECNUM))) ) ==1
+  *Set cmdopt = "specNum=$SPECNUM"
+*ELSE
+  *Set cmdopt = ""
+*ENDIF
+
+
+:main_start
+
+*FOR $STEP COUNT IN
+
+    *IF $COUNT == 1
+        *SET ROTANG_CURRENT = $STARTANG
+    *ENDIF
+
+    *IF "$WMODE" == "YES"
+        {
+        #Exposure
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="GETOBJECT: rot=$ROTANG_CURRENT deg"' TIMELIM=$EXPTIMLIM ;
+        },
+        {
+        # Check shutter status
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS TIMER DURATION=($EXPTIME) ,
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
+
+        # Change rotator angle after the shutter is closed
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Moving rotator to $STARTANG+$DROT*$COUNT deg..." ,
+        EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=FREE COORD=ABS POSITION=($STARTANG+$DROT*$COUNT);
+        *SET ROTANG_CURRENT = $STARTANG+$DROT*$COUNT
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
+        };
+
+    *ELIF  "$WMODE" == "NO"
+        {
+        #Exposure
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+        EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="GETOBJECT: rot=$ROTANG_CURRENT deg"' TIMELIM=$EXPTIMLIM ;
+        },
+        {
+        # Check shutter status
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS TIMER DURATION=($EXPTIME) ,
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$WAITTIME C1=[PFS.SHUTTERS.STATE EQ close];
+
+        # Change rotator angle after the shutter is closed
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Moving rotator to $STARTANG+$DROT*$COUNT deg..." ,
+        EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=FREE COORD=ABS POSITION=($STARTANG+$DROT*$COUNT);
+        *SET ROTANG_CURRENT = $STARTANG+$DROT*$COUNT
+        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3=Clear;
+        };
+    *ENDIF
+
+*ENDFOR
+
+
+#Exposure for the last rotator angle
+
+*IF "$WMODE" == "YES"
+    {
+    #Exposure
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 groupId=$GROUP_ID $cmdopt name="GETOBJECT: rot=$ROTANG_CURRENT deg"' TIMELIM=$EXPTIMLIM ;
+    }
+*ELIF  "$WMODE" == "NO"
+    {
+    #Exposure
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=Clear ObsInfo4=Clear;
+    EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME groupId=$GROUP_ID $cmdopt name="GETOBJECT: rot=$ROTANG_CURRENT deg"' TIMELIM=$EXPTIMLIM ;
+    };
+*ENDIF
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Done" ObsInfo3=Clear ObsInfo5=Clear ;
+
+:main_end
+
+:end
