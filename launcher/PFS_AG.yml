@@ -13,6 +13,12 @@ launchers:
         cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01
         params:
             - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
+    -
+        label: "AG Shutters (2)"
+        cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01 CAMERAS=$VAL02
+        params:
+            - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
+            - { name: VAL02, type: LIST, values: ["ALL","1","2","3","4","5","6"], label: "CAM" }     
 
     - sep
 

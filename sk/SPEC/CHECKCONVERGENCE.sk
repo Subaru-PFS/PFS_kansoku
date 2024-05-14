@@ -1,0 +1,30 @@
+#**********************************************************************
+# CHECKCONVERGENCE
+#  Check the cobra convergence after restarting fpsActor
+#
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2024.05.03
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=CHECKCONVERGENCE
+
+:Parameter
+    #Default designID to move the cobra to safe position
+    DESIGN_ID="0x464fb47d38f6c9f2"
+
+:Command
+
+:start
+
+:main_start
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=CHECKCONVERGENCE obsinfo2=clear obsinfo3="checking convergence (by moving to safe position)..." obsinfo4=clear obsinfo5=clear;
+    exec pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=$DESIGN_ID nIteration=3 noTweak' TIMELIM=400;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=CHECKCONVERGENCE obsinfo2=clear obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
+
+:main_end
+
+:end
