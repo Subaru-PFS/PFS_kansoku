@@ -101,16 +101,12 @@ def inr_med10err():
             else:
                 d[name] = float(val)
 
-	print(d['DEW_POINT_O'])
-	print(d['DEW_POINT_M1'])
-
         if d['EXPID'] == lastExpid:
             time.sleep(5)
             continue
 
         lastExpid = d['EXPID']
-        ln = np.append(l, d['INR_ERR'])
-	print(ln)
+        ln = np.append(ln, d['INR_ERR'])
 
         if linenum < 10:
             linenum += 1
@@ -121,6 +117,10 @@ def inr_med10err():
 
         if inrerr_median < -5 or inrerr_median > 5:
             c = inrerr_median
+            linenum = 0
+            ln = np.empty[0]
+            time.sleep(5)
+            break
 
         linenum += 1
 

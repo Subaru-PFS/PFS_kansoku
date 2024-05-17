@@ -1,0 +1,40 @@
+#**********************************************************************
+# ROTCORRECTIONLOOP
+# Loop to Monitor InsRot error and apply correction when necessary 
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2024.05.0316
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=ROTCORRECTIONLOOP
+
+:Parameter
+
+:Command
+
+:start
+
+from "pfsmisc" import inr_med10err
+
+:main_start
+
+asn flag = 1
+
+while (@flag == 1) {
+
+    {
+        EXEC OBS MEMORY INSTRUMENT_NAME=PFS INRERR_10MED = @inr_med10err();
+    },
+    {
+        EXEC OBS SLEEP SLEEP_TIME=30 ;
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=1200 N1=[1/MEMORY.PFS.INRERR_10MED -0.2 0.2];
+        EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=LINT COORD=REL POSITION=-1*(MEMORY.PFS.INRERR_10MED / 3600);
+    };
+    }
+
+
+:main_end
+
+:end
