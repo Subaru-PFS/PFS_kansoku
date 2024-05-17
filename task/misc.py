@@ -77,12 +77,14 @@ def fullmatch(regex, string, flags=0):
 """
 
 
-def inr_med10err():
+def inr_med10err(threshold):
 
-    lastExpid = None
-    linenum   = 0
-    ln        = np.empty([0])
-    c         = 0
+    lastExpid  = None
+    linenum    = 0
+    ln         = np.empty([0])
+    c          = 0
+    thres_min  = threshold * -1
+    thres_max  = threshold
 
     while True:
         raw   = subprocess.check_output(['get_status', 'PFS.AG'])
@@ -115,7 +117,7 @@ def inr_med10err():
 
         inrerr_median = np.median(ln[-10:])
 
-        if inrerr_median < -5 or inrerr_median > 5:
+        if inrerr_median < thres_min or inrerr_median > thres_max:
             c = inrerr_median
             linenum = 0
             ln = np.empty[0]
