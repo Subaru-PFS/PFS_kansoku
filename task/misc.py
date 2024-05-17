@@ -1,5 +1,9 @@
 import math
 import re
+import subprocess
+import numpy as np
+import time
+
 
 ## symbolic link from $OBSHOME/COMMON/task/pfsmisc.py to this file
 def adc_pos(el,cnf):
@@ -71,3 +75,57 @@ def fullmatch(regex, string, flags=0):
     ###Emulate python-3.4 re.fullmatch().###
     return re.match("(?:" + regex + r")\Z", string, flags=flags)
 """
+
+
+def inr_med10err():
+
+    lastExpid = None
+    linenum   = 0
+    ln        = np.empty([0])
+    c         = 0
+
+    while True:
+        raw   = subprocess.check_output(['get_status', 'PFS.AG'])
+        lines = raw.decode('latin-1').split('\n')
+
+        d = {}
+        for l in lines:
+            if not l:
+                continue
+            name, val = l.split(':')
+            name = name.strip()         # delete extra space
+            name = name.split('.')[-1]  # extract last content
+            val = val.strip()
+            if name == 'EXPID':
+                d[name] = int(val)
+            else:
+                d[name] = float(val)
+
+	print(d['DEW_POINT_O'])
+	print(d['DEW_POINT_M1'])
+
+        if d['EXPID'] == lastExpid:
+            time.sleep(5)
+            continue
+
+        lastExpid = d['EXPID']
+        ln = np.append(l, d['INR_ERR'])
+	print(ln)
+
+        if linenum < 10:
+            linenum += 1
+            time.sleep(5)
+            continue
+
+        inrerr_median = np.median(ln[-10:])
+
+        if inrerr_median < -5 or inrerr_median > 5:
+            c = inrerr_median
+
+        linenum += 1
+
+        time.sleep(5)
+
+        return c
+
+
