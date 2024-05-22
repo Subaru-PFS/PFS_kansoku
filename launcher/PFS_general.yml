@@ -100,7 +100,7 @@ launchers:
 
     -
         label: "Cable B Light"
-        cmd  : PFS_CABLEB_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG CABLEB=$VAL01
+        cmd  : CABLEBLIGHT OBE_ID=PFS OBE_MODE=SPEC CABLEB=$VAL01
         params:
             - [VAL01, LIST, ["ON", "OFF"]]
 
