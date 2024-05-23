@@ -87,7 +87,33 @@ def inr_med10err(threshold):
     thres_max  = threshold
 
     while True:
-        raw   = subprocess.check_output(['get_status', 'PFS.AG'])
+
+        # Check loop flag status
+
+        l_raw = subprocess.check_output(['get_status', 'MEMORY.PFS'])
+        l_lines = l_raw.decode('latin-1').split('\n')
+
+        dl = {}
+        for ll in l_lines:
+            if not ll:
+                continue
+            lname, lval = ll.split(':')
+            lname = lname.strip()         # delete extra space
+            lname = lname.split('.')[-1]  # extract last content
+            lval = lval.strip()
+
+            if lname == 'ROTCORLOOP_FLG':
+                dl[lname] = int(lval)
+        
+        if dl['ROTCORLOOP_FLG'] == 0:
+            c=0
+            return c
+
+
+        # Fetch AG calculation parameters
+
+        #raw   = subprocess.check_output(['get_status', 'PFS.AG'])
+        raw   = subprocess.check_output(['get_status', 'MEMORY.PFS.DUMMY_'])
         lines = raw.decode('latin-1').split('\n')
 
         d = {}
@@ -98,36 +124,48 @@ def inr_med10err(threshold):
             name = name.strip()         # delete extra space
             name = name.split('.')[-1]  # extract last content
             val = val.strip()
-            if name == 'EXPID':
+
+            #if name == 'EXPID':
+            if name == 'DUMMY_EXPID':
                 d[name] = int(val)
             else:
                 d[name] = float(val)
 
-        if d['EXPID'] == lastExpid:
-            time.sleep(5)
+        # Check updates
+
+        #if d['EXPID'] == lastExpid:
+        if d['DUMMY_EXPID'] == lastExpid:
+            time.sleep(3)
             continue
 
-        lastExpid = d['EXPID']
-        ln = np.append(ln, d['INR_ERR'])
+        # add most recent values to list
+
+        #lastExpid = d['EXPID']
+        #ln = np.append(ln, d['INR_ERR'])
+        lastExpid = d['DUMMY_EXPID']
+        ln = np.append(ln, d['DUMMY_INR_ERR'])
+
+        
+        # Check the number of values in the list
 
         if linenum < 10:
             linenum += 1
-            time.sleep(5)
+            time.sleep(3)
             continue
+
+        # Calculate median and return median if it is exceeding the threshold
 
         inrerr_median = np.median(ln[-10:])
 
         if inrerr_median < thres_min or inrerr_median > thres_max:
             c = inrerr_median
             linenum = 0
-            ln = np.empty[0]
-            time.sleep(5)
-            break
+            ln = np.empty([0])
+            return 1/c
 
         linenum += 1
 
-        time.sleep(5)
+        time.sleep(3)
 
-        return c
 
 
