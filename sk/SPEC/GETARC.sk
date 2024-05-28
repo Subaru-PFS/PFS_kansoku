@@ -39,6 +39,9 @@
 
 :main_start
 
+    # Check cobra is home?
+    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+
     # Selecting lamps for SEQ_NAME and set value for EXPTIME
     # EXPTIME will be set to the longest value among HGCD, AR, XE, NE, and KR
 
@@ -130,7 +133,7 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
+    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
 
     # Start exposure sequence
     {

@@ -53,7 +53,9 @@
 
 :main_start
 
-  
+    # Check cobra is home?
+    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETTRACE" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
     # Start exposure sequence
