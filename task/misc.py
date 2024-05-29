@@ -81,8 +81,8 @@ def inr_med10err(threshold):
 
     lastExpid  = None
     linenum    = 0
-    ln         = np.empty([0])
     c          = 0
+    ln         = np.empty([0])
     thres_min  = threshold * -1
     thres_max  = threshold
 
@@ -106,14 +106,23 @@ def inr_med10err(threshold):
                 dl[lname] = int(lval)
         
         if dl['ROTCORLOOP_FLG'] == 0:
+<<<<<<< HEAD
             c=0
+=======
+            c = 0
+>>>>>>> 59f98f3 (Updated rotator correction loop scripts)
             return c
 
 
         # Fetch AG calculation parameters
 
+<<<<<<< HEAD
         #raw   = subprocess.check_output(['get_status', 'PFS.AG'])
         raw   = subprocess.check_output(['get_status', 'MEMORY.PFS.DUMMY_'])
+=======
+        raw   = subprocess.check_output(['get_status', 'PFS.AG'])
+        #raw   = subprocess.check_output(['get_status', 'MEMORY.PFS.DUMMY_'])
+>>>>>>> 59f98f3 (Updated rotator correction loop scripts)
         lines = raw.decode('latin-1').split('\n')
 
         d = {}
@@ -125,47 +134,47 @@ def inr_med10err(threshold):
             name = name.split('.')[-1]  # extract last content
             val = val.strip()
 
-            #if name == 'EXPID':
-            if name == 'DUMMY_EXPID':
+            if name == 'EXPID':
+            #if name == 'DUMMY_EXPID':
                 d[name] = int(val)
             else:
                 d[name] = float(val)
 
         # Check updates
 
-        #if d['EXPID'] == lastExpid:
-        if d['DUMMY_EXPID'] == lastExpid:
+        if d['EXPID'] == lastExpid:
+        #if d['DUMMY_EXPID'] == lastExpid:
             time.sleep(3)
             continue
 
         # add most recent values to list
 
-        #lastExpid = d['EXPID']
-        #ln = np.append(ln, d['INR_ERR'])
-        lastExpid = d['DUMMY_EXPID']
-        ln = np.append(ln, d['DUMMY_INR_ERR'])
-
-        
-        # Check the number of values in the list
-
-        if linenum < 10:
+        lastExpid = d['EXPID']
+        #lastExpid = d['DUMMY_EXPID']
+        if linenum == 0:
             linenum += 1
-            time.sleep(3)
             continue
+        ln = np.append(ln, d['INR_ERR'])
+        #ln = np.append(ln, d['DUMMY_INR_ERR'])
+
+        # Calculate median
 
         # Calculate median and return median if it is exceeding the threshold
 
         inrerr_median = np.median(ln[-10:])
+        c = 1 / inrerr_median
 
-        if inrerr_median < thres_min or inrerr_median > thres_max:
-            c = inrerr_median
-            linenum = 0
-            ln = np.empty([0])
-            return 1/c
+        # Calculate median and return median if it is exceeding the threshold and frame num > 10
 
-        linenum += 1
+        if linenum >= 10:
+            if inrerr_median < thres_min or inrerr_median > thres_max:
+                return c
+        else:
+            #print(c)
+            linenum += 1
 
         time.sleep(3)
+
 
 
 
