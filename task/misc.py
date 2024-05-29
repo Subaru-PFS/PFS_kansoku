@@ -106,23 +106,14 @@ def inr_med10err(threshold):
                 dl[lname] = int(lval)
         
         if dl['ROTCORLOOP_FLG'] == 0:
-<<<<<<< HEAD
-            c=0
-=======
             c = 0
->>>>>>> 59f98f3 (Updated rotator correction loop scripts)
             return c
 
 
         # Fetch AG calculation parameters
 
-<<<<<<< HEAD
-        #raw   = subprocess.check_output(['get_status', 'PFS.AG'])
-        raw   = subprocess.check_output(['get_status', 'MEMORY.PFS.DUMMY_'])
-=======
         raw   = subprocess.check_output(['get_status', 'PFS.AG'])
         #raw   = subprocess.check_output(['get_status', 'MEMORY.PFS.DUMMY_'])
->>>>>>> 59f98f3 (Updated rotator correction loop scripts)
         lines = raw.decode('latin-1').split('\n')
 
         d = {}
