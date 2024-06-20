@@ -52,6 +52,7 @@
 
     *ENDIF
 
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" obsinfo4=clear obsinfo5=clear;
 :main_end
 
 :end

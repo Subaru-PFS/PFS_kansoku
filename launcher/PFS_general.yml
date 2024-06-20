@@ -72,12 +72,20 @@ launchers:
             - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
                 label: save }
 
+    -
+        label: "Stop SpS Exp. seq."
+        cmd  : IIC_SEQ_ABORT OBE_ID=PFS OBE_MODE=SPEC SAVE=$VAL01
+        params:
+            - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
+                label: save }
+
+    - sep
 #
 # SpS Change Resolution
 #
     -
         label: "SpS Resolution"
-        cmd  : Exec pfs pfscmd actor="iic" cmd='sps rdaMove $VAL01' TIMELIM=180
+        cmd  : SETUPRES OBE_ID=PFS OBE_MODE=SPEC RESOLUTION=$VAL01
         params:
             - [VAL01, LIST, ["LOW", "MED"]]
 
@@ -97,12 +105,6 @@ launchers:
     -
         label: "Fiber illum. OFF"
         cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF
-
-    -
-        label: "Cable B Light"
-        cmd  : CABLEBLIGHT OBE_ID=PFS OBE_MODE=SPEC CABLEB=$VAL01
-        params:
-            - [VAL01, LIST, ["ON", "OFF"]]
 
     - sep
 

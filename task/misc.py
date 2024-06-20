@@ -40,6 +40,11 @@ def lower(s) :
 
     return s.lower()
 
+def gen2_round(f, n) :
+
+    return round(f, n)
+
+
 def random_song(music1,music2,music3):
     import random
     song = [music1,music2,music3]    
@@ -106,6 +111,26 @@ def inr_med10err(threshold):
                 dl[lname] = int(lval)
         
         if dl['ROTCORLOOP_FLG'] == 0:
+            c = 0
+            return c
+
+
+        g_raw = subprocess.check_output(['get_status', 'STATL.GU'])
+        g_lines = g_raw.decode('latin-1').split('\n')
+
+        dg = {}
+        for lg in g_lines:
+            if not lg:
+                continue
+            gname, gval = lg.split(':')
+            gname = gname.strip()         # delete extra space
+            gname = gname.split('.')[-1]  # extract last content
+            gval = gval.strip()
+
+            if gname == 'GUIDING':
+                dg[gname] = str(gval)
+        
+        if dg['GUIDING'] == "NO":
             c = 0
             return c
 

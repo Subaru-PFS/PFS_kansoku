@@ -8,13 +8,13 @@
 tabname: "PFS (AG)"
 launchers:
 
+#    -
+#        label: "AG Shutters"
+#        cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01
+#        params:
+#            - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
     -
         label: "AG Shutters"
-        cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01
-        params:
-            - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
-    -
-        label: "AG Shutters (2)"
         cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01 CAMERAS=$VAL02
         params:
             - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
@@ -55,6 +55,16 @@ launchers:
         cmd  : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=ON
 
     -
+        label: "InR corr. loop ON"
+        cmd  : ROTCORRECTIONLOOP OBE_ID=PFS OBE_MODE=SPEC THRESHOLD=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "5", label: "Threshold" }
+
+    -
+        label: "InR corr. loop STOP"
+        cmd  : ROTCORRECTIONLOOP_STOP OBE_ID=PFS OBE_MODE=SPEC
+
+    -
         label : "Stop AG (Tel & Calc)"
 #        cmd   : AGSTARTCORRECTION OBE_ID=PFS OBE_MODE=SPEC MOTOR=OFF
         cmd   : AGSTOP OBE_ID=PFS OBE_MODE=SPEC
@@ -67,7 +77,7 @@ launchers:
         cmd   : AGRECONF2 OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07 MAX_ELLIP=$VAL08 MAX_SIZE=$VAL09 MIN_SIZE=$VAL10 MAX_RES=$VAL11 
         params:
             - [ VAL01, INPUT, 9, "NOP", "Exp Time" ]
-            - [ VAL02, INPUT, 9, "NOP", "Interval" ]
+            - [ VAL02, INPUT, 9, "NOP", "Cadence" ]
             - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run" ]
             - break
             - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]

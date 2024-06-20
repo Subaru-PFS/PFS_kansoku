@@ -102,7 +102,10 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
 
 Exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=$Z ,
 Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-Exec OBS Confirmation Instrument_Name=PFS Title="Set the best focus value via launcher." Dialog=[OK] ;
+#Exec OBS Confirmation Instrument_Name=PFS Title="Set the best focus value via launcher." Dialog=[OK] ;
+Exec OBS USERINPUT INSTRUMENT_NAME=PFS TITLE="Input best focus." Item1="Value:";
+exec OBS sleep sleep_time=1 ;
+Exec TSC TELFOCUS MOTOR=ON COORD=TSC Z=!STATOBS.PFS.UI1 ;
 
 :main_end
 

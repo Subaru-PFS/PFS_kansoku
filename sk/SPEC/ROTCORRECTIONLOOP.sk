@@ -19,13 +19,7 @@
 :start
 
 from "pfsmisc" import inr_med10err
-
-# reset INRERR_10MED
-EXEC OBS MEMORY INSTRUMENT_NAME=PFS INRERR_10MED=100;
-
-*SET THRES_INV_MIN=(-1/$THRESHOLD)
-*SET THRES_INV_MAX=(1/$THRESHOLD)
-
+from "pfsmisc" import gen2_round
 
 :main_start
 
@@ -50,11 +44,13 @@ while 0 < !MEMORY.PFS.ROTCORLOOP_FLG {
         EXEC OBS MEMORY INSTRUMENT_NAME=PFS INRERR_10MED_INV=(@inr_med10err($THRESHOLD));
 
         IF !MEMORY.PFS.INRERR_10MED_INV != 0
-            asn INR_CORR=1/!MEMORY.PFS.INRERR_10MED_INV 
+            asn INR_CORR_F=1/!MEMORY.PFS.INRERR_10MED_INV 
+            asn INR_CORR=@gen2_round(@INR_CORR_F, 2)
             EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Correcting InsRot error (@INR_CORR arcsec)...";
             EXEC OBS SLEEP SLEEP_TIME=1;
             Exec OBS Confirmation Instrument_Name=PFS Title="Applying @INR_CORR arcsec offsets, OK?" Dialog=[OK] ;
-            EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=LINK COORD=REL POSITION=-1*(@INR_CORR / 3600);
+            *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=@INR_CORR ;
+            #EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=LINK COORD=REL POSITION=-1*(@INR_CORR / 3600);
             EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Correcting InsRot error (@INR_CORR arcsec)... Done.";
 
         ELIF !MEMORY.PFS.INRERR_10MED_INV == 0
