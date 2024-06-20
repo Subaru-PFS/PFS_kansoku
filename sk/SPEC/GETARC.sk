@@ -17,7 +17,8 @@
     EXPTYPE=COMPARISON
     NFRAME=1
     # Which camera to be used
-    CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+    CAMERA="all"
+    #CAMERA="b1,r1,b2,r2,n2,b3,r3,n3,b4,r4"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
@@ -38,6 +39,11 @@
 
 :main_start
 
+    # Check cobra is home?
+    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
+    
     # Selecting lamps for SEQ_NAME and set value for EXPTIME
     # EXPTIME will be set to the longest value among HGCD, AR, XE, NE, and KR
 
@@ -99,12 +105,12 @@
 
 
     # Set time limits for commands
-    *SET TIMELIM     = ($EXPTIME + 30) 
+    *SET TIMELIM     = ($EXPTIME + 60) 
 
     *IF ($HGCD) > (0.0)
         *SET TIMELIM_SEQ = 260 + ($EXPTIME + 80) * $NFRAME
     *ELSE
-        *SET TIMELIM_SEQ = ($EXPTIME + 85) * $NFRAME
+        *SET TIMELIM_SEQ = 60 + ($EXPTIME + 85) * $NFRAME
     *ENDIF
 
 
@@ -129,8 +135,7 @@
 #       raise "error: Shutter status: None"
 #     ENDIF
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
-
+    
     # Start exposure sequence
     {
     {
@@ -142,7 +147,7 @@
     *FOR $NFRAME STEP IN
         #sleep needed?
 
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=250 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=45 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";

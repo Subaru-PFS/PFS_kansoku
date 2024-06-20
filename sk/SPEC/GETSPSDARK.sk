@@ -17,7 +17,8 @@
     EXPTIME=1
     NFRAME=1
     ## Which camera to be used
-    CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+    CAMERA="all"
+    #CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP

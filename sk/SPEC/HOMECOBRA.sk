@@ -15,7 +15,6 @@
     COMMAND=HOMECOBRA
 
 :Parameter
-    DESIGN_ID="0x6b24c40ee4154f34"
     INFO1="HOME COBRA"
     INFO2="Moving cobra to Home position..."
     
@@ -27,9 +26,10 @@
 
 :main_start
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2=$INFO2 obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-#        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=$DESIGN_ID' TIMELIM=400 ;
         EXEC pfs pfscmd actor="iic" cmd="moveToHome all" TIMELIM=400 ;
         #EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
+	EXEC OBS Set_Message Instrument_name=PFS obsinfo2=clear obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
+
 
 :main_end
 :end

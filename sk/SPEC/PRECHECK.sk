@@ -25,7 +25,7 @@
     *CHK_AG="YES,NO"
 
     ## Which camera to be used for SpS
-    SPS_CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+    #SPS_CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
 
 :Command
 

@@ -1,0 +1,27 @@
+#**********************************************************************
+# CHECKCOBRAISHOME.sk
+#  Just calling pop-up for confiramtion that the cobra position is home
+#***********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2024.5.27
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=CHECKCOBRAISHOME
+
+
+:Parameter
+
+:Command
+
+:start
+
+:main_start
+
+    # POP-UP for Confirmaton of cobra position
+    Exec OBS Confirmation Instrument_Name=PFS Title="Is Cobra at HOME Position? (If NO, please Cancel from InteGUI)" Dialog=[OK] ;
+
+:main_end
+
+:end

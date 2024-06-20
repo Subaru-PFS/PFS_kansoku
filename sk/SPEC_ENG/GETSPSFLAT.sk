@@ -18,7 +18,8 @@
     EXPTIME=1
     NFRAME=1
     # Which camera to be used
-    CAMERA="b1,r1,b2,r2,n2,r3,n3,b4,r4"
+    CAMERA="all"
+    #CAMERA="b1,r1,b2,r2,n2,b3,r3,n3,b4,r4"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
@@ -63,7 +64,10 @@
 #     ELIF PFS.SHUTTERS.STATE == "None"
 #       raise "error: Shutter status: None"
 #     ENDIF
-    
+
+    # Check cobra is home?
+    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSFLAT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
     # Start exposure sequence

@@ -1,0 +1,25 @@
+#**********************************************************************
+# ROTCORRECTIONLOOP_STOP
+# STOP the loop to Monitor InsRot error and apply correction  
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi
+    SCRIPT_UPDATE=2024.05.17
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=ROTCORRECTIONLOOP_STOP
+
+:Parameter
+
+:Command
+
+:start
+
+:main_start
+
+EXEC OBS MEMORY INSTRUMENT_NAME=PFS ROTCORLOOP_FLG=0;
+
+:main_end
+
+:end

@@ -72,15 +72,22 @@ launchers:
             - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
                 label: save }
 
+    -
+        label: "Stop SpS Exp. seq."
+        cmd  : IIC_SEQ_ABORT OBE_ID=PFS OBE_MODE=SPEC SAVE=$VAL01
+        params:
+            - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
+                label: save }
+
+    - sep
 #
 # SpS Change Resolution
 #
     -
-        label: "SpS Red resolution"
-        cmd  : Exec pfs pfscmd actor="iic" cmd='sps rdaMove $VAL01' TIMELIM=180
+        label: "SpS Resolution"
+        cmd  : SETUPRES OBE_ID=PFS OBE_MODE=SPEC RESOLUTION=$VAL01
         params:
-            - {name: VAL01, type: LIST, values: ["low", "med"],
-                label: resolution}
+            - [VAL01, LIST, ["LOW", "MED"]]
 
     - sep
 
@@ -95,21 +102,24 @@ launchers:
             - [ VAL01, INPUT, 8, 1, "FF Power" ]
             - [ VAL02, INPUT, 8, 40, "SF Power"]
 
-
     -
         label: "Fiber illum. OFF"
         cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF
 
-
-
     - sep
 
 #
-# Home cobra
+# Home cobra, checking cobra
 #
 
     -
         label: "Home Cobra"
         cmd: HOMECOBRA OBE_ID=PFS OBE_MODE=SPEC
+
+
+    -
+        label: "Check Convergence"
+        cmd: CHECKCONVERGENCE OBE_ID=PFS OBE_MODE=SPEC
+
 
 # End

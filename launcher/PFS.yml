@@ -221,6 +221,12 @@ launchers:
         label: "Temp. Fiber illum. OFF"
         cmd  : Exec pfs pfscmd actor="dcb" cmd='power off cableB'
 
+    -
+        label: "Cable B Light"
+        cmd  : CABLEBLIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG CABLEB=$VAL01
+        params:
+            - [VAL01, LIST, ["ON", "OFF"]]
+
     - sep
 #
 # POpt2 Hexapod Movement added 2022.09.18

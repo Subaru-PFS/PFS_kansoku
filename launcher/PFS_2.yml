@@ -96,6 +96,18 @@ launchers:
         params:
             - { name: VAL01, type: INPUT, width:8, value: "1", label: "Exp. (s)" }
 
+    - sep
+
+    -
+        label: "InR corr. loop ON"
+        cmd  : ROTCORRECTIONLOOP OBE_ID=PFS OBE_MODE=SPEC THRESHOLD=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width:8, value: "5", label: "Threshold" }
+
+    -
+        label: "InR corr. loop STOP"
+        cmd  : ROTCORRECTIONLOOP_STOP OBE_ID=PFS OBE_MODE=SPEC
+
 
 
 #END

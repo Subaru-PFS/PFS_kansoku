@@ -20,7 +20,7 @@
   EXPTIME=2
   NFRAME=1
   EXPDLY=0.1
-  TECOFF=yes
+  TECOFF=no
   *TECOFF=yes,no
   # Object type for AGCC actor
   # object type for AGCC: dark|test|object
