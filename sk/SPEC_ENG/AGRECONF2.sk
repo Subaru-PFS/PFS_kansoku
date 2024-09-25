@@ -30,7 +30,7 @@
     *min_size = 0.92
     MAX_RES = NOP
     *max_residual = 0.2
-    #AG_MAG = NOP
+    AG_MAG = NOP
 
 :Command
 
@@ -162,10 +162,10 @@ ENDIF
 #    asn INFO_AG_MAG = ""
 #    asn COM_AG_MAG  = ""
 #ELSE
-#    asn	INFO_AG_MAG = "AG mag: $AG_MAG"
+#    asn	INFO_AG_MAG = " AG lim. mag.: $AG_MAG"
 #    asn	COM_AG_MAG  = "	magnitude=$AG_MAG"
 #ENDIF
-
+# No option magnitude for ag reconfigure
 
 
 asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES"

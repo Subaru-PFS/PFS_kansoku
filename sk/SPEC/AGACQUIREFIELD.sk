@@ -29,6 +29,8 @@
   *AGTECOFF  = NOP,yes,no
   OTF        = NOP
   *OTF       = yes,no
+  MAGLIM     = NOP
+  *MAGLIM    = 20.0
 
 :Command
 :Start
@@ -92,8 +94,13 @@
     asn cmdopt8 = ""
   ENDIF
 
+  If "$MAGLIM" != NOP
+    asn cmdopt9 = " magnitude=$MAGLIM"
+  ELSE
+    asn cmdopt9 = ""
+  ENDIF
 
-  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt9@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
 
 :Main_Start
 

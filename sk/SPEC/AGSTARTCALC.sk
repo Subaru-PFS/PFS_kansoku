@@ -28,6 +28,8 @@
 
   OTF        = NOP
 
+  MAGLIM     = NOP
+
 :Command
 :Start
 
@@ -90,7 +92,14 @@
     asn cmdopt8 = ""
   ENDIF
 
-  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+  IF "$MAGLIM" != NOP
+    asn cmdopt9 = " magnitude=$MAGLIM"
+  ELSE
+    asn cmdopt9 = ""
+  ENDIF
+
+
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt9@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
 
 :Main_Start
 

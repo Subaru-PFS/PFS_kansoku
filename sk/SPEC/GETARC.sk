@@ -39,6 +39,9 @@
 
 :main_start
 
+    # assign GroupID
+    *SET GROUP_ID=!PFS.GROUPID.ID
+
     # Check cobra is home?
     *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
 
@@ -139,7 +142,7 @@
     # Start exposure sequence
     {
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME $cmdopt name="$SEQ_NAME"$seqcomm' TIMELIM=$TIMELIM_SEQ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceArc hgcd=$HGCD argon=$AR xenon=$XE neon=$NE krypton=$KR duplicate=$NFRAME groupId=$GROUP_ID $cmdopt name="$SEQ_NAME"$seqcomm' TIMELIM=$TIMELIM_SEQ;
     },
 
     # Manage Gen2 outputs
@@ -147,7 +150,7 @@
     *FOR $NFRAME STEP IN
         #sleep needed?
 
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=45 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=90 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
