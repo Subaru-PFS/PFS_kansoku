@@ -71,7 +71,7 @@
     # Manage Gen2 outputs
     {
     *FOR $NFRAME STEP IN
-	EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=90 C1=[PFS.SHUTTERS.STATE EQ open];
+	EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=150 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
