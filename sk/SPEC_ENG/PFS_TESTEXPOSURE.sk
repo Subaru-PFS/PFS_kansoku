@@ -66,7 +66,8 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Object exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
+    #Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
+    Exec PFS PFSCMD ACTOR="fps" cmd="testLoop" TIMELIM=$TIMELIM;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
 
   *ENDIF

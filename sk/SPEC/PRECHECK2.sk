@@ -55,14 +55,14 @@
 
         #Fiber illuminator test
         #Turn on illuminators
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Turning on illuminators..." obsinfo4=clear obsinfo5=clear;
-        *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=1 SF=ON SF_POWER=40
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Taking MCS data..." obsinfo4=clear obsinfo5=clear;
-        *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.2 MODE="OBJECT"
-        EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
-        EXEC OBS Confirmation Instrument_Name=PFS Title="Are illuminators ON?" Dialog=[YES] ;
+        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Turning on illuminators..." obsinfo4=clear obsinfo5=clear;
+        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=1 SF=ON SF_POWER=40
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Taking MCS data..." obsinfo4=clear obsinfo5=clear;
+        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.2 MODE="OBJECT"
+        #EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
+        #EXEC OBS Confirmation Instrument_Name=PFS Title="Are illuminators ON?" Dialog=[YES] ;
 
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Moving cobra to Safe position..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Moving cobra to Safe position..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
         EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2 noTweak nIteration=8' TIMELIM=400 ;
         EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
 
