@@ -5,8 +5,8 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2023.10.10
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
+    SCRIPT_UPDATE=2025.01.21
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETOBJECT
@@ -29,6 +29,11 @@
     FORCEGRATING="NO"
 
 :Command
+
+# Wait iic background command and only return when the entire sequence. (added on 21 Jan. 2025)
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear;
+EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=90, 
+
 
 :start
 
@@ -79,11 +84,13 @@
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
-    # Start exposure sequence
+    # Start exposure sequence. Added returnWhenShutterClose option (Jan. 21, 2025)
     {
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
-	},
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ,
+	# Original command by Jan20 2025
+    # EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
+    },
 
     # Manage Gen2 outputs
     {
