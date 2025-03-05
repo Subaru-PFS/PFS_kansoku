@@ -1,0 +1,116 @@
+#**********************************************************************
+# GETOBJECT
+#  Take science data with SPS
+#  Basically created from PFS_SPS_EXPOSURE.sk
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
+    SCRIPT_UPDATE=2025.01.21
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=GETOBJECT
+
+
+:Parameter
+
+    EXPTIME=1
+    NFRAME=1
+    ## Which camera to be used
+    CAMERA="all"
+    #CAMERA="b1,r1,b2,r2,n2,b3,r3,n3,b4,r4"
+    ARM=NOP
+    *ARM="b,r,n"
+    SPECNUM=NOP
+    *SPECNUM="1,2,3"
+    #Assuming that the SEQ_NAME will be defined by the actual ope command 
+    SEQ_NAME=NOP
+    SEQ_COMMENT=NOP
+    FORCEGRATING="NO"
+
+:Command
+
+
+:start
+    # Wait iic background command and only return when the entire sequence. (added on 21 Jan. 2025)
+    #EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear ,
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=90 ; 
+
+    # Set time limits for commands
+    *SET TIMELIM_SEQ = ($EXPTIME + 105) * $NFRAME
+    *SET TIMELIM     = ($EXPTIME + 30) 
+
+    # Camera selection option
+    *IF $CAMERA != "NOP"
+        *Set cmdopt = "cam=$CAMERA"
+    *ELIF $ARM != "NOP"
+        *Set cmdopt = "arm=$ARM"
+    *ELIF $SPECNUM != "NOP" 
+        *Set cmdopt = "specNum=$SPECNUM"
+    *ELSE
+        *Set cmdopt = ""
+    *ENDIF
+
+    IF $SEQ_NAME != "NOP"
+        asn seqname = " name=\"$SEQ_NAME\""
+    ELSE
+        asn seqname = ""
+    ENDIF
+
+    IF $SEQ_COMMENT != "NOP"
+        asn seqcomm = " comments=\"$SEQ_COMMENT\""
+    ELSE
+        asn seqcomm = ""
+    ENDIF
+
+    IF $FORCEGRATING == "YES"
+        asn fcgr = " forceGrating"
+    ELSE
+        asn fcgr = ""
+    ENDIF
+
+
+:main_start
+
+#     # Check shutter status
+#     IF PFS.SHUTTERS.STATE == "Open"
+#       raise "error: Shutter status: Open"
+#     ELIF PFS.SHUTTERS.STATE == "Unknown"
+#       raise "error: Shutter status: Unknown"
+#     ELIF PFS.SHUTTERS.STATE == "None"
+#       raise "error: Shutter status: None"
+#     ENDIF
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear ,
+
+    # Start exposure sequence. Added returnWhenShutterClose option (Jan. 21, 2025)
+    {
+    {
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ ;
+    # Original command by Jan20 2025
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
+    },
+
+    # Manage Gen2 outputs
+    {
+    *FOR $NFRAME STEP IN
+
+        #sleep needed?
+
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=90 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
+        EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
+        EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=$TIMELIM C1=[PFS.SHUTTERS.STATE EQ close];
+        EXEC OBS SOUND SELECT=TIMER_END Volume=64 ,
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3="readout..." ;
+    *ENDFOR
+	};
+    };
+
+    EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done" ;
+
+:main_end
+
+:end
