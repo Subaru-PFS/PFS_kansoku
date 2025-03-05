@@ -99,7 +99,7 @@ launchers:
         label: "Fiber illum. ON"
         cmd  : PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=$VAL01 SF=ON SF_POWER=$VAL02
         params:
-            - [ VAL01, INPUT, 8, 1, "FF Power" ]
+            - [ VAL01, INPUT, 8, 2, "FF Power" ]
             - [ VAL02, INPUT, 8, 40, "SF Power"]
 
     -
@@ -120,6 +120,32 @@ launchers:
     -
         label: "Check Convergence"
         cmd: CHECKCONVERGENCE OBE_ID=PFS OBE_MODE=SPEC
+
+#
+# Telescope
+#
+    -
+        label: Telescope Focus
+        cmd  : SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width: 7, value: 0.000, label: "Z" }
+
+
+    - 
+        label: "Rotator Angle"
+        cmd  : SETROTATOR OBE_ID=COMMON OBE_MODE=LAUNCHER TELESCOPE=$VAL01 INSROT_PA=$VAL02
+        params:
+            - { name: VAL01, type: LIST, values: [Link, Free],
+                label: Telscp }
+            - { name: VAL02, type: INPUT, width: 7, value: 0.0,
+                label: Degree }
+
+    -
+        label: "Set AzEl"
+        cmd  : SETAzEl OBE_ID=COMMON OBE_MODE=LAUNCHER Az=$VAL01 El=$VAL02
+        params:
+            - [ VAL01, INPUT, 6, nop, "Az" ]
+            - [ VAL02, INPUT, 6, nop, "El" ]
 
 
 # End

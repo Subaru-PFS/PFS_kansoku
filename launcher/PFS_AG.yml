@@ -18,7 +18,15 @@ launchers:
         cmd: AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=$VAL01 CAMERAS=$VAL02
         params:
             - { name: VAL01, type: LIST, values: ["OPEN", "CLOSE"], label: "Shutter" }
-            - { name: VAL02, type: LIST, values: ["ALL","1","2","3","4","5","6"], label: "CAM" }     
+            - { name: VAL02, type: LIST, values: ["ALL","2","4","6"], label: "CAM" }     
+
+    -
+        label: "AG Test Exp."
+        cmd  : PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=$VAL01 EXPTIME=$VAL02 MODE=$VAL03
+        params:
+            - [ VAL02, INPUT, 8, 1.0, "ExpTime (sec)" ]
+            - [ VAL01, INPUT, 8, 1, "NFrame" ]
+            - [ VAL03, LIST, [ "OBJECT", "DARK" ], "Mode" ]
 
     - sep
 
