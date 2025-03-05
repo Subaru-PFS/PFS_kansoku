@@ -33,7 +33,7 @@
     # move all cobras behind the dot
     asn timedot = !PFS.TIME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving all cobras behind the dot (30 min)..." obsinfo4="starting time: @timedot" obsinfo5=clear,
-    EXEC PFS PFSCMD ACTOR="iic" CMD='dotRoach exptime=12 cam=r2,r3,r4 mode=safe maskFile=moveAll' TIMELIM=2500;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='dotRoach exptime=12 cam=r1,r2,r3,r4 mode=safe maskFile=moveAll' TIMELIM=2500;
 
     ## move grating if needed
     #*IF $RES == "MED"
