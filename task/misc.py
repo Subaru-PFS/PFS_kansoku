@@ -45,9 +45,9 @@ def gen2_round(f, n) :
     return round(f, n)
 
 
-def random_song(music1,music2,music3):
+def random_song(music1,music2,music3,music4,music5):
     import random
-    song = [music1,music2,music3]    
+    song = [music1,music2,music3,music4,music5]    
     return random.choice(song)
 
 def sps_chk_sel(select, val) :

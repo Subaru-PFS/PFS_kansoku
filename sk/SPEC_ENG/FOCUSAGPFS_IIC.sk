@@ -155,7 +155,7 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
     *IF $MODE == AGEXP
 
         *FOR $NFRAME FRAME IN
-         exec OBS sleep sleep_time=3.0 ; 
+
 #            exec obs check_status mode=OR timeout=0090 \
 #                c1=[VGW.PFS.AG.COUNT NE !VGW.PFS.AG.COUNT] ,
 

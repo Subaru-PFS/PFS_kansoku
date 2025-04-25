@@ -176,7 +176,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
         ### Sound during cobraconvergence
         #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 ,
-        *SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 , 
+        #*SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 , 
 
         ## Cobra configuration
         EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8" timelim=600;

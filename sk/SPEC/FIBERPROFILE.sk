@@ -22,30 +22,50 @@
 :start
 
     # set comments
-    *IF $RES == "LOW"
-        *SET SEQCOMM = "brn_arm"
-    *ELSE
-        *SET SEQCOMM = "bmn_arm"
-    *ENDIF
+#    *IF $RES == "LOW"
+#        *SET SEQCOMM = "brn_arm"
+#        *SET CMDOPT = " skipOtherRedResolution"
+#    *ELIF $RES == "MED"
+#        *SET SEQCOMM = "bmn_arm"
+#        *SET CMDOPT = " skipOtherRedResolution"
+#    *ELSE
+#        *SET CMDOPT = ""
+#    *ENDIF
+
+    IF "$RES" == "LOW"
+        asn cmdopt = " skipOtherRedResolution"
+    ELIF "$RES" == "MED"
+        asn cmdopt = " skipOtherRedResolution"
+    ELSE
+        asn cmdopt = ""
+    ENDIF
 
 :main_start
+
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to LOW for dotRoach" obsinfo4="" obsinfo5=clear,
+    exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
 
     # move all cobras behind the dot
     asn timedot = !PFS.TIME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving all cobras behind the dot (30 min)..." obsinfo4="starting time: @timedot" obsinfo5=clear,
     EXEC PFS PFSCMD ACTOR="iic" CMD='dotRoach exptime=12 cam=r1,r2,r3,r4 mode=safe maskFile=moveAll' TIMELIM=2500;
 
+    # slit start
+
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start' TIMELIM=120;
+
     ## move grating if needed
-    #*IF $RES == "MED"
-    #    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating..." obsinfo4=clear obsinfo5=clear,
-    #    EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove med' TIMELIM=180;
-    #*ENDIF
+    *IF $RES == "MED"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to MED" obsinfo4=clear obsinfo5=clear,
+        EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove med' TIMELIM=180;
+    *ENDIF
 
     # take profile-dark data
     asn timedark = !PFS.TIME
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile-dark (20 min)..." obsinfo4="starting time: @timedark" obsinfo5=clear,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile-dark (20 min per res.)..." obsinfo4="starting time: @timedark" obsinfo5=clear,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=allHidden' TIMELIM=1400;	
-    EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=allHidden' TIMELIM=2800;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=allHidden @cmdopt" TIMELIM=3000;
 
     # move one of the cobra group to home
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving cobra group $GROUP to home..." obsinfo4=clear obsinfo5=clear,
@@ -53,15 +73,19 @@
 
     # take profile data
     asn timeprof = !PFS.TIME
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile dark (20 min)..." obsinfo4="starting time: @timeprof" obsinfo5=clear,
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile (20 min per res.)..." obsinfo4="starting time: @timeprof" obsinfo5=clear,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=MOD4_group$GROUP' TIMELIM=1400;
-    EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=MOD4_group$GROUP' TIMELIM=2800;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=MOD4_group$GROUP @cmdopt" TIMELIM=3000;
+
+    # slit stop
+
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit stop' TIMELIM=120;
 
     ## move grating if needed
-    #*IF $RES == "MED"
-    #    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating..." obsinfo4=clear obsinfo5=clear,
-    #    EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove low' TIMELIM=180;
-    #*ENDIF
+    *IF $RES == "MED"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating..." obsinfo4=clear obsinfo5=clear,
+        EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove low' TIMELIM=180;
+    *ENDIF
 
 :main_end
 

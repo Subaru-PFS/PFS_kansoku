@@ -15,7 +15,7 @@
 :Parameter
 
     EXPTIME=1
-	NFRAME=1
+    NFRAME=1
     ## Which camera to be used
     CAMERA="all"
     #CAMERA="b1,r1,b2,r2,n2,b3,r3,n3,b4,r4"
@@ -30,12 +30,12 @@
 
 :Command
 
-# Wait iic background command and only return when the entire sequence. (added on 21 Jan. 2025)
-#EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear;
-#EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=90, 
-
 
 :start
+
+    # Wait iic background command and only return when the entire sequence. (added on 21 Jan. 2025)
+    #EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear ,
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=90 ; 
 
     # Set time limits for commands
     *SET TIMELIM_SEQ = ($EXPTIME + 105) * $NFRAME
@@ -87,7 +87,7 @@
     # Start exposure sequence. Added returnWhenShutterClose option (Jan. 21, 2025)
     {
     {
-    #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ,
+    #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ ;
     # Original command by Jan20 2025
     EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
     },

@@ -122,7 +122,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
     EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
 
-    EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
+#    EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
     #EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
 
     EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
@@ -143,7 +143,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     # Sidereal tracking
     IF "$FILE" == "NOP"
 
-	    asn RA=(!PFS.DESIGN.RA) 
+        asn RA=(!PFS.DESIGN.RA) 
         asn DEC=(!PFS.DESIGN.DEC) 
         asn ROTA=(!PFS.DESIGN.PA) 
 
@@ -248,7 +248,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     *ENDIF
 
-    # waiting for the telescope settle
+    # waiting for the telescope to settle
     Exec OBS SLEEP SLEEP_TIME=3 ;
 
     # Acquire Field and AG
@@ -256,7 +256,7 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     asn fit_dscale=@lower("$FIT_DSCALE")
     asn fit_dinr=@lower("$FIT_DINR")
 
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
+#    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Start." , 
 
     IF "$DRY_RUN" == "YES"
         asn cmdopt1 = " dryRun"
@@ -324,9 +324,9 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     asn cmdopt_aq = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7"
     asn cmdopt_ag = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt8@cmdopt9"
 
-    EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt_aq" TIMELIM=180;
+#    EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt_aq" TIMELIM=180;
     #EXEC pfs pfscmd actor="iic" cmd="acquireField exptime=3000 fit_dScale=no fit_dInR=yes" TIMELIM=180;
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+#    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
 
 
@@ -334,24 +334,24 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
         # Apply AG correction (RA and DEC)
 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors..." , 
-        *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR ;
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors... Done." , 
+#        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors..." , 
+#        *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR ;
+#        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors... Done." , 
 
-        Exec OBS SLEEP SLEEP_TIME=3 ;
+#        Exec OBS SLEEP SLEEP_TIME=3 ;
 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying InR AG errors..." , 
-        *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=!PFS.AG.ERR.INR_ERR ;
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying InR AG errors... Done." , 
+#        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying InR AG errors..." , 
+#        *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=!PFS.AG.ERR.INR_ERR ;
+#        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying InR AG errors... Done." , 
 
 
         # Start AG calculation 
 
-        EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt_ag";
-        Exec OBS Confirmation Instrument_Name=PFS Title="Check AG calc results. Hit OK to start telescope guiding." Dialog=[OK] ;
-        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
+#        EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt_ag";
+#        Exec OBS Confirmation Instrument_Name=PFS Title="Check AG calc results. Hit OK to start telescope guiding." Dialog=[OK] ;
+#        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="SetupField Done. AG is ON." ;
+#        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="SetupField Done. AG is ON." ;
 
 #        IF "$DRY_RUN" == "YES"
 #
