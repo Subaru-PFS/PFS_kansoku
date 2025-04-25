@@ -22,7 +22,7 @@ from "pfsmisc" import random_song
 
 :main_start
 
-asn BGM = @random_song('Colonel_Bogey_March_LONG','Korobushka_LONG','Turkish_March_LONG') 
+asn BGM = @random_song('Colonel_Bogey_March_LONG','Korobushka_LONG','Turkish_March_LONG','Divertimento_K131_LONG','dance_of_the_sugar_plum_fairies_LONG') 
 Exec OBS Sound Select="@BGM" Volume=$VOLUME ,
 
 :main_end

@@ -1,16 +1,15 @@
-#**********************************************************************
-# FOCUSAGPFS
-#  Run focusing sequence
-#  Copied and modified from COMMON/sk/CMDTEST/PFS_FOCUSAG_AGEXP.sk
-#**********************************************************************
-
+#**************************
+# PFS_AG_IIC
+#**************************
 :Header
 
     Script_Author=Jeschke
-    Last_Update=2023-11-20
+    Last_Update=2022-09-14
+    Script_Update=2025-03-10
+
     OBE_ID=PFS
-    OBE_MODE=SPEC
-    COMMAND=FOCUSAGPFS
+    OBE_MODE=SPEC_ENG
+    COMMAND=FOCUSAGPFS_IIC
 
 :Parameter
     F_SELECT=!STATL.TSC_F_SELECT
@@ -24,20 +23,120 @@
     EXPTIME=2
     GUIDE=no
 
-    VISIT=NOP
+    # we default to the last position sent by PFS if the command is repeated
+    TARGET = NOP
+    DATASET_ID=DS000
+
+    DESIGN_PATH="/data/pfsDesign"
+    DESIGN_ID=NOP
+    #VISIT_ID=0
+
+    DRY_RUN=no
+    *DRY_RUN=YES,NO
+    FIT_DSCALE=yes
+    *FIT_DSCALE=NOP,YES,NO
+    FIT_DINR=yes
+    *FIT_DINR=NOP,YES,NO
+    AGEXPDLY=NOP
+    *AGEXPDLY=0.1
+    AGTECOFF=NOP
+    *AGTECOFF=NOP,yes,no
+    OTF=NO
+    *OTF=NOP,YES,NO
 
 :Command
 :start
 
-*Set EXPT_AG = INT($EXPTIME * 1000)
+    *Set EXPT_AG = INT($EXPTIME * 1000)
 
+    from "pfsmisc" import lower
 
 :main_start
 
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Focus Sweep  " ObsInfo2=clear ObsInfo3=Clear ObsInfo4=clear ObsInfo5=Clear ;
+
+    # parameter formatting
+
+    asn fit_dscale=@lower("$FIT_DSCALE")
+    asn fit_dinr=@lower("$FIT_DINR")
+    asn tec_off = @lower("$AGTECOFF")
+    asn designid = @lower("$DESIGN_ID")
+
+    IF @fit_dscale == "no" OR @fit_dscale == "yes"
+        asn cmdopt1 = " fit_dScale=@fit_dscale"
+    ELSE
+        asn cmdopt1 = ""
+    ENDIF
+
+    IF @fit_dinr == "no" OR @fit_dinr == "yes"
+        asn cmdopt2 = " fit_dInR=@fit_dinr"
+    ELSE
+        asn cmdopt2 = ""
+    ENDIF
+
+    IF "$AGEXPDLY" != NOP
+        asn exposure_delay = int($AGEXPDLY * 1000)
+        #asn exposure_delay = $AGEXPDLY
+        asn cmdopt3 = " exposure_delay=@exposure_delay"
+    ELSE
+        asn cmdopt3 = ""
+    ENDIF
+
+    IF @tec_off == "yes" or "$AGTECOFF" == "no"
+        asn cmdopt4 = " tec_off=@tec_off"
+    ELSE
+        asn cmdopt4 = ""
+    ENDIF
+
+    IF "$OTF" == "YES"
+        IF "$DESIGN_ID" == NOP
+  	    asn cmdopt5 = " otf"
+        ELSE
+            asn cmdopt5 = " designId=\"@designid\""
+        ENDIF
+    ELSE
+        IF "$DESIGN_ID" == NOP
+            asn cmdopt5 = ""
+        ELSE
+            asn cmdopt5 = " designId=\"@designid\""
+        ENDIF
+    ENDIF
+
+    IF "$EXPTIME" != "NOP"
+        asn expt = INT($EXPTIME * 1000)
+        asn cmdopt6 = " exptime=@expt"
+    ELSE
+        asn cmdopt6 = ""
+    ENDIF
+
+    asn cmdopt = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6"
+
+    #EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt_aq" TIMELIM=180;
+    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
+
+# AG off
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo2="Stopping AG" ;
+
+*SET TIMELIM = 60
+
+EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
+EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
+EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
+
+
+# Declare a focus sweep sequence on IIC
+
+*set TIMELIM = 30
+*set INFO4="designID: $DESIGN_ID"
+*set INFO5="ExpTime: $EXPTIME"
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo4=$INFO4 ObsInfo5=$INFO5 ;
+EXEC pfs pfscmd actor="iic" cmd="startAgFocusSweep @cmdopt" TIMELIM=$TIMELIM ;
+
+# Start sweep sequence
+
 *set INFO2="Center Z = $Z   :   Step =  $NSTEP   :   Resolution = $DELTAZ"
 exec OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo1="Focusing by Guider" obsinfo2=$INFO2 ,
-
-# memory variable should be PFS below?
 exec OBS memory instrument_name=COMMON n1=($Z-$INSTRUMENT_DELTAZ) n2=($Z - $INSTRUMENT_DELTAZ - ($NSTEP + 1) * $DELTAZ / 2.0) ;
 
 # reset Z
@@ -47,7 +146,7 @@ exec OBS sleep sleep_time=2 ;
 exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
 
 *FOR $NSTEP STEP IN
-    *SET INFO3="Collecting Data ....   $STEP / $NSTEP steps passed ..."
+*SET INFO3="Collecting Data ....   $STEP / $NSTEP steps passed ..."
     exec OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo3=$INFO3 ,
     exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=(!STATOBS.CMN.N2+($STEP*$DELTAZ)) ;
     exec OBS sleep sleep_time=2 ;
@@ -56,30 +155,27 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
     *IF $MODE == AGEXP
 
         *FOR $NFRAME FRAME IN
-
+         exec OBS sleep sleep_time=3.0 ; 
 #            exec obs check_status mode=OR timeout=0090 \
 #                c1=[VGW.PFS.AG.COUNT NE !VGW.PFS.AG.COUNT] ,
 
             asn ag_count = !VGW.PFS.AG.COUNT
 
-            *IF $STEP == 1 and $FRAME == 1
+#            *IF $STEP == 1 and $FRAME == 1
+#
+#                #EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=0 exposure_time=$EXPT_AG",
+#                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf exposure_time=$EXPT_AG";
+#
+#            *ELSE
+#
+#                *Set VISIT = !PFS.DESIGN.VISIT
+#                EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
+#
+#            *ENDIF
 
-                *IF $VISIT != NOP
-                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
-                *ELSE
-                    *Set VISIT = INT(!PFS.DESIGN.VISIT) 
-                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
-                *ENDIF
+            # acquire_field following the setting by startAgFocusSweep 
+            exec pfs pfscmd actor="iic" cmd="addAgFocusPosition" ;
 
-            *ELSE
-
-                *IF $VISIT != NOP
-                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
-                *ELSE
-                    EXEC pfs pfscmd actor="ag" cmd="acquire_field otf visit_id=$VISIT exposure_time=$EXPT_AG";
-                *ENDIF
-
-            *ENDIF
 
             exec obs check_status mode=OR timeout=0090 \
                 c1=[VGW.PFS.AG.COUNT NE @ag_count] ;
@@ -100,8 +196,15 @@ exec OBS check_status mode=AND timeout=0030 n1=[STATL.ZDIF -0.00005 0.00005] ;
     *ENDIF
 *ENDFOR
 
+# declaration of end of focus sweep to IIC
+
+exec pfs pfscmd actor="iic" cmd="finishAgFocusSweep" ;
+
+# Wrapping up
+
 Exec TSC telfocus motor=ON coord=TSC f_select=$F_SELECT z=$Z ,
 Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+
 #Exec OBS Confirmation Instrument_Name=PFS Title="Set the best focus value via launcher." Dialog=[OK] ;
 Exec OBS USERINPUT INSTRUMENT_NAME=PFS TITLE="Input best focus." Item1="Value:";
 exec OBS sleep sleep_time=1 ;
