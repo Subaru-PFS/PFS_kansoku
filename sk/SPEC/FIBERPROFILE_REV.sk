@@ -46,7 +46,7 @@
     # FiberProfiles Dark ----------------------------------
 
     # If you got error here, please comment out following two lines.
-    asn grpname="fiberProfiles_dark_group$GROUP"
+    asn grpname="fiberProfiles_dark_group$GROUP_NAME"
     *SUB SETUP_ENG_GROUPID GROUP_NAME="@grpname"
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to LOW for dotRoach" obsinfo4="" obsinfo5=clear,
@@ -81,7 +81,7 @@
     EXEC PFS PFSCMD ACTOR="iic" CMD='moveToHome maskFile=MOD4_group$GROUP' TIMELIM=120;
 
     # If you got error here, please comment out following two lines.
-    asn grpname="fiberProfiles_bright_group$GROUP"
+    asn grpname="fiberProfiles_bright_group$GROUP_NAME"
     *SUB SETUP_ENG_GROUPID GROUP_NAME="@grpname"
 
     # take profile data
