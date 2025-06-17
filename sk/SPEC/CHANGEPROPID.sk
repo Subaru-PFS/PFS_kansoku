@@ -1,0 +1,31 @@
+#**********************************************************************
+# CHANGEPROPID.sk
+#  
+#***********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2025.06.17
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=CHANGEPROPID
+
+:Parameter
+PROP_ID=25016
+PROP_PI="Koshida"
+OBSRVER="Moritani, Yabe, Koshida"
+
+:Command
+
+:start
+
+:main_start
+
+# Change proposal id, PI name, OBSERVER, etc.
+EXEC OBS changeprop prop_id=$PROP_ID prop_pi=$PROP_PI observer=$OBSERVER full=N ;
+EXEC OBS set_message instrument_name=!FITS.SBR.MAINOBCP obsinfo2="PropID -> $PROP_ID" ;
+EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
+
+:main_end
+
+:end
