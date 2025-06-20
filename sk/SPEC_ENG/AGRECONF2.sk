@@ -5,11 +5,12 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai
     SCRIPT_UPDATE=2021.11.10
     SCRIPT_UPDATE=2022.06.14
     SCRIPT_UPDATE=2023.02.16
     SCRIPT_UPDATE=2023.07.12
+    SCRIPT_UPDATE=2025.06.20 max residual, default 0.2 --> 0.5 along to agcc setting (tickets/INSTRM-2604)
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -29,7 +30,7 @@
     MIN_SIZE = NOP
     *min_size = 0.92
     MAX_RES = NOP
-    *max_residual = 0.2
+    *max_residual = 0.5
     AG_MAG = NOP
 
 :Command
@@ -148,7 +149,7 @@ ELSE
 ENDIF
 
 
-#max_residual=0.2
+#max_residual=0.5
 IF $MAX_RES == "NOP"
     asn INFO_MAX_RES = ""
     asn COM_MAX_RES = ""

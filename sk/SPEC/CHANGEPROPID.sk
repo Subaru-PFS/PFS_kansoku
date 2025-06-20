@@ -11,7 +11,7 @@
     COMMAND=CHANGEPROPID
 
 :Parameter
-PROP_ID=25016
+PROP_ID=o25016
 PROP_PI="Koshida"
 OBSRVER="Moritani, Yabe, Koshida"
 
