@@ -13,7 +13,7 @@
 :Parameter
 PROP_ID=o25016
 PROP_PI="Koshida"
-OBSRVER="Moritani, Yabe, Koshida"
+OBSERVER="Moritani, Yabe, Koshida"
 
 :Command
 

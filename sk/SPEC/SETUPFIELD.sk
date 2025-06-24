@@ -11,29 +11,17 @@
         COMMAND=SETUPFIELD
         Script_Version=0.1
         Script_Author=cloomis
-    	Transcribed=ejeschke, koshida
-        Script_Update=2021.09.30
-	    Script_Update=2022.05.11
-        ### Add pfsDesign option
-	    Script_Update=2022.09.20
-        ### Remove RA, Dec option, etc. 
-        ### add cobra option (YES or NO) by Arai
+    	Transcribed=ejeschke, koshida, takagi, arai
+        Script_Update=2021.09.30 # 1st version
+	    Script_Update=2022.05.11 # Add pfsDesign option
+	    Script_Update=2022.09.20 # Remove RA, Dec option, add cobra option (YES or NO) (arai)
 	    Script_Update=2022.09.25
-        Script_Update=2023.07.12
-#       Dispatcher_Version=1.0
-#             ESTIMATE=180
-	    Script_Update=2023.07.17
-        # added tolerance option of cobra convergence 
-        # added iteration parameter (default: 8)
-        # and commented ou the pop-up quiestion after the covra convergence.
-        Script_Update=2024.02.29
-        # named as SPEC/SETUPFILED.sk for openuse observations based on SPEC_ENG/SETUPFILED_TOLERANCE.sk.
-        # Refactoring and cleaning the code needed.
-        Script_Update=2024.05.28
-        # Function to start AG at the end of the procedure is added.
-        Script_Update=2024.05.31
-        # Implemented CALC_ROT
-
+        Script_Update=2023.07.12 # Dispatcher_Version=1.0, ESTIMATE=180
+	    Script_Update=2023.07.17 # added tolerance, iteration parameter (default: 8), commented out the pop-up after the covra convergence. (arai)
+        Script_Update=2024.02.29 # named as SPEC/SETUPFILED.sk for openuse observations based on SPEC_ENG/SETUPFILED_TOLERANCE.sk, Refactoring and cleaning the code needed. (takagi)
+        Script_Update=2024.05.28 # Function to start AG at the end of the procedure is added. (koshida)
+        Script_Update=2024.05.31 # Implemented CALC_ROT (takagi)      
+        Script_Update=2025.06.22 # bug fix for rotator handling in COBRA=NO case. Still need to cleaning and refactoring. (arai)
 
 :Parameter
     # we default to the last position sent by PFS if the command is repeated
@@ -114,22 +102,19 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
 # With pfsDesign
 
+    # code block to slewing telescope with pfsDesign
     {
-    # AG off
-
     *SET TIMELIM = 60
-
+    # Turn off AutoGuiding if it is on
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
     EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
-
     EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
     #EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
 
+    # Hold Rotator angle at the current position
     EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
 
-
-    # calculate pointing
-
+    # Setting up Slewing parameters
     EXEC pfs pfscmd actor="iic" cmd="declareCurrentPfsDesign designId=$DESIGN_ID" TIMELIM=$TIMELIM ;
     Exec OBS SLEEP SLEEP_TIME=2 ;
 
@@ -147,37 +132,50 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         asn DEC=(!PFS.DESIGN.DEC) 
         asn ROTA=(!PFS.DESIGN.PA) 
 
+        # convert RA and DEC from degrees, and add offsets if they are given
         EXEC OBS CONV_RADEC MODE=DEGREES RA_DEG=@RA DEC_DEG=@DEC ;
         EXEC OBS CONVSECRADEC RASEC=$OFFSET_RA DECSEC=$OFFSET_DEC RABASE=!STATOBS.RACONVOUT DECBASE=!STATOBS.DECCONVOUT ;
 	    EXEC OBS CALC_RADEC MODE=PLUS RABASE=!STATOBS.RACONVOUT DECBASE=!STATOBS.DECCONVOUT RAOFFSET=!STATOBS.RARELOUT DECOFFSET=!STATOBS.DECRELOUT ;
 
+        # telescope slew and wait for it to settle
         {
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope and rotator..." ObsInfo4="@DSGN_FNAME",
-	    EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
+            Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Slewing Telescope and rotator..." ObsInfo4="@DSGN_FNAME",
+	        EXEC TSC TELDRIVE COORD=ABS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=$EQUINOX ;
         },
+
+        # Rotator handling parallel to the telescope slewing
         {
-        IF $ROT == "CALC"
-            EXEC OBS CALC_ROT INSTRUMENT_NAME=PFS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=2000 PA=@ROTA EXPTIME_SEC=900;
-            EXEC OBS SLEEP SLEEP_TIME=2 ; 
-            EXEC TSC INSROT_PF TELESCOPE=FREE COORD=ABS POSITION=!STATOBS.CALC_ROT_ANG_START;
-            EXEC OBS SLEEP SLEEP_TIME=3 ;
-            Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-            IF "$COBRA"=="NO"
-                EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=!STATOBS.CALC_ROT_OFFSET ;
-                Exec OBS SLEEP SLEEP_TIME=3 ;
-                Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+            IF $ROT == "CALC"
+                # calculate the rotator angle and the expected starting position
+                EXEC OBS CALC_ROT INSTRUMENT_NAME=PFS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=2000 PA=@ROTA EXPTIME_SEC=900;
+                # wait for status to be updated
+                EXEC OBS SLEEP SLEEP_TIME=2 ; 
+                # move rotator to the expected starting position
+                EXEC TSC INSROT_PF TELESCOPE=FREE COORD=ABS POSITION=!STATOBS.CALC_ROT_ANG_START;
+                # wait a bit for the rotator to start moving
+                EXEC OBS SLEEP SLEEP_TIME=3 ;
+                # weit for the rotator to settle
+                Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+                
+                #IF "$COBRA"=="NO": this block was wrong.
+                #    EXEC TSC INSROT_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=!STATOBS.CALC_ROT_OFFSET ;
+                #    Exec OBS SLEEP SLEEP_TIME=3 ;
+                #    Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+                #ENDIF
+            ELSE # ROT=CLASSIC
+                #Exec OBS SLEEP SLEEP_TIME=2 ; 
+                # move rotator with given position angle defined in design
+                EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=@ROTA ; # <-- only difference
+                EXEC OBS SLEEP SLEEP_TIME=3 ; 
+                # wait for the rotator to settle
+                Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+                IF "$COBRA"=="YES"
+                    # Hold rotator angle at the current position
+                    EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
+                    Exec OBS SLEEP SLEEP_TIME=2 ;
+                    Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+                ENDIF
             ENDIF
-        ELSE
-            Exec OBS SLEEP SLEEP_TIME=2 ; 
-            EXEC TSC InsRot_PF MOTOR=ON TELESCOPE=LINK COORD=ABS POSITION=@ROTA ;
-            EXEC OBS SLEEP SLEEP_TIME=3 ; 
-            Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-            IF "$COBRA"=="YES"
-                EXEC TSC InsRot_PF MOTOR=ON Telescope=FREE COORD=abs POSITION=!STATS.IROTPF_POS ;
-                Exec OBS SLEEP SLEEP_TIME=2 ;
-                Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-            ENDIF
-        ENDIF
         };
 
     # Non-sidereal tracking (NOT tested, so disabled)
@@ -191,16 +189,19 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
 
     ENDIF
 
+    # set z value at the value at the start of this command
     Exec TSC TelFocus Motor=on Coord=TSC F_Select=P_OPT2 Z=$Z ;
 
     };
 
 
     # 
-    # check status
+    # check status: what status?
     #
-    #Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Waiting for Rotator/Focus to Settle" , 
+    # wait for telescope slewing to settle
     Exec OBS Check_Status Mode=AND Timeout=0030 N1=[STATL.ZDIF -0.005 0.005] ;
+ 
+    # wait for wind screen settle (not needed at 2025)
     # Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF  -10.0 +0.5] ;
     # Exec OBS Check_Status Mode=AND Timeout=0720 N1=[STATL.WINDSDIF_SIGN -0.5 +10.0] ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Done" ;  
@@ -208,52 +209,49 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     # Moon distance calculation 
     Exec OBS Calc_Moon EQUINOX=2000.0 ;
 
-    #
-    # PFS settings
-    #
+
+    # Cobra convergence #############################################
 
     *IF "$COBRA"=="YES"
         # Cobra convergence with Rotator stop
 
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra configuration with rotator paused: Start." , 
-
+        EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
         ### Pop-up window for checking the fiber illuminator status
-        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
         #Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
 
         ### Sound during cobraconvergence
-        #Exec OBS Sound Select="Colonel_Bogey_March_LONG" Volume=64 , 
-        #Exec OBS Sound Select="Korobushka_LONG" Volume=64 ,
         #*SUB BGM OBE_ID=PFS OBE_MODE=SPEC_ENG VOLUME=64 ,
 	
-	## Cobra configuration (modified for Eng22, May 21, 2025)
-	EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff" timelim=600;
+	    ## Cobra configuration (modified for Eng22, May 21, 2025)
+	    EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff" timelim=600;
         ## Cobra configuration (modified for Eng20, Jan. 21, 2025)
         #EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION tolerance=$TOLERANCE" timelim=600;
-        # original by Jan 21, 2025
-        #EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE" timelim=600;
 
-        # restart rotator sync 
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Waiting for Rotator to Settle" , 
-        IF $ROT == "CALC"
-            EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=!STATOBS.CALC_ROT_OFFSET ;
-        ELSE
-            EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
-        ENDIF
-        Exec OBS SLEEP SLEEP_TIME=3 ;
-        Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
-
-        Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
-
-    *ELSE
+    *ELSE # COBRA=NO. add the same process as above to sync the rotator handlong. If this is fine, organize the both process.
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra convergence skipped" ,
-
     *ENDIF
+
+
+    # restart rotator sync ########################
+
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Waiting for Rotator to Settle" , 
+
+    IF $ROT == "CALC"
+        EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=!STATOBS.CALC_ROT_OFFSET ;
+    ELSE # ROT=CLASSIC
+        EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;
+    ENDIF
+
+    Exec OBS SLEEP SLEEP_TIME=3 ;
+    Exec OBS Check_Status Mode=AND Timeout=0300 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Done." ,
 
     # waiting for the telescope settle
     Exec OBS SLEEP SLEEP_TIME=3 ;
 
-    # Acquire Field and AG
+
+    # Acquire Field and AG ########################
 
     asn fit_dscale=@lower("$FIT_DSCALE")
     asn fit_dinr=@lower("$FIT_DINR")
@@ -320,22 +318,17 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         asn cmdopt9 = ""
     ENDIF
 
-
-
-
-    asn cmdopt_aq = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7"
-    asn cmdopt_ag = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt8@cmdopt9"
+    # combine command options
+    asn cmdopt_aq = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" # with magnitude option, aquireField
+    asn cmdopt_ag = "@cmdopt1@cmdopt2@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt8@cmdopt9" # without magnitude option, autoguide
 
     EXEC pfs pfscmd actor="iic" cmd="acquireField@cmdopt_aq" TIMELIM=180;
     #EXEC pfs pfscmd actor="iic" cmd="acquireField exptime=3000 fit_dScale=no fit_dInR=yes" TIMELIM=180;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
 
-
     IF "$AG" == "ON"
-
         # Apply AG correction (RA and DEC)
-
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors..." , 
         *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors... Done." , 
@@ -346,13 +339,11 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
         *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=!PFS.AG.ERR.INR_ERR ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying InR AG errors... Done." , 
 
-
         # Start AG calculation 
-
+        EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
         EXEC pfs pfscmd actor="iic" cmd="autoguideStart@cmdopt_ag";
         Exec OBS Confirmation Instrument_Name=PFS Title="Check AG calc results. Hit OK to start telescope guiding." Dialog=[OK] ;
         EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="SetupField Done. AG is ON." ;
 
 #        IF "$DRY_RUN" == "YES"
