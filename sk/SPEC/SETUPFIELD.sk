@@ -238,6 +238,11 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Restart Rotator: Waiting for Rotator to Settle" , 
 
     IF $ROT == "CALC"
+
+# 20250629
+	# calculate the rotator angle and the expected starting position
+        EXEC OBS CALC_ROT INSTRUMENT_NAME=PFS RA=!STATOBS.RACALCOUT DEC=!STATOBS.DECCALCOUT EQUINOX=2000 PA=@ROTA EXPTIME_SEC=900;
+
         EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=!STATOBS.CALC_ROT_OFFSET ;
     ELSE # ROT=CLASSIC
         EXEC TSC InsRot_PF MOTOR=ON Telescope=LINK COORD=abs POSITION=@ROTA ;

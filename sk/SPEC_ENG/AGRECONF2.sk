@@ -11,6 +11,7 @@
     SCRIPT_UPDATE=2023.02.16
     SCRIPT_UPDATE=2023.07.12
     SCRIPT_UPDATE=2025.06.20 max residual, default 0.2 --> 0.5 along to agcc setting (tickets/INSTRM-2604)
+    SCRIPT_UPDATE=2025.06.26
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -41,7 +42,8 @@ from "pfsmisc" import lower
 
 :main_start
 
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+#EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clear obsinfo3="Start" obsinfo4=clear obsinfo5=clear ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo5="AG Reconf." ;
 
 IF "$EXPTIME" != "NOP"
     asn EXPT_AG = INT($EXPTIME * 1000) 
@@ -186,12 +188,12 @@ IF @cmdopt != ""
 
 ELSE
 
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo4="No parameter reconfigured. " ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo5="No parameter reconfigured. " ;
 
 ENDIF
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
-EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. "  ;
+EXEC OBS Set_Message Instrument_name=PFS obsinfo5="AG Reconf. Done. "  ;
 
 :main_end
 
