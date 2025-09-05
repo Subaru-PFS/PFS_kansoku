@@ -75,7 +75,7 @@
     asn GROUP_ID=!PFS.GROUPID.ID
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile-dark (20 min per res.)..." obsinfo4="starting time: @timedark" obsinfo5=clear,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=allHidden' TIMELIM=1400;	
-    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=allHidden groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=25 name=allHidden groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
 
 
 
@@ -97,7 +97,7 @@
     asn GROUP_ID = !PFS.GROUPID.ID
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile (20 min per res.)..." obsinfo4="starting time: @timeprof" obsinfo5=clear,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=MOD4_group$GROUP' TIMELIM=1400;
-    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 name=MOD4_group$GROUP groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
+    EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=25 name=MOD4_group$GROUP groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
 
     # slit stop
 

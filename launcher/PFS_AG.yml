@@ -39,15 +39,16 @@ launchers:
             - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Rot. fit" }
             - { name: VAL04, type: INPUT, width:8, value: "NOP", label: "Catalog limiting mag."}
 
-    -
     #-
     #    label: "Correct RA/DEC error"
     #    cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR
     #
     #-
+
     -
         label: "Correct Rot. error"
         cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=!PFS.AG.ERR.INR_ERR
+
 
     - sep
 
@@ -97,7 +98,14 @@ launchers:
             - break
             - [ VAL09, INPUT, 9, "NOP", "Max. size (20.0 pix)" ]
             - [ VAL10, INPUT, 9, "NOP", "Min. size (0.92 pix)" ]
-            - [ VAL11, INPUT, 9, "NOP", "Max. residual (0.2 mm)" ]
+            - [ VAL11, INPUT, 9, "NOP", "Max. residual (0.5 mm)" ]
             - break
+    - sep
 
+    -   label: Telescope Focus
+        cmd  : SETFOCUS OBE_ID=COMMON OBE_MODE=LAUNCHER Z=$VAL01
+        params:
+            - { name: VAL01, type: INPUT, width: 7, value: 0.000, label: "Z" }
+
+        
 #END

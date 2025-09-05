@@ -1,0 +1,26 @@
+#**********************************************************************
+# CHANGEPROPID.sk
+#  
+#***********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2025.06.25
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=UPDATEGEN2STATUS
+
+:Parameter
+
+:Command
+
+:start
+
+:main_start
+
+Exec pfs pfscmd actor="gen2" cmd='status'; 
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=Clear ObsInfo2="Updated gen2 status" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear;
+
+:main_end
+
+:end

@@ -4,8 +4,8 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi
-    SCRIPT_UPDATE=2024.05.16
+    SCRIPT_AUTHOR=Takagi, Arai
+    SCRIPT_UPDATE=2025.06.16 (created on 2024.05.15)
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=ROTCORRECTIONLOOP
@@ -35,7 +35,6 @@ while 0 < !MEMORY.PFS.ROTCORLOOP_FLG {
         EXEC OBS MEMORY INSTRUMENT_NAME=PFS ROTCORLOOP_FLG=0 ,
         EXEC OBS Set_Message Instrument_name=PFS obsinfo4="InsRot error correction loop: Stopped";
 
-
     ELSE
         EXEC OBS Set_Message Instrument_name=PFS obsinfo4="InsRot error correction loop: ON";
 
@@ -48,9 +47,13 @@ while 0 < !MEMORY.PFS.ROTCORLOOP_FLG {
             asn INR_CORR=@gen2_round(@INR_CORR_F, 2)
             EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Correcting InsRot error (@INR_CORR arcsec)...";
             EXEC OBS SLEEP SLEEP_TIME=1;
-            Exec OBS Confirmation Instrument_Name=PFS Title="Applying @INR_CORR arcsec offsets, OK?" Dialog=[OK] ;
+
+            # 2025.06.16 Commented out by Araito avoid confirmation dialog
+            #Exec OBS Confirmation Instrument_Name=PFS Title="Applying @INR_CORR arcsec offsets, OK?" Dialog=[OK] ;
             *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=@INR_CORR ;
             #EXEC TSC INSROT_PF MOTOR=ON TELESCOPE=LINK COORD=REL POSITION=-1*(@INR_CORR / 3600);
+            # sound
+            EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
             EXEC OBS Set_Message Instrument_name=PFS obsinfo4="Correcting InsRot error (@INR_CORR arcsec)... Done.";
 
         ELIF !MEMORY.PFS.INRERR_10MED_INV == 0
