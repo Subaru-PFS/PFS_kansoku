@@ -1,0 +1,18 @@
+#**********************************************************************
+#
+# Stop running AG sequence through AG actor
+#   sending a command to AG actor
+#
+#**********************************************************************
+<Header>
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2025.09.29
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+</Header>
+
+<Command>
+    *SUB AGSTOP $OBE_ID $OBE_MODE;
+    *SUB ROTCORRECTIONLOOP_STOP $OBE_ID $OBE_MODE;
+    *SUB CHANGEPROPID.sk;
+</Command>
