@@ -1,0 +1,29 @@
+#**********************************************************************
+#
+# Abort: focus sweep
+#
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2025.09.18
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+
+:Parameter
+
+:Command
+:start
+
+# Nothing to execute here
+
+:main_start
+
+EXEC PFS PFSCMD ACTOR="iic" cmd="finishAgFocusSweep";
+EXEC OBS SOUND SELECT="whistle" Volume=64 ,
+EXEC OBS Set_message obsinfo1=clear obsinfo2="Focus sweep is aborted." obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+
+:main_end
+
+# Nothing to execute here
+
+:end

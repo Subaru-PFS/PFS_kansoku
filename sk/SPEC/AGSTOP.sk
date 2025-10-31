@@ -8,7 +8,7 @@
     SCRIPT_AUTHOR=Moritani, Koshida, Arai
     SCRIPT_UPDATE=2022.09.20
     OBE_ID=PFS
-    OBE_MODE=SPEC_ENG
+    OBE_MODE=SPEC
 </Header>
 
 <Default_Parameter>

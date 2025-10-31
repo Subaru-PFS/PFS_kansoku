@@ -15,6 +15,8 @@ def getAgRow():
         val = val.strip()
         if name == 'EXPID':
             d[name] = int(val)
+        elif name == 'STATUS':
+            d[name] = val
         else:
             d[name] = float(val)
 
@@ -29,11 +31,12 @@ while True:
     lastExpid = row['EXPID']
 
     if lineNum % 40 == 0:
-        print(f'EXPID       ALT       AZ         RA      DEC        INR    FOCUS    SCALE')
+        print(f'EXPID       ALT       AZ         RA      DEC        INR    FOCUS    SCALE  STATUS')
 
     print(f'{row["EXPID"]:-5d} {row["ALT_ERR"]: 8.3f} {row["AZ_ERR"]: 8.3f}'
           f'   {row["RA_ERR"]: 8.3f} {row["DEC_ERR"]: 8.3f}'
-          f'   {row["INR_ERR"]: 8.3f} {row["FOCUS_ERR"]: 8.3f} {row["SCALE_ERR"]*1000: 8.3f}')
+          f'   {row["INR_ERR"]: 8.3f} {row["FOCUS_ERR"]: 8.3f} {row["SCALE_ERR"]*1000: 8.3f}'
+          f'   {row.get("STATUS")}')
 
     lineNum += 1
     

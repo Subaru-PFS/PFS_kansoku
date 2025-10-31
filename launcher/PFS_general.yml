@@ -147,5 +147,10 @@ launchers:
             - [ VAL01, INPUT, 6, nop, "Az" ]
             - [ VAL02, INPUT, 6, nop, "El" ]
 
+    - 
+
+        label: "Shutdown PFS obs.(w EngID)"
+        cmd  : SHUTDOWNPFSOBS OBE_ID=PFS OBE_MODE=SPEC
+
 
 # End
