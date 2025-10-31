@@ -153,6 +153,8 @@ def inr_med10err(threshold):
             if name == 'EXPID':
             #if name == 'DUMMY_EXPID':
                 d[name] = int(val)
+            elif name == 'STATUS':
+                d[name] = val
             else:
                 d[name] = float(val)
 
