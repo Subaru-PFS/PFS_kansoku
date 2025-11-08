@@ -12,7 +12,9 @@
 </Header>
 
 <Command>
+
     *SUB AGSTOP $OBE_ID $OBE_MODE;
     *SUB ROTCORRECTIONLOOP_STOP $OBE_ID $OBE_MODE;
-    *SUB CHANGEPROPID.sk;
+    *SUB CHANGEPROPID $OBE_ID $OBE_MODE PROP_ID=o25016 PROP_PI="Koshida" OBSERVER="Moritani, Yabe, Koshida";
+
 </Command>
