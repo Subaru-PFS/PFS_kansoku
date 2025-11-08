@@ -96,7 +96,7 @@
 :Start
 
 from "pfsmisc" import lower
-from "pfsmisc" import random_song
+#from "pfsmisc" import random_song
 
 :Main_Start
 
@@ -108,18 +108,18 @@ Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="SetupField" ObsInfo2=clear Ob
 Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_ASEC=0 DITHER_PA_OFFSET_ASEC=0 ;
 
 
-# With pfsDesign
+# SetupField Using pfsDesign
 
-    # EXEC PFS PFSCMD ACTOR="fps" CMD="moveToHome all noMCSexposure" TIMELIM=120 ,
-
-
-    # code block to slewing telescope with pfsDesign
+    # Before slewing, move cobras to home position if COBRA=YES
     {
     IF "$COBRA" == "YES"
         # Move all cobras to home position pararelly to telescope slewing
         EXEC PFS PFSCMD ACTOR="fps" CMD="moveToHome all noMCSexposure" TIMELIM=120 ,
     ENDIF
+    },
 
+    # code block to slewing telescope with pfsDesign
+    {
     *SET TIMELIM = 60
     # Turn off AutoGuiding if it is on
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
