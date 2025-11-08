@@ -4,8 +4,9 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi
+    SCRIPT_AUTHOR=Takagi,Arai
     SCRIPT_UPDATE=2024.02.26
+    SCRIPT_UPDATE=2025.11.07
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=PRECHECK
@@ -56,10 +57,9 @@
     # MCS Test Exposure
 
     *IF $CHK_MCS == "YES"
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Taking test data...with fiber illim. ON" obsinfo4=clear obsinfo5=clear,
-        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF="ON" FF_POWER="2" SF="ON" SF_POWER="40" ;
-        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.8 MODE="OBJECT" ;
-        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF="OFF" SF="OFF" ;
+        #EXEC PFS PFSCMD actor="iic" cmd='declareCurrentPfsDesign designID=0x353dfe8d259ffbb8' TIMELIM=120;
+        *SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure by fpsLoop" obsinfo3="Taking test data...with fiber illim. ON" obsinfo4=clear obsinfo5=clear,
         EXEC PFS PFSCMD ACTOR="iic" cmd="fpsLoop expTime=4.8 cnt=1" TIMELIM=60 ;
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Done." obsinfo4="fiber illum. OFF" obsinfo5=clear;
     *ENDIF
