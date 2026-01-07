@@ -39,6 +39,7 @@ launchers:
             - { name: VAL03, type: LIST, values: ["yes", "no"], label: "Rot. fit" }
             - { name: VAL04, type: INPUT, width:8, value: "NOP", label: "Catalog limiting mag."}
 
+
     #-
     #    label: "Correct RA/DEC error"
     #    cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR
@@ -48,7 +49,6 @@ launchers:
     -
         label: "Correct Rot. error"
         cmd  : CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=ROTATION DELTA_ROT=!PFS.AG.ERR.INR_ERR
-
 
     - sep
 

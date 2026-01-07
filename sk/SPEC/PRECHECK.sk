@@ -4,8 +4,9 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi
+    SCRIPT_AUTHOR=Takagi,Arai
     SCRIPT_UPDATE=2024.02.26
+    SCRIPT_UPDATE=2025.11.10
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=PRECHECK
@@ -56,10 +57,10 @@
     # MCS Test Exposure
 
     *IF $CHK_MCS == "YES"
-        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Taking test data...with fiber illim. ON" obsinfo4=clear obsinfo5=clear,
-        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF="ON" FF_POWER="2" SF="ON" SF_POWER="40" ;
-        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.8 MODE="OBJECT" ;
-        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF="OFF" SF="OFF" ;
+        # Declare pfsDesign for executing this command the first night of a run.
+        *SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
+        # Taking MCS image usng fpsLoop command. 
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure by fpsLoop" obsinfo3="Taking test data...with fiber illim. ON" obsinfo4=clear obsinfo5=clear,
         EXEC PFS PFSCMD ACTOR="iic" cmd="fpsLoop expTime=4.8 cnt=1" TIMELIM=60 ;
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure" obsinfo3="Done." obsinfo4="fiber illum. OFF" obsinfo5=clear;
     *ENDIF
@@ -68,41 +69,37 @@
     # SpS Test Exposure
 
     *IF $CHK_SPS == "YES"
-        ## Declare pfsDesign for Cobra home
-        # This is not necessary for taking DARK with SpS
-        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Declare pfsDesign..." obsinfo4=clear obsinfo5=clear,
-        #*SUB PFS_SETPFSDESIGN OBE_ID=PFS OBE_MODE=SPEC_ENG DESIGN_ID="0x6b24c40ee4154f34"
-        
+        # Declare pfsDesign for executing this command the first night of a run.
+        *SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
+        # Taking an SpS Dark image as a test exposure with 10sec. 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Taking test data..." obsinfo4=clear obsinfo5=clear,
-        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK" SELECT="cam" SELVAL=$SPS_CAMERA
         *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
     *ENDIF
 
 
     # AG Test Exposure
-
     *IF $CHK_AG == "YES"
 
+        # Confirming AG cameras are ON and cooling
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3=clear obsinfo4=clear obsinfo5=clear,
-
         EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
         EXEC OBS Confirmation Instrument_Name=PFS Title="Are AG cameras ON?" Dialog=[YES] ;
 
-        # Open AG Shutters permenantly
-	EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Opening shutters..." obsinfo4=clear obsinfo5=clear,
+        # Open AG Shutters
+	    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Opening shutters..." obsinfo4=clear obsinfo5=clear,
         *SUB AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=OPEN
-	EXEC OBS Sleep Sleep_Time=10 ;
+	    EXEC OBS Sleep Sleep_Time=10 ;
 
+        # Taking AG image as a test exposure with 1sec.
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Taking data..." obsinfo4=clear obsinfo5=clear,
         *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="AG" NFRAME=1 EXPTIME=1 MODE="OBJECT"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Done." obsinfo4=clear obsinfo5=clear;
     *ENDIF
 
 
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck" obsinfo2="Precheck completed." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-
-    
+    # Showing completion message
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck" obsinfo2="Precheck completed." obsinfo3=clear obsinfo4=clear obsinfo5=clear;    
 
 :main_end
 

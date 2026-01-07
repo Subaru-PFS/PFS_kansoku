@@ -4,15 +4,19 @@
 #   sending a command to AG actor
 #
 #**********************************************************************
-<Header>
+:Header
     SCRIPT_AUTHOR=Arai
-    SCRIPT_UPDATE=2025.09.29
-    OBE_ID=PFS
-    OBE_MODE=SPEC
-</Header>
+    SCRIPT_UPDATE=2025.11.07
+    prop_id="o25016"
+    #OBE_ID=PFS 
+    #OBE_MODE=SPEC
+:Parameter
 
-<Command>
-    *SUB AGSTOP $OBE_ID $OBE_MODE;
-    *SUB ROTCORRECTIONLOOP_STOP $OBE_ID $OBE_MODE;
-    *SUB CHANGEPROPID.sk;
-</Command>
+:Command
+:start
+:main_start
+    *SUB AGSTOP OBE_ID=PFS OBE_MODE=SPEC;
+    *SUB ROTCORRECTIONLOOP_STOP OBE_ID=PFS OBE_MODE=SPEC;
+    *SUB CHANGEPROPID OBE_ID=PFS OBE_MODE=SPEC PROP_ID=$prop_id PROP_PI="Koshida" OBSERVER="Moritani, Yabe, Koshida";
+:main_end
+:end

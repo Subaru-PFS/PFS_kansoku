@@ -56,7 +56,7 @@
     AG=OFF
     # Parameters for AG (when AG=ON)
     AGEXPT=3
-    AGCADENCE=5
+    AGCADENCE=10
 
     # Common parameters
     ## OFFSET_RA and OFFSET_DEC are not implemebted yet. Keep them zero (2022/9/20)
@@ -118,12 +118,15 @@ Exec OBS MEMORY INSTRUMENT_NAME=PFS DITHER_RA_OFFSET_ASEC=0 DITHER_DEC_OFFSET_AS
     IF "$COBRA" == "YES"
         # Move all cobras to home position pararelly to telescope slewing
         EXEC PFS PFSCMD ACTOR="fps" CMD="moveToHome all noMCSexposure" TIMELIM=120 ,
+        # changed fps --> iic on 251118
+        #EXEC PFS PFSCMD ACTOR="fps" CMD="moveToHome all noMCSexposure" TIMELIM=120 ,
     ENDIF
 
     *SET TIMELIM = 60
     # Turn off AutoGuiding if it is on
     EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=OFF ;
-    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
+    EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE YES] ;
+    #EXEC OBS Check_Status Mode=AND Timeout=0030 C1=[STATL.GUIDING NE "YES"] ;
     EXEC PFS PFSCMD ACTOR="iic" CMD="autoguideStop" TIMELIM=$TIMELIM ;
     #EXEC OBS Check_Status Mode=AND Timeout=0030 N1=[TSCV.PFS.AG.AutoGuideReady -0.005 +0.005] ;
 

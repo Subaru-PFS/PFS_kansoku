@@ -1,0 +1,28 @@
+#**********************************************************************
+# DECLAREDESIGN.sk
+# Ececute given declare pfsDisign
+# Default value is initialization design of 0x353dfe8d259ffbb8.
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2025.11.07
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=DECLAREDESIGN
+:Parameter
+
+DESIGN_ID='0x353dfe8d259ffbb8'
+TIMELIM=120
+
+:Command
+
+:start
+
+:main_start
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=NOP obsinfo2=NOP obsinfo3=NOP obsinfo4=NOP obsinfo5="declareCurrentPfsDesign: $DESIGN_ID";
+    EXEC PFS PFSCMD actor="iic" cmd="declareCurrentPfsDesign designID=$DESIGN_ID" TIMELIM=$TIMELIM;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=NOP obsinfo2=NOP obsinfo3=NOP obsinfo4=NOP obsinfo5="done";
+:main_end
+
+:end
