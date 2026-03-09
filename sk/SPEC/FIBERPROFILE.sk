@@ -6,7 +6,7 @@
 :Header
     SCRIPT_AUTHOR=Takagi,Arai
     SCRIPT_CREATED=2024.08.24
-    SCRIPT_UPDATE=2025.05.19
+    SCRIPT_UPDATE=2025.05.19,2026.01.19
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=FIBERPROFILE
@@ -54,20 +54,27 @@
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to LOW for dotRoach" obsinfo4="" obsinfo5=clear,
     exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
 
+    ## move grating if needed
+   # *IF $RES == "MED"
+   #     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to MED" obsinfo4=clear obsinfo5=clear,
+    #    EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove med' TIMELIM=180;
+    #*ENDIF
+
     # move all cobras behind the dot
     asn timedot = !PFS.TIME
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving all cobras behind the dot (30 min)..." obsinfo4="starting time: @timedot" obsinfo5=clear,
     EXEC PFS PFSCMD ACTOR="iic" CMD='dotRoach exptime=12 cam=r1,r2,r3,r4 mode=safe maskFile=moveAll' TIMELIM=2500;
 
-    # slit start
-
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start' TIMELIM=120;
-
-    ## move grating if needed
+   ## move grating if needed
     *IF $RES == "MED"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to MED" obsinfo4=clear obsinfo5=clear,
         EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove med' TIMELIM=180;
     *ENDIF
+
+
+    # slit start
+
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start' TIMELIM=120;
 
     # take profile-dark data
     asn timedark = !PFS.TIME
@@ -76,8 +83,6 @@
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile-dark (20 min per res.)..." obsinfo4="starting time: @timedark" obsinfo5=clear,
     #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=allHidden' TIMELIM=1400;	
     EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=25 name=allHidden groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
-
-
 
     # FiberProfiles Bright ----------------------------------
     # move one of the cobra group to home

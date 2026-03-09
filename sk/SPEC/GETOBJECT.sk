@@ -27,6 +27,7 @@
     SEQ_NAME=NOP
     SEQ_COMMENT=NOP
     FORCEGRATING="NO"
+    SKIP_MCS="NO"
 
 :Command
 
@@ -69,6 +70,11 @@
         asn fcgr = ""
     ENDIF
 
+    IF $SKIP_MCS == "YES"
+        asn skmcs = " skipMcsExposure"
+    ELSE
+        asn skmcs = ""
+    ENDIF
 
 :main_start
 
@@ -86,7 +92,7 @@
     # Start exposure sequence. Added returnWhenShutterClose option (Jan. 21, 2025)
     {
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ ;
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr @skmcs returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ ;
     # Original command by Jan20 2025
     #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
     },
@@ -97,7 +103,7 @@
 
         #sleep needed?
 
-        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=90 C1=[PFS.SHUTTERS.STATE EQ open];
+        EXEC OBS CHECK_STATUS MODE=AND TIMEOUT=100 C1=[PFS.SHUTTERS.STATE EQ open];
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="$STEP / $NFRAME" obsinfo3="exposing, wait..." ,
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         EXEC OBS TIMER DURATION=$EXPTIME TITLE="APPROX remaining exposure time:" SOUNDFILE="SILENT_2SEC.au";
