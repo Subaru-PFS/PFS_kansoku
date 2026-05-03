@@ -35,6 +35,10 @@
     AG_MAG = NOP
     MAX_CORRECTION = NOP
     *max_correction = 0.5
+    FILTER_BADSHAPE = "yes"
+    *FILTER_BADSHAPE = NOP
+
+
 
 :Command
 
@@ -170,6 +174,25 @@ ELSE
     asn COM_MAX_CORR = " max_correction=$MAX_CORRECTION"
 ENDIF
 
+# added on 3/9 by arai
+#IF "$FILTER_BADSHAPE" == "yes"
+#    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: yes"
+#    asn COM_FILTER_BADSHAPE = " filter_bad_shape=yes"
+#ELIF "$FILTER_BADSHAPE" == "no"
+#    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: no"
+#    asn COM_FILTER_BADSHAPE = " filter_bad_shape=no"
+#ENDIF
+
+#asn filt_badshape=@lower("$FILTER_BADSHAPE")
+#IF @filt_badshape == "yes" OR @filt_badshape == "no"
+#    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: @filt_badshape"
+#    asn COM_FILTER_BADSHAPE = " filter_bad_shape=@filt_badshape"
+#ELSE
+#    asn INFO_FILTER_BADSHAPE = ""
+#    asn COM_FILTER_BADSHAPE = ""
+#ENDIF
+
+
 #IF $AG_MAG == "NOP"
 #    asn INFO_AG_MAG = ""
 #    asn COM_AG_MAG  = ""
@@ -182,6 +205,8 @@ ENDIF
 
 asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR"
 asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR"
+#asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR@INFO_FILTER_BADSHAPE"
+#asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR@COM_FILTER_BADSHAPE"
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 
@@ -189,6 +214,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 IF @cmdopt != ""
 
     exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
+    #exec pfs pfscmd actor="iic" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
 
     IF @dry_run == "no"
         Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
