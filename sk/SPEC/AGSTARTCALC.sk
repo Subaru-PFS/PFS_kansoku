@@ -29,6 +29,7 @@
   OTF        = NOP
 
   MAGLIM     = NOP
+  FILTER_BADSHAPE = "yes"
 
 :Command
 :Start
@@ -98,8 +99,14 @@
     asn cmdopt9 = ""
   ENDIF
 
+  IF "$FILTER_BADSHAPE" == "yes"
+    asn COM_FILTER_BADSHAPE = " filter_bad_shape=\"yes\""
+  ELSE
+    asn COM_FILTER_BADSHAPE = " filter_bad_shape=\"no\""
+  ENDIF
 
-  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt9@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7" 
+
+  asn cmdopt = "@cmdopt8@cmdopt1@cmdopt2@cmdopt9@cmdopt3@cmdopt4@cmdopt5@cmdopt6@cmdopt7@COM_FILTER_BADSHAPE" 
 
 :Main_Start
 

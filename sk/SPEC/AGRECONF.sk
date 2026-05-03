@@ -5,11 +5,12 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida
+    SCRIPT_AUTHOR=Moritani, Yoshida, Koshida, Arai
     SCRIPT_UPDATE=2021.11.10
     SCRIPT_UPDATE=2022.06.14
     SCRIPT_UPDATE=2023.02.16
     SCRIPT_UPDATE=2023.07.12
+    SCRIPT_UPDATE=2026.03.10
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -23,6 +24,7 @@
     FIT_DSCALE=NOP
     FIT_DINR=NOP
     MAGLIM=MOP
+    FILTER_BADSHAPE="yes"
 
 :Command
 
@@ -127,16 +129,26 @@ IF "$MAGLIM" == "NOP"
 ELSE
     asn INFO_MAGLIM = " Lim. Mag.: $MAGLIM"
     asn COM_MAGLIM = " magnitude=$MAGLIM"
+ENDIF
 
-asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAGLIM"
-asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAGLIM"
+IF "$FILTER_BADSHAPE" == "yes"
+    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: yes"
+    asn COM_FILTER_BADSHAPE = " filter_bad_shape=yes"
+ELIF "$FILTER_BADSHAPE" == "no"
+    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: no"
+    asn COM_FILTER_BADSHAPE = " filter_bad_shape=no"
+ENDIF
+
+asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAGLIM@INFO_FILTER_BADSHAPE"
+asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAGLIM@COM_FILTER_BADSHAPE"
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 
 #*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
 IF @cmdopt != ""
 
-    exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
+    #exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
+    exec pfs pfscmd actor="iic" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
 
     #EXEC OBS Set_Message Instrument_name=PFS obsinfo4="@cmdopt" obsinfo5="@cmdinfo" ;
 
