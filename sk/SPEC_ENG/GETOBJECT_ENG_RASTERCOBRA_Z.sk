@@ -15,6 +15,7 @@
             #1. In moveToPfsDesign, add groupId="GROUP_ID" name="$GROUP_NAME" options
             #2. In Line 60--63, add a process to get GroupID from Gen2's PFS status if not given. The status will be created in December run.
         Script_Update=2023.04.20 add GROUP_ID and GROUP_NAME before :START.       
+        Script_Update=2026.05.04 modified for test on 5/6/2026
 </Header>
 
 <Default_Parameter>
@@ -33,6 +34,10 @@
     WMODE=YES
     *WMODE=YES,NO
 
+    BACK_CENTER=NO
+    *BACK_CENTER=NO,YES
+
+
     #Z_AG=2.82
     #Z_PFI=3.22   
  
@@ -42,7 +47,7 @@
 
     # Camera selection
     CAMERA=NOP
-    *CAMERA="b1,r1,n1,b3,r3,n3"
+    *CAMERA="b1,r1,n1,b2,r2,b3,r3,n3"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
@@ -50,9 +55,6 @@
 </Default_Parameter>
 
 
-# Get Group_ID from Gen2 status (added on 04/20/2023)
-asn GROUP_ID=!PFS.GROUPID.ID
-asn GROUP_NAME=!PFS.GROUPID.NAME
 
 
 <Command>
@@ -77,7 +79,7 @@ asn ROTA=(!PFS.DESIGN.PA)
 
 # get groupID from gen2 pfs status
 *IF "$GROUP_ID" == "NOP"
-    asn GROUP_ID=!PFS.GROUP.ID    # !!!! need to check the status name !!!!
+    asn GROUP_ID=!PFS.GROUPID.ID    # !!!! need to check the status name !!!!
 *ENDIF
 
 # preparation for the ObsInfo
@@ -89,9 +91,15 @@ asn INFO3="$GROUP_NAME"
 Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2=Clear ObsInfo3=Clear ObsInfo4=Clear ObsInfo5=Clear ;
 
 #Preparation for SPS exposure
-*SET EXPTIMLIM = INT($EXPTIME + 60)
+*SET EXPTIMLIM = ( $EXPTIME + 180 )
+
 #Wiping SPS
 Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
+
+
+# Get Group_ID from Gen2 status (added on 04/20/2023)
+asn GROUP_ID=!PFS.GROUPID.ID
+asn GROUP_NAME=!PFS.GROUPID.NAME
 
 # Camera selection options
 *IF $CAMERA != NOP #and @sps_chk_sel("cam", @lower($CAMERA)) ==1 
@@ -113,26 +121,28 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
 
 :MAIN_START
+
 # Proc 4. Take an SpS exposure (will be replace to a subroutine command) at the field center.
+
 { #subroutine of SpS exposure  
     # Warning about the fiber illuminator
     #Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ;
-    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-    Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+    #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    #Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = 0" ;
+
     *IF "$WMODE" == "YES"
         EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
 
-    *ELSE
-        EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
+    *ELIF "$WMODE" == "NO"
+        EXEC OBS TIMER DURATION=($EXPTIME) ;
         EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
         #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
         EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
     *ENDIF
 } ;
 
@@ -153,14 +163,14 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
         # 6. iic update cobra
         { 
-            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-            Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminators on?" Dialog=[OK] ;
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        #Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminators on?" Dialog=[OK] ;
 
 	    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra configuration" ObsInfo3=@INFO3 ObsInfo4="Variant No = $N_VARIANT" ,
  	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID" variant=$N_VARIANT';
 	    Exec PFS pfscmd Actor="iic" cmd='moveToPfsDesign noHome nIteration=4 tolerance=0.030 groupId="@GROUP_ID" name="@GROUP_NAME" ' TIMELIM=450;
             
-     } ;
+        } ;
 
         # 7. resume rotator
         {    # Resume Rotator
@@ -188,29 +198,28 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
         {
             # Warning about the fiber illuminator
             #Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ; 
-            Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-            Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+            #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+            #Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
             
             Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT" ;
             *IF "$WMODE" == "YES"
-                EXEC OBS TIMER DURATION=($EXPTIME) ;
+                EXEC OBS TIMER DURATION=($EXPTIME+) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
                 #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=@GROUP_D name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
                 EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
-            *ELSE
-                EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
+            *ELIF "$WMODE" == "NO"
+                EXEC OBS TIMER DURATION=($EXPTIME) ;
                 EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
                 #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
                 EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
-
             *ENDIF
         } ;
 *ENDFOR
-	
 
+
+*IF "$BACK_CENTER" == "YES"
 # Proc 9.  Move fiber to variance=0 position, and an SpS exposure at variance=0.
-*SET N_VARIANT = 0
+    *SET N_VARIANT = 0
 # subroutine of Raster: from rotator stop to SpS exposure
     # 1. rotator stop
     { 
@@ -221,8 +230,8 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 
     # 2. iic update cobra
     {
-        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-        Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        #Exec OBS Confirmation Instrument_Name=PFS Title="Are the fiber illuminators on?" Dialog=[OK] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Cobra Configuration:" ObsInfo3=Clear ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT",
 	    Exec PFS pfscmd Actor="iic" cmd='declareCurrentPfsDesign designId="$DESIGN_ID"';
 	    Exec PFS pfscmd Actor="iic" cmd='moveToPfsDesign noHome nIteration=4 tolerance=0.030 groupId="@GROUP_ID" name="@GROUP_NAME" ' TIMELIM=450;
@@ -256,25 +265,28 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
     {
         # Warning about the fiber illuminator
         #Exec TSC TelFocus MOTOR=ON COORD=TSC Z=($Z_PFI) ;
-        Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-        Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+        #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+        #Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo1=@INFO1 ObsInfo2="Exposing : $EXPTIME sec" ObsInfo3=@INFO3 ObsInfo4=Clear ObsInfo5="Variant No = $N_VARIANT (Field Center)";
         
         *IF "$WMODE" == "YES"
-            EXEC OBS TIMER DURATION=($EXPTIME) ;
+            EXEC OBS TIMER DURATION=($EXPTIME + 30) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
             #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 arm=$ARM groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME window=500,1000 $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
 
         *ELSE
-            EXEC OBS TIMER DURATION=($EXPTIME + 60) ;
+            EXEC OBS TIMER DURATION=($EXPTIME + 30) ;
             EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
             #EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME arm=$ARM groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
             EXEC PFS PFSCMD ACTOR="iic" cmd='scienceObject exptime=$EXPTIME $cmdopt groupId=@GROUP_ID name="@GROUP_NAME"' TIMELIM=$EXPTIMLIM ;
 
         *ENDIF
     } ;
-    Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Raster Scan by Cobra: Done";
+    
+*ENDIF
+
+Exec OBS Set_Message Instrument_Name=PFS ObsInfo1="Raster Scan by Cobra: Done";
 
 :MAIN_END
 :END
