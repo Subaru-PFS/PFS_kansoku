@@ -58,7 +58,7 @@
 
     *IF $CHK_MCS == "YES"
         # Declare pfsDesign for executing this command the first night of a run.
-        *SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
+        #*SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
         # Taking MCS image usng fpsLoop command. 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="MCS test exposure by fpsLoop" obsinfo3="Taking test data...with fiber illim. ON" obsinfo4=clear obsinfo5=clear,
         EXEC PFS PFSCMD ACTOR="iic" cmd="fpsLoop expTime=4.8 cnt=1" TIMELIM=60 ;
@@ -70,7 +70,7 @@
 
     *IF $CHK_SPS == "YES"
         # Declare pfsDesign for executing this command the first night of a run.
-        *SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
+        #*SUB DECLAREDESIGN OBE_ID=PFS OBE_MODE=SPEC DESIGN_ID="0x353dfe8d259ffbb8"
         # Taking an SpS Dark image as a test exposure with 10sec. 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="SpS test exposure" obsinfo3="Taking test data..." obsinfo4=clear obsinfo5=clear,
         *SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="SPS" NFRAME=1 EXPTIME=10.0 MODE="DARK"
