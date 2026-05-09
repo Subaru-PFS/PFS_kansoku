@@ -12,6 +12,7 @@
     SCRIPT_UPDATE=2023.07.12
     SCRIPT_UPDATE=2025.06.20 max residual, default 0.2 --> 0.5 along to agcc setting (tickets/INSTRM-2604)
     SCRIPT_UPDATE=2025.06.26
+    SCRIPT_UPDATE=2026.05.06-08 Modified for bad shape filtering, and a delete pop-up window if dryrun=no.
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -216,19 +217,10 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 
 #*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
 IF @cmdopt != ""
-
     exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
     #exec pfs pfscmd actor="iic" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
-
-    IF @dry_run == "no"
-        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
-        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-    ENDIF
-
 ELSE
-
     EXEC OBS Set_Message Instrument_name=PFS obsinfo5="No parameter reconfigured. " ;
-
 ENDIF
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,
