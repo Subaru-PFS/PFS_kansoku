@@ -4,8 +4,8 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2020.05.19
+    SCRIPT_AUTHOR=Moritani,Arai
+    SCRIPT_UPDATE=2020.05.19,2026.05.10
     OBE_ID=PFS
     OBE_MODE=SPEC
 
@@ -22,10 +22,12 @@
 
 :main_start
 
+TIMELIM=180
+
 if $SAVE == "TRUE"
-   EXEC PFS PFSCMD ACTOR="iic" cmd="sps finishExposure now" ;
+   EXEC PFS PFSCMD ACTOR="iic" cmd="sps finishExposure now" TIMELIM=$TIMELIM ;
 else
-   EXEC PFS PFSCMD ACTOR="iic" cmd="sps abortExposure" ;
+   EXEC PFS PFSCMD ACTOR="iic" cmd="sps abortExposure" TIMELIM=$TIMELIM ;
 endif
 
 EXEC OBS SOUND SELECT="whistle" Volume=64 ,
