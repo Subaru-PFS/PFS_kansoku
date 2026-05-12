@@ -87,9 +87,9 @@
         EXEC OBS Confirmation Instrument_Name=PFS Title="Are AG cameras ON?" Dialog=[YES] ;
 
         # Open AG Shutters
-	    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Opening shutters..." obsinfo4=clear obsinfo5=clear,
-        *SUB AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=OPEN
-	    EXEC OBS Sleep Sleep_Time=10 ;
+#	    EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Opening shutters..." obsinfo4=clear obsinfo5=clear,
+#        *SUB AGSHUTTER OBE_ID=PFS OBE_MODE=SPEC_ENG MODE=OPEN
+#	    EXEC OBS Sleep Sleep_Time=10 ;
 
         # Taking AG image as a test exposure with 1sec.
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="AG test exposure" obsinfo3="Taking data..." obsinfo4=clear obsinfo5=clear,
