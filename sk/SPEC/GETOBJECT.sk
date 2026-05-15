@@ -27,7 +27,7 @@
     SEQ_NAME=NOP
     SEQ_COMMENT=NOP
     FORCEGRATING="NO"
-    SKIP_MCS="NO"
+    SKIP_MCS="YES"
 
 :Command
 
