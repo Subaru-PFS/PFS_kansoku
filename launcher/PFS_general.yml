@@ -72,7 +72,7 @@ launchers:
                 label: save }
 
     -
-        label: "Stop SpS Exp. seq."
+        label: "Stop IIC seq."
         cmd  : IIC_SEQ_ABORT OBE_ID=PFS OBE_MODE=SPEC SAVE=$VAL01
         params:
             - {name: VAL01, type: LIST, values: ["TRUE", "FALSE"],
