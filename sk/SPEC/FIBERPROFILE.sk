@@ -6,7 +6,7 @@
 :Header
     SCRIPT_AUTHOR=Takagi,Arai
     SCRIPT_CREATED=2024.08.24
-    SCRIPT_UPDATE=2025.05.19,2026.01.19
+    SCRIPT_UPDATE=2025.05.19,2026.01.19,2026.07.05
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=FIBERPROFILE
@@ -74,7 +74,7 @@
 
     # slit start
 
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start' TIMELIM=120;
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit' TIMELIM=120;
 
     # take profile-dark data
     asn timedark = !PFS.TIME
