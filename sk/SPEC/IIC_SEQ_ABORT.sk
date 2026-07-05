@@ -4,8 +4,8 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
-    SCRIPT_UPDATE=2024.05.02
+    SCRIPT_AUTHOR=Moritani, Arai
+    SCRIPT_UPDATE=2024.05.02,2026.05.10
     OBE_ID=PFS
     OBE_MODE=SPEC
 
@@ -14,6 +14,7 @@
 #  SSYS=SPS
   SAVE=TRUE
 
+  TIMELIM=180
 
 :Command
 :start
@@ -22,7 +23,7 @@
 
 :main_start
 
-EXEC PFS PFSCMD ACTOR="iic" cmd="sequence abort" ;
+EXEC PFS PFSCMD ACTOR="iic" cmd="sequence abort" TIMELIM=$TIMELIM ;
 
 EXEC OBS SOUND SELECT="whistle" Volume=64 ,
 EXEC OBS Set_message obsinfo1=clear obsinfo2="iic sequence is aborted." obsinfo3=clear obsinfo4=clear obsinfo5=clear ;

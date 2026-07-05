@@ -12,6 +12,7 @@
     SCRIPT_UPDATE=2023.07.12
     SCRIPT_UPDATE=2025.06.20 max residual, default 0.2 --> 0.5 along to agcc setting (tickets/INSTRM-2604)
     SCRIPT_UPDATE=2025.06.26
+    SCRIPT_UPDATE=2026.05.06-08 Modified for bad shape filtering, and a delete pop-up window if dryrun=no.
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -183,14 +184,16 @@ ENDIF
 #    asn COM_FILTER_BADSHAPE = " filter_bad_shape=no"
 #ENDIF
 
-#asn filt_badshape=@lower("$FILTER_BADSHAPE")
-#IF @filt_badshape == "yes" OR @filt_badshape == "no"
-#    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: @filt_badshape"
-#    asn COM_FILTER_BADSHAPE = " filter_bad_shape=@filt_badshape"
-#ELSE
-#    asn INFO_FILTER_BADSHAPE = ""
-#    asn COM_FILTER_BADSHAPE = ""
-#ENDIF
+# revision on 5/6 by arai
+asn filt_badshape=@lower("$FILTER_BADSHAPE")
+IF @filt_badshape == "yes" OR @filt_badshape == "no"
+    asn INFO_FILTER_BADSHAPE = " filter_bad_shape: @filt_badshape"
+    asn COM_FILTER_BADSHAPE = " filter_bad_shape=@filt_badshape"
+ELSE
+    asn INFO_FILTER_BADSHAPE = ""
+    asn COM_FILTER_BADSHAPE = ""
+ENDIF
+
 
 
 #IF $AG_MAG == "NOP"
@@ -202,29 +205,22 @@ ENDIF
 #ENDIF
 # No option magnitude for ag reconfigure
 
+# before 5/6/2026
+#asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR"
+#asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR"
 
-asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR"
-asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR"
-#asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR@INFO_FILTER_BADSHAPE"
-#asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR@COM_FILTER_BADSHAPE"
+# after 5/6/2026
+asn cmdinfo = "@INFO_EXPT@INFO_INT@INFO_DRY_RUN@INFO_FIT_DSCALE@INFO_FIT_DINR@INFO_EXPDLY@INFO_TECOFF@INFO_MAX_ELLIP@INFO_MAX_SIZE@INFO_MIN_SIZE@INFO_MAX_RES@INFO_MAX_CORR@INFO_FILTER_BADSHAPE"
+asn cmdopt = "@COM_EXPT@COM_INT@COM_DRY_RUN@COM_FIT_DSCALE@COM_FIT_DINR@COM_EXPDLY@COM_TECOFF@COM_MAX_ELLIP@COM_MAX_SIZE@COM_MIN_SIZE@COM_MAX_RES@COM_MAX_CORR@COM_FILTER_BADSHAPE"
 
 EXEC OBS Set_Message Instrument_name=PFS obsinfo4=@cmdinfo ;
 
 #*IF "$EXPTIME" != "NOP" OR "$INTERVAL" != "NOP" OR "$DRY_RUN" == "yes" OR "$DRY_RUN" == "no" OR "$FIT_DSCALE" == "yes" OR "$FIT_DSCALE" == "no" OR "$FIT_DINR" == "yes" OR "$FIT_DINR" == "no"
 IF @cmdopt != ""
-
     exec pfs pfscmd actor="ag" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
     #exec pfs pfscmd actor="iic" cmd="autoguide reconfigure @cmdopt" TIMELIM=60 ;
-
-    IF @dry_run == "no"
-        Exec OBS Confirmation Instrument_Name=PFS Title="Is it OK to start AG with Telescope?" Dialog=[OK] ;
-        EXEC TSC AG_TRACKING CALC_REGION=PFS MOTOR=ON ;
-    ENDIF
-
 ELSE
-
     EXEC OBS Set_Message Instrument_name=PFS obsinfo5="No parameter reconfigured. " ;
-
 ENDIF
 
 EXEC OBS SOUND SELECT=COMMAND_COMPLETE Volume=64 ,

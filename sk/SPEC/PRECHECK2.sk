@@ -4,8 +4,9 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi
+    SCRIPT_AUTHOR=Takagi, Arai
     SCRIPT_UPDATE=2024.02.26
+    SCRIPT_UPDATE=2026.05.08
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=PRECHECK2
@@ -17,6 +18,8 @@
     *CHK_GRA="YES,NO"
     CHK_COBRA="YES"
     *CHK_COBRA="YES,NO"
+    SET_FIBERPOWER="YES"
+    *SET_FIBERPOWER="YES,NO"
 
     ## Which camera to be used for SpS
     #SPS_CAMERA="b1,r1,n1,b2,r2,n2,b3,r3,n3,b4,r4,n4"
@@ -31,8 +34,7 @@
 
 :main_start
 
-    # Grating test
-
+    # Grating switching test
     *IF $CHK_GRA == "YES"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Grating Test" obsinfo3="Moving from low res. to med res..." obsinfo4=clear obsinfo5=clear;
         exec pfs pfscmd actor="iic" cmd="sps rdaMove med"  TIMELIM=180 ;
@@ -50,27 +52,27 @@
 
 
     # Cobra movement test
-
     *IF $CHK_COBRA == "YES"
-
-        #Fiber illuminator test
-        #Turn on illuminators
-        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator check" obsinfo3="Turning on illuminators..." obsinfo4=clear obsinfo5=clear;
-        #*SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=1 SF=ON SF_POWER=40
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Taking MCS data..." obsinfo4=clear obsinfo5=clear;
-        #*SUB PFS_TESTEXPOSURE OBE_ID=PFS OBE_MODE=SPEC_ENG CAM="MCS" NFRAME=1 EXPTIME=4.2 MODE="OBJECT"
-        #EXEC OBS Sound Select=OBCP_STATUS_CHECK Volume=182,
-        #EXEC OBS Confirmation Instrument_Name=PFS Title="Are illuminators ON?" Dialog=[YES] ;
-
-        #EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Moving cobra to Safe position..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
         EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2 noTweak nIteration=8' TIMELIM=400 ;
         EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
+    *ENDIF
 
+
+    # Setting of Fiber illuminator
+    *IF $SET_FIBERPOWER == "YES"
+        #Set Fiber illuminator power 2 and 40, and trun on and off.
+        #Turn on illuminators
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator setting" obsinfo3="Turning on illuminators with FF_POWER=2 and SF_POWER=40." obsinfo4=clear obsinfo5=clear;
+        *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=2 SF=ON SF_POWER=40;
+        Exec OBS sleep sleep_time=3 ;
+        #Turn off illuminators
+        EXEC OBS Set_Message Instrument_name=PFSobsinfo3="Turning off illuminators." obsinfo4=clear obsinfo5=clear;
+        *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF;
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator setting: done" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
     *ENDIF
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="PFS Precheck 2" obsinfo2="Precheck completed." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-
-    
 
 :main_end
 

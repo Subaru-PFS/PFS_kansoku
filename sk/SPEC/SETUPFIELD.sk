@@ -25,6 +25,7 @@
         Script_Update=2025.09.11 # added cobrahome command pararelly to telescope slewing (koshida)
         Script_Update=2025.09.12 # added (1) subroutine with AGRECONF2.sk with max_correction option, (2) noHome option in covergence. (3) control of homecobra command to execute only in COBRA==YES case. (arai)
         Script_Update=2025.11.12 # modified and remaed as SETUPFIELD_RUN25.sk (Arai)
+        Script_Update=2026.05.06 # updated the script to use the convergence name
 
 :Parameter
     # we default to the last position sent by PFS if the command is repeated
@@ -51,6 +52,8 @@
     AGMAG=NOP
     MAX_CORRECTION=NOP
     *MAX_CORRECTION=10.0
+
+    CONVNAME="Convergence"
 
     # Start AG after a field acquisition or not
     AG=OFF
@@ -266,7 +269,7 @@ ENDIF
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra configuration with rotator paused: Start." , 
         EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
 	    ## Cobra configuration (modified for Eng24, Sep 12, 2025)
-	    EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff" timelim=300;
+	    EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff name=$CONVNAME' timelim=300;
 
         # reset COBRA home done flag
         Exec OBS MEMORY INSTRUMENT_NAME=PFS HOMECOBRA_DONE='FALSE' ,
@@ -285,7 +288,7 @@ ENDIF
         EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
     
 	    ## Cobra configuration (modified for Eng24, Sep 12, 2025)
-	    EXEC pfs pfscmd actor="iic" cmd="moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION_REDO tolerance=$TOLERANCE" timelim=420;
+	    EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION_REDO tolerance=$TOLERANCE name=$CONVNAME' timelim=420;
 
         # load parameters from pfsDesign for REDU option
         asn RA=(!PFS.DESIGN.RA) 
