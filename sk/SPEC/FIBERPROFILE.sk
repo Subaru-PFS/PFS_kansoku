@@ -46,19 +46,10 @@
     # FiberProfiles Dark ----------------------------------
 
     # If you got error here, please comment out following two lines.
-    #asn grpname="fiberProfiles_dark_group$GROUP"
-    #*SUB SETUP_GROUPID GROUP_NAME="@grpname"
-    #*SUB SETUP_GROUPID GROUP_NAME=@grpname OBE_ID=PFS OBE_MODE=SPEC
     *SUB SETUP_GROUPID GROUP_NAME="fiberProfiles_dark_group$GROUP" OBE_ID=PFS OBE_MODE=SPEC
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to LOW for dotRoach" obsinfo4="" obsinfo5=clear,
     exec pfs pfscmd actor="iic" cmd="sps rdaMove low"  TIMELIM=180 ;
-
-    ## move grating if needed
-   # *IF $RES == "MED"
-   #     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Moving the grating to MED" obsinfo4=clear obsinfo5=clear,
-    #    EXEC PFS PFSCMD ACTOR="iic" CMD='sps rdaMove med' TIMELIM=180;
-    #*ENDIF
 
     # move all cobras behind the dot
     asn timedot = !PFS.TIME
@@ -81,7 +72,6 @@
     # assign GroupID
     asn GROUP_ID=!PFS.GROUPID.ID
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile-dark (20 min per res.)..." obsinfo4="starting time: @timedark" obsinfo5=clear,
-    #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=allHidden' TIMELIM=1400;	
     EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=25 name=allHidden groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
 
     # FiberProfiles Bright ----------------------------------
@@ -90,18 +80,13 @@
     EXEC PFS PFSCMD ACTOR="iic" CMD='moveToHome maskFile=MOD4_group$GROUP' TIMELIM=120;
 
     # If you got error here, please comment out following two lines.
-    #asn grpname="fiberProfiles_bright_group$GROUP"
-    #*SUB SETUP_GROUPID GROUP_NAME=@grpname OBE_ID=PFS OBE_MODE=SPEC
-    #*SUB SETUP_ENG_GROUPID GROUP_NAME="@grpname"
     *SUB SETUP_GROUPID GROUP_NAME="fiberProfiles_bright_group$GROUP" OBE_ID=PFS OBE_MODE=SPEC
 
     # take profile data
     asn timeprof = !PFS.TIME
     # assign GroupID
-    #*SET GROUP_ID=!PFS.GROUPID.ID
     asn GROUP_ID = !PFS.GROUPID.ID
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1="FIBER PROFILE" obsinfo2=clear obsinfo3="Taking profile (20 min per res.)..." obsinfo4="starting time: @timeprof" obsinfo5=clear,
-    #EXEC PFS PFSCMD ACTOR="iic" CMD='fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=45 comments=$SEQCOMM name=MOD4_group$GROUP' TIMELIM=1400;
     EXEC PFS PFSCMD ACTOR="iic" CMD="fiberProfiles pixelRange=-0.4,0.4,0.2 halogen=25 name=MOD4_group$GROUP groupId=@GROUP_ID @cmdopt" TIMELIM=3000;
 
     # slit stop
