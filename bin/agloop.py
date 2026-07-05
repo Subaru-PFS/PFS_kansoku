@@ -26,7 +26,7 @@ def getAgRow():
 lastExpid = None
 lineNum = 0
 last_time = int(time.time())
-time_old = 10
+time_old = 20
 red='\033[31m'
 red2='\033[91m'
 magenta='\033[35m'
