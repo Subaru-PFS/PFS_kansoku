@@ -108,6 +108,28 @@ launchers:
         label: "InR corr. loop STOP"
         cmd  : ROTCORRECTIONLOOP_STOP OBE_ID=PFS OBE_MODE=SPEC
 
+    - sep
 
-
-#END
+    -
+        label : "Reconf. AG Param."
+        cmd   : AGRECONF2 OBE_ID=PFS OBE_MODE=SPEC_ENG EXPTIME=$VAL01 INTERVAL=$VAL02 DRY_RUN=$VAL03 FIT_DSCALE=$VAL04 FIT_DINR=$VAL05 EXPDLY=$VAL06 TECOFF=$VAL07 MAX_ELLIP=$VAL08 MAX_SIZE=$VAL09 MIN_SIZE=$VAL10 MAX_RES=$VAL11 MAX_CORRECTION=$VAL12 FILTER_BADSHAPE=$VAL13
+        params:
+            - [ VAL01, INPUT, 9, "NOP", "Exp Time" ]
+            - [ VAL02, INPUT, 9, "NOP", "Cadence" ]
+            - [ VAL03, LIST, ["NOP", "yes", "no"], "Dry run" ]
+            - break
+            - [ VAL04, LIST, ["NOP", "yes", "no"], "Scale fit" ]
+            - [ VAL05, LIST, ["NOP", "yes", "no"], "InR fit" ]
+            - break
+            - [ VAL06, INPUT, 9, "NOP", "Exp. Delay(s)" ]
+            - [ VAL07, LIST, [ "NOP", "yes", "no" ], "AG coolers off" ]
+            - [ VAL08, INPUT, 9, "NOP", "Max. ellip. (0.6)" ]
+            - break
+            - [ VAL09, INPUT, 9, "NOP", "Max. size (20.0 pix)" ]
+            - [ VAL10, INPUT, 9, "NOP", "Min. size (0.92 pix)" ]
+            - [ VAL11, INPUT, 9, "NOP", "Max. residual (0.5 mm)" ]
+            - break
+            - [ VAL12, INPUT, 9, "NOP", "Max. Correction (10 arcsec)" ]
+            - [ VAL13, LIST, ["NOP", "yes", "no"], "filter_bad_shape"]
+            - break
+    - sep
