@@ -36,7 +36,8 @@
     IF "$RES" == "LOW"
         asn cmdopt = " skipOtherRedResolution"
     ELIF "$RES" == "MED"
-        asn cmdopt = " skipOtherRedResolution cam=r1,r2,r3,r4"
+#asn cmdopt = " skipOtherRedResolution cam=r1,r2,r3,r4"
+        asn cmdopt = " skipOtherRedResolution cam=r1,r2,r3"
     ELSE
         asn cmdopt = ""
     ENDIF
@@ -65,7 +66,8 @@
 
     # slit start
 
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit' TIMELIM=120;
+    #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit' TIMELIM=120;
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fuiiInit specNum=1,2,3' TIMELIM=120;
 
     # take profile-dark data
     asn timedark = !PFS.TIME
