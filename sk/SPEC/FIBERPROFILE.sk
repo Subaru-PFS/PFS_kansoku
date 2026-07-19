@@ -4,9 +4,9 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi,Arai
+    SCRIPT_AUTHOR=Takagi,Arai,Passegger
     SCRIPT_CREATED=2024.08.24
-    SCRIPT_UPDATE=2025.05.19,2026.01.19,2026.07.05
+    SCRIPT_UPDATE=2025.05.19,2026.01.19,2026.07.05, 2026.07.18
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=FIBERPROFILE
@@ -67,7 +67,8 @@
     # slit start
 
     #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit' TIMELIM=120;
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fuiiInit specNum=1,2,3' TIMELIM=120;
+    #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit specNum=1,2,3' TIMELIM=120;
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit cam=1,2,3' TIMELIM=120;
 
     # take profile-dark data
     asn timedark = !PFS.TIME
@@ -93,7 +94,7 @@
 
     # slit stop
 
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit stop' TIMELIM=120;
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit stop specNum=1,2,3' TIMELIM=120;
 
     ## move grating if needed
     *IF $RES == "MED"
