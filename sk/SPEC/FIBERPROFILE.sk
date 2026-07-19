@@ -67,8 +67,8 @@
     # slit start
 
     #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit' TIMELIM=120;
-    #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit specNum=1,2,3' TIMELIM=120;
-    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit cam=1,2,3' TIMELIM=120;
+    EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit specNum=1,2,3' TIMELIM=120;
+    #EXEC PFS PFSCMD ACTOR="sps" CMD='slit start fullInit cam=1,2,3' TIMELIM=120;
 
     # take profile-dark data
     asn timedark = !PFS.TIME
