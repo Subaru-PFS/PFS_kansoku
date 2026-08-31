@@ -11,6 +11,7 @@
         Script_Author=Arai
         Script_Update=2022.11.12
         Script_Update=2023.04.12
+        Script_Update=2026.05.04
 </Header>
 
 <Default_Parameter>
@@ -34,7 +35,7 @@
 #    CORRECT=YES
 
     CAMERA=NOP
-    *CAMERA="b1,r1,n1,b3,r3,n3"
+    *CAMERA="b1,r1,n1,b2,r2,b3,r3,n3"
     ARM=NOP
     *ARM="b,r,n"
     SPECNUM=NOP
@@ -96,8 +97,8 @@ Exec PFS PFSCMD ACTOR="iic" cmd="sps erase" ;
 # Proc 4. Take an SpS exposure (will be replace to a subroutine command) at the field center.
 { #subroutine of SpS exposure  
     # Warning about the fiber illuminator
-    Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
-    Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
+    #Exec OBS Sound Select=OBCP_STATUS_CHECK Volume=182 ;
+    #Exec OBS Confirmation Instrument_Name=PFS Title="Is the fiber illuminator off?" Dialog=[OK] ;
 
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo4="Exposing : $EXPTIME sec" ;
     *IF "$WMODE" == "YES"
