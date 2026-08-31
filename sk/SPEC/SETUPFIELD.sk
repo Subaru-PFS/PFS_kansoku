@@ -26,6 +26,8 @@
         Script_Update=2025.09.12 # added (1) subroutine with AGRECONF2.sk with max_correction option, (2) noHome option in covergence. (3) control of homecobra command to execute only in COBRA==YES case. (arai)
         Script_Update=2025.11.12 # modified and remaed as SETUPFIELD_RUN25.sk (Arai)
         Script_Update=2026.05.06 # updated the script to use the convergence name
+        Script_Update=2026.08.30 # replaced this script to major SetupField.sk from SetupField_0518.sk
+     
 
 :Parameter
     # we default to the last position sent by PFS if the command is repeated
@@ -140,7 +142,8 @@ IF "$COBRA" == "YES" OR "$COBRA" == "NO"
 # SetupField Using pfsDesign: it will start pararelly to cobra home if COBRA=YES
 # code block to slewing telescope with pfsDesign
 {
-    *SET TIMELIM = 60        
+    # *SET TIMELIM = 60 # <-- original 2026-07-11
+    *SET TIMELIM = 300 # test with 300s 7/11 (arai)
     # Setting up Slewing parameters
     EXEC PFS PFSCMD actor="iic" CMD="declareCurrentPfsDesign designId=$DESIGN_ID" TIMELIM=$TIMELIM ;
     Exec OBS SLEEP SLEEP_TIME=2 ;
@@ -269,7 +272,7 @@ ENDIF
         Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Cobra configuration with rotator paused: Start." , 
         EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
 	    ## Cobra configuration (modified for Eng24, Sep 12, 2025)
-	    EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff name=$CONVNAME' timelim=300;
+	    EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 noHome nIteration=$CC_NITERATION tolerance=$TOLERANCE shortExpOff name=$CONVNAME' timelim=1200;
 
         # reset COBRA home done flag
         Exec OBS MEMORY INSTRUMENT_NAME=PFS HOMECOBRA_DONE='FALSE' ,
