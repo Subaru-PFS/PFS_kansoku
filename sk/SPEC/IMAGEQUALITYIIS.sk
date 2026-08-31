@@ -15,8 +15,10 @@
     TIMELIM=300
 
 :Command
+
 :start
-    :main_start
+
+:main_start
         EXEC OBS Set_Message Instrument_name=PFS obsinfo1="IMAGE Quality" obsinfo2="central IIS" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
 
         EXEC OBS Set_Message Instrument_name=PFS obsinfo3="IIS Ne";
@@ -30,5 +32,7 @@
 
         EXEC OBS SOUND SELECT=E_EXPDONE Volume=64 ,
         EXEC OBS Set_Message Instrument_name=PFS obsinfo1="IMAGE Quality" obsinfo2="done" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-    :main_end
+
+:main_end
+
 :end
