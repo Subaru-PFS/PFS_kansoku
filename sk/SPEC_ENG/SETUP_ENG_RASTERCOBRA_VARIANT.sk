@@ -3,6 +3,10 @@
 #
 # OPE) SETUP_ENG_RASTER_COBRA_VARIANT DESING_ID="pfsDesign_file" GROUP_NAME="RSC_FIELD+DEG_SET" N_VARIANT=INT
 # N_ARGS = 3
+#
+# USAGE for ADD and CONTINUE options:
+# Set ADD = NO and CONTINUE = NO if you make 1st time or want to create a new group ID.
+# After the 2nd time, set ADD=YES, and CONTINUE=YES if you want to continue the previous group ID.
 #****************************************************************************************************
 
 <Header>
@@ -11,7 +15,7 @@
         COMMAND=SETUP_ENG_RASTERCOBRA_VARIANT.sk
         Script_Version=0.1
         Script_Author=Arai
-        Script_Update=2022.11.14
+        Script_Update=2022.11.14, 2026.07.07
 </Header>
 
 <Default_Parameter>

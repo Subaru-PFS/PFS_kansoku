@@ -67,7 +67,7 @@
         *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=ON FF_POWER=2 SF=ON SF_POWER=40;
         Exec OBS sleep sleep_time=3 ;
         #Turn off illuminators
-        EXEC OBS Set_Message Instrument_name=PFSobsinfo3="Turning off illuminators." obsinfo4=clear obsinfo5=clear;
+        EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Turning off illuminators." obsinfo4=clear obsinfo5=clear;
         *SUB PFS_FIBRE_LIGHT OBE_ID=PFS OBE_MODE=SPEC_ENG FF=OFF SF=OFF;
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Fiber illuminator setting: done" obsinfo3=clear obsinfo4=clear obsinfo5=clear;
     *ENDIF
