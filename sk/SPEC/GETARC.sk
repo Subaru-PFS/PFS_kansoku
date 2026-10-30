@@ -5,8 +5,8 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2023.10.09
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
+    SCRIPT_UPDATE=2023.10.09, 2026.10.29
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETARC
@@ -33,6 +33,10 @@
     NE=0.0
     KR=0.0
 
+    # Show the pop-up to confirm cobras are at HOME (YES) or skip it (NO)
+    CHECKHOME=YES
+    *CHECKHOME="YES,NO"
+
 :Command
 
 :start
@@ -42,8 +46,10 @@
     # assign GroupID
     *SET GROUP_ID=!PFS.GROUPID.ID
 
-    # Check cobra is home?
+    # Check cobra is home? (skip with CHECKHOME=NO)
+    *IF $CHECKHOME == "YES"
     *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+    *ENDIF
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETARC" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
     
