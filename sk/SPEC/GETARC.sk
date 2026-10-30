@@ -1,7 +1,10 @@
 #**********************************************************************
-# GETSPSFLAT
-#  Take FLAT (with PFI Lamps) with SPS
+# GETARC.sk
+#  Take ARC (with PFI Lamps) with SpS
 #  Basically created from PFS_SPS_EXPOSURE.sk
+# example:
+# GETARC OBE_ID=PFS OBE_MODE=SPEC CAMERA="all" NE=5.0 CHECKHOME=NO
+# *SUB GETARC OBE_ID=PFS OBE_MODE=SPEC CAMERA="all" NE=5.0 CHECKHOME=NO
 #**********************************************************************
 
 :Header
