@@ -1,0 +1,45 @@
+#**********************************************************************
+# GETARC_TEST_SUB
+#  Take ARC by calling GETARC with *SUB (wrapper for testing GETARC)
+# usage in OPE file:
+# GETARC_TEST_SUB $DEF_PFS $CAMS NFRAME=1 NE=5.0 SEQ_COMMENT="brn arm" CHECKHOME=NO
+#**********************************************************************
+
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_CREATED=2026.10.29
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=GETARC_SUB
+
+:Parameter
+
+    NFRAME=1
+    # Which camera to be used
+    CAMERA="all"
+    #CAMERA="b1,r1,b2,r2,n2,b3,r3,n3,b4,r4"
+    #EXPTIME for each lamps. When it is set to > 0, that lamp will turn on during the exposure.
+    HGCD=0.0
+    AR=0.0
+    XE=0.0
+    NE=5.0
+    KR=0.0
+    # Show the pop-up to confirm cobras are at HOME (YES) or skip it (NO)
+    CHECKHOME=YES
+    *CHECKHOME="YES,NO"
+
+:Command
+
+:start
+
+:main_start
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETARC_TEST_SUB" obsinfo2=clear obsinfo3="Calling GETARC..." obsinfo4=clear obsinfo5=clear;
+
+    *SUB GETARC OBE_ID=PFS OBE_MODE=SPEC NFRAME=$NFRAME CAMERA="$CAMERA" HGCD=$HGCD AR=$AR XE=$XE NE=$NE KR=$KR CHECKHOME=$CHECKHOME;
+
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETARC_SUB" obsinfo2=clear obsinfo3="Done" obsinfo4=clear obsinfo5=clear;
+
+:main_end
+
+:end
