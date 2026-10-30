@@ -4,11 +4,12 @@
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Takagi
+    SCRIPT_AUTHOR=Takagi, Arai
     SCRIPT_UPDATE=2022.09.24
     SCRIPT_UPDATE=2022.10.26
     SCRIPT_UPDATE=2023.04.11
     SCRIPT_UPDATE=2023.07.05
+    SCRIPT_UPDATE=2026.09.01
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -67,7 +68,7 @@ from "pfsmisc" import sps_chk_sel
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     #Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
-    Exec PFS PFSCMD ACTOR="fps" cmd="testLoop" TIMELIM=$TIMELIM ;
+    Exec PFS PFSCMD ACTOR="fps" cmd="testLoop" expTime=$EXPTIME TIMELIM=$TIMELIM ;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done";
 
   *ENDIF
