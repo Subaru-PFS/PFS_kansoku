@@ -5,8 +5,7 @@
 
 :Header
     SCRIPT_AUTHOR=Takagi, Arai
-    SCRIPT_UPDATE=2024.02.26
-    SCRIPT_UPDATE=2026.05.08
+    SCRIPT_UPDATE=2024.02.26, 2026.05.08, 2026.10.30
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=PRECHECK2
@@ -54,7 +53,7 @@
     # Cobra movement test
     *IF $CHK_COBRA == "YES"
         EXEC OBS Set_Message Instrument_name=PFS obsinfo2="Taking MCS data..." obsinfo4=clear obsinfo5=clear;
-        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2 noTweak nIteration=8' TIMELIM=400 ;
+        EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign designId=0x464fb47d38f6c9f2 noTweak shortExpOff nIteration=8' TIMELIM=400 ;
         EXEC OBS Confirmation Instrument_Name=PFS Title="Check convergence." Dialog=[YES] ;
     *ENDIF
 
