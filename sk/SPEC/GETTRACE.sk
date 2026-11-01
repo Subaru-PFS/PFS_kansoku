@@ -4,8 +4,8 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2024.02.28
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
+    SCRIPT_UPDATE=2024.02.28, 2026.10.31
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETTRACE
@@ -30,7 +30,7 @@
 
 :start
     # Set time limits for commands
-    *SET TIMELIM_SEQ = ($EXPTIME + 100) * $NFRAME
+    *SET TIMELIM_SEQ = ($EXPTIME + 120) * $NFRAME
     *SET TIMELIM     = ($EXPTIME + 30) 
 
     # Camera selection option
