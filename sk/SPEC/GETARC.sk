@@ -117,12 +117,12 @@
 
 
     # Set time limits for commands
-    *SET TIMELIM     = ($EXPTIME + 60) 
+    *SET TIMELIM     = ($EXPTIME + 80) 
 
     *IF ($HGCD) > (0.0)
-        *SET TIMELIM_SEQ = 260 + ($EXPTIME + 80) * $NFRAME
+        *SET TIMELIM_SEQ = 260 + ($EXPTIME + 100) * $NFRAME
     *ELSE
-        *SET TIMELIM_SEQ = 60 + ($EXPTIME + 85) * $NFRAME
+        *SET TIMELIM_SEQ = 60 + ($EXPTIME + 105) * $NFRAME
     *ENDIF
 
 
