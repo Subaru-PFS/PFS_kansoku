@@ -30,6 +30,8 @@
         Script_Update=2026.05.08 # Corrention for COBRA=REDO. It can now be used to redo the cobra convergence. (need a test)
         Script_Update=2026.05.18 # Added displaying feature of Rot_stop and EL_stop after the rotator handling parallel to the telescope slewing (Arai) 
         Script_Update=2026.08.31 # renamed to SETUPFIELD.sk to use Run30
+        Script_Update=2026.11.03 # added "shortExpOff" option in the convergence command. (Arai)
+        
 
 
 :Parameter
@@ -305,7 +307,7 @@ ENDIF
     EXEC OBS SOUND SELECT=LAUNCHER_COMPLETE Volume=64 ,
     
 	## Cobra configuration (modified for Eng24, Sep 12, 2025)
-	EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION_REDO tolerance=$TOLERANCE name=$CONVNAME' timelim=$TIMELIM;
+	EXEC pfs pfscmd actor="iic" cmd='moveToPfsDesign exptime=4.8 nIteration=$CC_NITERATION_REDO tolerance=$TOLERANCE shortExpOff name=$CONVNAME' timelim=$TIMELIM;
 
     # load parameters from pfsDesign for REDU option
     asn RA=(!PFS.DESIGN.RA) 
