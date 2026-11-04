@@ -30,9 +30,9 @@
         Script_Update=2026.05.08 # Corrention for COBRA=REDO. It can now be used to redo the cobra convergence. (need a test)
         Script_Update=2026.05.18 # Added displaying feature of Rot_stop and EL_stop after the rotator handling parallel to the telescope slewing (Arai) 
         Script_Update=2026.08.31 # renamed to SETUPFIELD.sk to use Run30
-        Script_Update=2026.11.03 # added "shortExpOff" option in the convergence command. (Arai)
+        Script_Update=2026.11.03 # added "shortExpOff" option in the convergence command. By default, it use 0.8-sec exposure for the first a couple of images. (Arai)
+        Script_Update=2026.11.03 # added "CMD='sps waitForSequenceCompletion' TIMELIM=120" command to wait for the previous iic background command to be completed before starting cobra convergence. (Arai)
         
-
 
 :Parameter
     # we default to the last position sent by PFS if the command is repeated
@@ -268,6 +268,11 @@ ENDIF
 
 
 # Cobra convergence #############################################
+
+#Wait iic background command and only return when the entire sequence. (added on 2026.11.03, command is the same as in GETOBJECT.sk)
+EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear ,
+EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=120 ; 
+
 
 *IF "$COBRA"=="YES"
     *SET TIMELIM = 420
