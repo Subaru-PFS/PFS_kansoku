@@ -32,7 +32,7 @@
         Script_Update=2026.08.31 # renamed to SETUPFIELD.sk to use Run30
         Script_Update=2026.11.03 # added "shortExpOff" option in the convergence command. By default, it use 0.8-sec exposure for the first a couple of images. (Arai)
         Script_Update=2026.11.03 # added "CMD='sps waitForSequenceCompletion' TIMELIM=120" command to wait for the previous iic background command to be completed before starting cobra convergence. (Arai)
-        
+        Script_Update=2026.11.08 # modified to non-COS of the submode in the CORRECT_PFS command. (Arai)        
 
 :Parameter
     # we default to the last position sent by PFS if the command is repeated
@@ -430,9 +430,9 @@ IF "$AG" == "ON"
     #EXEC pfs pfscmd actor="iic" cmd="acquireField exptime=3000 fit_dScale=no fit_dInR=yes" TIMELIM=180;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Acquire Field: Done." ;
 
-    # Apply AG correction (RA and DEC)
+    # Apply AG correction (RA and DEC): changed to NOCOS of the submode in the CORRECT_PFS command (261108)
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors..." , 
-    *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=COS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR ;
+    *SUB CORRECT_PFS OBE_ID=COMMON OBE_MODE=CMDTEST MODE=RADEC SUBMODE=NOCOS DELTA_RA=!PFS.AG.ERR.RA_ERR DELTA_DEC=!PFS.AG.ERR.DEC_ERR ;
     Exec OBS Set_Message Instrument_Name=PFS ObsInfo3="Applying RADEC AG errors... Done." , 
 
     Exec OBS SLEEP SLEEP_TIME=3 ;
