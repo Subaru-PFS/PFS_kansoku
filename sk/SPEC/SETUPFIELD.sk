@@ -270,7 +270,7 @@ ENDIF
 # Cobra convergence #############################################
 
 #Wait iic background command and only return when the entire sequence. (added on 2026.11.03, command is the same as in GETOBJECT.sk)
-EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETOBJECT" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear ,
+EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Checking/Waiting previous process was done..." ,
 EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=120 ; 
 
 
