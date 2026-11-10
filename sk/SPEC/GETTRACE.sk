@@ -5,7 +5,7 @@
 
 :Header
     SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
-    SCRIPT_UPDATE=2024.02.28, 2026.10.31
+    SCRIPT_UPDATE=2024.02.28, 2026.10.31, 2026.11.09
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETTRACE
@@ -25,6 +25,9 @@
     SEQ_NAME="TRACE"
     SEQ_COMMENT=NOP
 
+    # Show the pop-up to confirm cobras are at HOME (YES) or skip it (NO)
+    CHECKHOME=YES
+    *CHECKHOME="YES,NO"
 
 :Command
 
@@ -56,8 +59,10 @@
 
 :main_start
 
-    # Check cobra is home?
-    *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+    # Check cobra is home? (skip with CHECKHOME=NO)
+    *IF $CHECKHOME == "YES"
+        *SUB CHECKCOBRAISHOME OBE_ID=PFS OBE_MODE=SPEC
+    *ENDIF
 
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETTRACE" obsinfo2=clear obsinfo3="preparing/wiping..." obsinfo4=clear obsinfo5=clear;
 
