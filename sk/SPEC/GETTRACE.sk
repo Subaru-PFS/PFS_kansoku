@@ -1,6 +1,8 @@
 #**********************************************************************
 # GETTRACE
 #  Take trace reference data with (with PFI Lamps)
+# GETTRACE OBE_ID=PFS OBE_MODE=SPEC CAMERA="all" EXPTIME=30 CHECKHOME=NO
+# *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC CAMERA="all" EXPTIME=30 CHECKHOME=NO KEEPINFO=YES
 #**********************************************************************
 
 :Header
