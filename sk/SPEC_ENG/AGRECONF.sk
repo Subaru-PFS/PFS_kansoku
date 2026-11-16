@@ -37,7 +37,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo1="AG Reconfigure" obsinfo2=clea
 
     asn EXPT_AG = INT($EXPTIME * 1000) 
     asn INFO_EXPT = " ExpTime: $EXPTIME, " 
-    asn COM_EXPT = " exposure_time=@EXPT_AG" 
+    asn COM_EXPT = " exptime=@EXPT_AG" 
 
 *ELSE
 

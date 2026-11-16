@@ -55,7 +55,7 @@ EXEC OBS Set_Message Instrument_name=PFS obsinfo5="AG Reconf." ;
 IF "$EXPTIME" != "NOP"
     asn EXPT_AG = INT($EXPTIME * 1000) 
     asn INFO_EXPT = " ExpTime: $EXPTIME, " 
-    asn COM_EXPT = " exposure_time=@EXPT_AG" 
+    asn COM_EXPT = " exptime=@EXPT_AG" 
 ELSE
     asn INFO_EXPT = "" 
     asn COM_EXPT = ""
