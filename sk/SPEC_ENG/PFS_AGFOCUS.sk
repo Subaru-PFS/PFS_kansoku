@@ -64,7 +64,7 @@ ENDIF
 
 asn cmdopt = "@cmdopt1@cmdopt2"
 
-EXEC PFS pfscmd actor="ag" cmd="focus exposure_time=$EXPT_AG@cmdopt" ;
+EXEC PFS pfscmd actor="ag" cmd="focus exptime=$EXPT_AG@cmdopt" ;
 
 ### --- Following descriptions were commented out in ver. 2022.11.10. Delete if not needed. ---
 EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done. " obsinfo4="Focus offset: " obsinfo5=!PFS.AG.ERR.FOCUS_ERR ;
