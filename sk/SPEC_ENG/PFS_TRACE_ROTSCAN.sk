@@ -3,15 +3,16 @@
 # PFS_TRACE_ROTSCAN
 #
 # -- Move Instrument rotator and take one Trace (GETTRACE) at each position
-#      -174, -150, -120, ..., +120, +150, +174, then return to 0
+#      -174, -150, -120, ..., +120, +150, +174
 #
 # example in OPE file:
 # PFS_TRACE_ROTSCAN OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" EXPTIME=30 SEQ_NAME="Trace" SEQ_COMMENT="brn arm"
+# PFS_TRACE_ROTSCAN OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" EXPTIME=30 SEQ_NAME="Trace" SEQ_COMMENT="brn arm" SKIPEDGE=YES
 #
 #**********************************************************************
 :Header
     SCRIPT_AUTHOR=Arai
-    SCRIPT_UPDATE=2026.11.10
+    SCRIPT_UPDATE=2026.11.10, 2026.11.15
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
     COMMAND=PFS_TRACE_ROTSCAN
@@ -31,7 +32,9 @@
     ROT_START=-150
     DROTA=30
     NMOVE_ROTA=11
-    ROT_END=0
+# Skip the +/-174 deg (edge) positions (YES) or take them (NO)
+    SKIPEDGE=NO
+    *SKIPEDGE="YES,NO"
 # Confirm cobras are at HOME once at the beginning (YES) or skip it (NO)
     CHECKHOME=YES
     *CHECKHOME="YES,NO"
@@ -48,11 +51,14 @@
 
 :main_start
 
-    # ---- -174 deg ----
-    *SET ROTA = $ROT_EDGE_NEG
-    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
-    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
-    *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$EXPTIME NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO KEEPINFO=YES ;
+    # ---- -174 deg (skip with SKIPEDGE=YES) ----
+    *IF $SKIPEDGE == "NO"
+        *SET ROTA = $ROT_EDGE_NEG
+        EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
+        EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+        Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+        *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$EXPTIME NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO KEEPINFO=YES ;
+    *ENDIF
 
     # ---- -150 ... +150 deg (every 30 deg) ----
 *FOR $NMOVE_ROTA RSTEP IN
@@ -60,21 +66,21 @@
     *SET ROTA = $ROT_START + $DROTA * ($RSTEP - 1)
     EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg ($RSTEP / $NMOVE_ROTA)" obsinfo5=clear ;
     EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$EXPTIME NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO KEEPINFO=YES ;
 
 *ENDFOR
 
-    # ---- +174 deg ----
-    *SET ROTA = $ROT_EDGE_POS
-    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
-    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
-    *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$EXPTIME NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO KEEPINFO=YES ;
+    # ---- +174 deg (skip with SKIPEDGE=YES) ----
+    *IF $SKIPEDGE == "NO"
+        *SET ROTA = $ROT_EDGE_POS
+        EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
+        EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+        Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+        *SUB GETTRACE OBE_ID=PFS OBE_MODE=SPEC EXPTIME=$EXPTIME NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO KEEPINFO=YES ;
+    *ENDIF
 
 :main_end
-
-    # ---- Return rotator ----
-    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR -> $ROT_END deg (return)" obsinfo5=clear ;
-    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROT_END ;
 
     EXEC OBS SOUND SELECT=SOUND_LADY_EI Volume=32 ,
     EXEC OBS Set_message obsinfo1=clear obsinfo2="PFS_TRACE_ROTSCAN" obsinfo3="done" obsinfo4=clear obsinfo5=clear ;
