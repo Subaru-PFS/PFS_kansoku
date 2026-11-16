@@ -4,10 +4,20 @@
 #
 # -- Rotate Instrument rotator, take exposure, and calculate center
 #    Command to send to IIC (not directly to FPS)
+#    Rotator positions are the same as PFS_TRACE_ROTSCAN:
+#      -174, -150, -120, ..., +120, +150, +174
+#
+# example in OPE file:
+#  (default: 13 positions, -174 ... +174)
+#  PFS_MCS_PFI_ROTCENTER OBE_ID=PFS OBE_MODE=SPEC_ENG
+#  (skip +/-174: 11 positions, -150 ... +150)
+#  PFS_MCS_PFI_ROTCENTER OBE_ID=PFS OBE_MODE=SPEC_ENG SKIPEDGE=YES
+#  (same positions as the old version: 12 positions, -180 ... +150)
+#  PFS_MCS_PFI_ROTCENTER OBE_ID=PFS OBE_MODE=SPEC_ENG ROT_START=-180 NMOVE_ROTA=12 SKIPEDGE=YES
 #
 #**********************************************************************
 :Header
-    SCRIPT_AUTHOR=Moritani
+    SCRIPT_AUTHOR=Moritani, Arai
     SCRIPT_UPDATE=2019.08.26, 2026.11.15
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
@@ -22,10 +32,16 @@
 #  DOCENTROID=FALSE
 # Telescope movement
   EL=!STATS.EL
-#  ROTA=!STATS.IROTPF_POS
-  ROTA=-180
+# Rotator positions (same as PFS_TRACE_ROTSCAN)
+#   -174, -150, -120, ..., +120, +150, +174
+  ROT_EDGE_NEG=-174
+  ROT_EDGE_POS=174
+  ROT_START=-150
   DROTA=30
   NMOVE_ROTA=11
+# Skip the +/-174 deg (edge) positions (YES) or take them (NO)
+  SKIPEDGE=NO
+  *SKIPEDGE="YES,NO"
 # Object (passed to Gen2 FITS.PFS.OBJECT status.)
   OBJECT="Rotation Center calib"
   TIMELIM=60
@@ -33,35 +49,47 @@
 :Command
 :start
 
-# set counters
-asn cntrt = 0
-
 # Claim IIC to start measurement
 EXEC OBS Set_message obsinfo1=clear obsinfo2="Measure PFI center on MCS" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="taking data..." obsinfo4=clear obsinfo5=clear ;
 EXEC PFS PFSCMD ACTOR="iic" cmd="startBoresightAcquisition expTime=$EXPTIME nExposures=$NFRAME" ;
 
 
-# Move telescope to initial position and take exposure
+# Move telescope (EL) if needed
 #EXEC TSC AzElDrive COORD=abs AZ=NOP EL=$EL ,
-
-EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
-Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
 #*SUB PFS_POPT2_MOVE OBE_ID=PFS OBE_MODE=ENG COMP=ADC MMODE=EL EL=$EL TELESCOPE=free ;
-
-# Take initial exposure
-EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
-
 
 :main_start
 
-# Move Instrument rotator and take exposure
-while(@cntrt < $NMOVE_ROTA){
-    asn cntrt = (@cntrt + 1)
-    EXEC TSC InsRot_PF Telescope=free COORD=rel POSITION=$DROTA ;
+# ---- -174 deg (skip with SKIPEDGE=YES) ----
+*IF $SKIPEDGE == "NO"
+    *SET ROTA = $ROT_EDGE_NEG
+    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg" obsinfo5=clear ;
+    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
     Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
-}
+*ENDIF
+
+# ---- -150 ... +150 deg (every 30 deg) ----
+*FOR $NMOVE_ROTA RSTEP IN
+
+    *SET ROTA = $ROT_START + $DROTA * ($RSTEP - 1)
+    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg ($RSTEP / $NMOVE_ROTA)" obsinfo5=clear ;
+    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
+
+*ENDFOR
+
+# ---- +174 deg (skip with SKIPEDGE=YES) ----
+*IF $SKIPEDGE == "NO"
+    *SET ROTA = $ROT_EDGE_POS
+    EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg" obsinfo5=clear ;
+    EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
+    EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
+*ENDIF
+
 :main_end
 
 EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="calculating..." obsinfo4=clear obsinfo5=clear ;
