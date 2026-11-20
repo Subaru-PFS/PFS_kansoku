@@ -5,8 +5,8 @@
 #**********************************************************************
 
 :Header
-    SCRIPT_AUTHOR=Takagi, Koshida, Moritani
-    SCRIPT_UPDATE=2023.10.10
+    SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
+    SCRIPT_UPDATE=2026.11.20
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETSPSDARK
