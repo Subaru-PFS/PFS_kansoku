@@ -1,0 +1,21 @@
+#**********************************************************************
+#
+# Stop AG, Rot correction loop
+# Usage in OPE file: STOPGUIDELOOP.sk 
+#**********************************************************************
+:Header
+    SCRIPT_AUTHOR=Arai
+    SCRIPT_UPDATE=2026.11.19
+    OBE_ID=PFS
+    OBE_MODE=SPEC
+    COMMAND=STOPGUIDELOOP
+
+:Parameter
+
+:Command
+:start
+:main_start
+    *SUB AGSTOP OBE_ID=PFS OBE_MODE=SPEC;
+    *SUB ROTCORRECTIONLOOP_STOP OBE_ID=PFS OBE_MODE=SPEC;
+:main_end
+:end
