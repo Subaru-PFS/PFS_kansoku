@@ -7,10 +7,10 @@
 :Header
     SCRIPT_AUTHOR=Takagi, Koshida, Moritani, Arai
     SCRIPT_UPDATE=2025.01.21
+    SCRIPT_UPDATE=2026.11.19 # added WAIT_READ option
     OBE_ID=PFS
     OBE_MODE=SPEC
     COMMAND=GETOBJECT
-
 
 :Parameter
 
@@ -28,7 +28,10 @@
     SEQ_COMMENT=NOP
     FORCEGRATING="NO"
     SKIP_MCS="YES"
-
+    ## YES: iic returns after readout is completed
+    ## NO : iic returns when the shutter closes (does not wait for readout)
+    WAIT_READ="NO"
+    
 :Command
 
 
@@ -76,6 +79,12 @@
         asn skmcs = ""
     ENDIF
 
+    IF $WAIT_READ == "YES"
+        asn return_shut_close = ""
+    ELSE
+        asn return_shut_close = " returnWhenShutterClose"
+    ENDIF
+
 :main_start
 
 #     # Check shutter status
@@ -92,9 +101,7 @@
     # Start exposure sequence. Added returnWhenShutterClose option (Jan. 21, 2025)
     {
     {
-    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr @skmcs returnWhenShutterClose' TIMELIM=$TIMELIM_SEQ ;
-    # Original command by Jan20 2025
-    #EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr' TIMELIM=$TIMELIM_SEQ,
+    EXEC PFS PFSCMD ACTOR="iic" CMD='scienceObject exptime=$EXPTIME duplicate=$NFRAME $cmdopt @seqname@seqcomm @fcgr @skmcs @return_shut_close' TIMELIM=$TIMELIM_SEQ ;
     },
 
     # Manage Gen2 outputs
