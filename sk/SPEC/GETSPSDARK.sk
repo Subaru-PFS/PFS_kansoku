@@ -30,9 +30,17 @@
 
 
 :start
+
+# Wait iic background command and only return when the entire sequence is done.
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1="GETSPSDARK" obsinfo2=clear obsinfo3="Checking/Waiting previous process was done..." obsinfo4=clear obsinfo5=clear ,
+    EXEC PFS PFSCMD ACTOR="iic" CMD='sps waitForSequenceCompletion' TIMELIM=90 ;
+
     # Set time limits for commands
     *SET TIMELIM_SEQ = ($EXPTIME + 60 + 43) * $NFRAME
     *SET TIMELIM     = ($EXPTIME + 30) 
+
+    # Rough total time for display (upper bound: 90 sec overhead per frame, rough)
+    *SET EST_SEC = ($EXPTIME + 90) * $NFRAME
 
     # Camera selection option
     *IF $CAMERA != "NOP"
@@ -54,8 +62,8 @@
 
 :main_start
     
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="Taking $NFRAME dark frames..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
-
+    # EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="Taking $NFRAME dark frames..." obsinfo3=clear obsinfo4=clear obsinfo5=clear;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" obsinfo2="ExpTime: $EXPTIME s x $NFRAME frames" obsinfo3="within $EST_SEC sec" obsinfo4=clear obsinfo5=clear;
     # EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo1="GETSPSDARK" ;
 
     # Start exposure sequence
