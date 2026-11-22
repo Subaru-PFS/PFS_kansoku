@@ -10,6 +10,7 @@
     SCRIPT_UPDATE=2023.04.11
     SCRIPT_UPDATE=2023.07.05
     SCRIPT_UPDATE=2026.09.01
+    SCRIPT_UPDATE=2026.11.21
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
 
@@ -67,8 +68,8 @@ from "pfsmisc" import sps_chk_sel
     EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="MCS Object exposure: $EXPTIME sec" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
-    #Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
-    Exec PFS PFSCMD ACTOR="fps" cmd="testLoop" expTime=$EXPTIME TIMELIM=$TIMELIM ;
+    Exec PFS PFSCMD ACTOR="mcs" cmd="expose object expTime=$EXPTIME noCentroid" TIMELIM=$TIMELIM;
+#    Exec PFS PFSCMD ACTOR="mcs" cmd="testLoop expTime=$EXPTIME" TIMELIM=$TIMELIM ;
     EXEC OBS Set_Message Instrument_name=PFS obsinfo3="Done";
 
   *ENDIF
@@ -120,7 +121,7 @@ from "pfsmisc" import sps_chk_sel
 
   IF @invalid_input == 1
     EXEC OBS SOUND SELECT=E_CANCEL Volume=64 ,
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure ($MODE): $NFRAME" obsinfo3="Invalid input: @comopt" obsinfo4=clear obsinfo5=clear ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS test exposure ($MODE): $NFRAME" obsinfo3="Invalid input: @comopt" obsinfo4=clear obsinfo5=clear ;
 
   ELIF "$MODE" == "BIAS"
     *SET TIMELIM = 30 + 60 * $NFRAME
@@ -137,7 +138,7 @@ from "pfsmisc" import sps_chk_sel
   ELIF "$MODE" == "DARK"
     #*SET TIMELIM = 30 + ($EXPTIME + 60) * $NFRAME
     *SET TIMELIM = 7 + ($EXPTIME + 60) * $NFRAME
-    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS exposure (Dark): $NFRAME x $EXPTIME sec @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
+    EXEC OBS Set_Message Instrument_name=PFS obsinfo1=clear obsinfo2="SpS test exposure (Dark): $NFRAME x $EXPTIME sec @comopt" obsinfo3=clear obsinfo4=clear obsinfo5=clear ;
 
     EXEC OBS SOUND SELECT=E_EXPSTART Volume=64 ,
     EXEC OBS TIMER DURATION=$TIMELIM ,

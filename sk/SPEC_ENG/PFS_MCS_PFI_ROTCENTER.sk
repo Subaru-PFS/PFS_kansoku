@@ -66,6 +66,7 @@ EXEC PFS PFSCMD ACTOR="iic" cmd="startBoresightAcquisition expTime=$EXPTIME nExp
     *SET ROTA = $ROT_EDGE_NEG
     EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg" obsinfo5=clear ;
     EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
     Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
 *ENDIF
@@ -76,6 +77,7 @@ EXEC PFS PFSCMD ACTOR="iic" cmd="startBoresightAcquisition expTime=$EXPTIME nExp
     *SET ROTA = $ROT_START + $DROTA * ($RSTEP - 1)
     EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg ($RSTEP / $NMOVE_ROTA)" obsinfo5=clear ;
     EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
     Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
 
@@ -86,6 +88,7 @@ EXEC PFS PFSCMD ACTOR="iic" cmd="startBoresightAcquisition expTime=$EXPTIME nExp
     *SET ROTA = $ROT_EDGE_POS
     EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3=nop obsinfo4="ROTCENTER: InR = $ROTA deg" obsinfo5=clear ;
     EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
     Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     EXEC PFS PFSCMD ACTOR="iic" cmd="addBoresightPosition" TIMELIM=$TIMELIM ;
 *ENDIF

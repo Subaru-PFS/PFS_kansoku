@@ -1,14 +1,14 @@
 #**********************************************************************
 #
-# PFS_ARC_ROTCENTER
+# PFS_ARC_ROTSCAN.sk
 #   (GETARC version of PFS_TRACE_ROTSCAN)
 #
 # -- Move Instrument rotator and take one Arc (GETARC) at each position
 #      -174, -150, -120, ..., +120, +150, +174
 #
 # example in OPE file:
-# PFS_ARC_ROTCENTER OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" NE=5.0 SEQ_COMMENT="brn arm"
-# PFS_ARC_ROTCENTER OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" NE=5.0 SEQ_COMMENT="brn arm" SKIPEDGE=YES
+# PFS_ARC_ROTSCAN OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" NE=5.0 SEQ_COMMENT="brn arm"
+# PFS_ARC_ROTSCAN OBE_ID=PFS OBE_MODE=SPEC_ENG CAMERA="all" NE=5.0 SEQ_COMMENT="brn arm" SKIPEDGE=YES
 #
 #**********************************************************************
 :Header
@@ -16,7 +16,7 @@
     SCRIPT_UPDATE=2026.11.21
     OBE_ID=PFS
     OBE_MODE=SPEC_ENG
-    COMMAND=PFS_ARC_ROTCENTER
+    COMMAND=PFS_ARC_ROTSCAN
 
 :Parameter
 # Exposure (passed to GETARC)
@@ -62,6 +62,7 @@
         *SET ROTA = $ROT_EDGE_NEG
         EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
         EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+        Exec OBS SLEEP SLEEP_TIME=2 ;
         Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
         *SUB GETARC OBE_ID=PFS OBE_MODE=SPEC HGCD=$HGCD AR=$AR XE=$XE NE=$NE KR=$KR NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO ;
     *ENDIF
@@ -72,6 +73,7 @@
     *SET ROTA = $ROT_START + $DROTA * ($RSTEP - 1)
     EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg ($RSTEP / $NMOVE_ROTA)" obsinfo5=clear ;
     EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+    Exec OBS SLEEP SLEEP_TIME=2 ;
     Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
     *SUB GETARC OBE_ID=PFS OBE_MODE=SPEC HGCD=$HGCD AR=$AR XE=$XE NE=$NE KR=$KR NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO ;
 
@@ -82,6 +84,7 @@
         *SET ROTA = $ROT_EDGE_POS
         EXEC OBS Set_message obsinfo1=clear obsinfo2=nop obsinfo3="moving rotator..." obsinfo4="ROTSCAN: InR = $ROTA deg" obsinfo5=clear ;
         EXEC TSC InsRot_PF Telescope=free COORD=abs POSITION=$ROTA ;
+        Exec OBS SLEEP SLEEP_TIME=2 ;
         Exec OBS Check_Status Mode=AND Timeout=0360 N1=[STATS.ROTDIF_PF -0.005 +0.005] ;
         *SUB GETARC OBE_ID=PFS OBE_MODE=SPEC HGCD=$HGCD AR=$AR XE=$XE NE=$NE KR=$KR NFRAME=$NFRAME CAMERA="$CAMERA" ARM="$ARM" SPECNUM="$SPECNUM" SEQ_NAME="$SEQ_NAME" SEQ_COMMENT="$SEQ_COMMENT" CHECKHOME=NO ;
     *ENDIF
